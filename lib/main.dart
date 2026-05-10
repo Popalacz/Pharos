@@ -1,31 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'app/pharos_app.dart';
+import 'providers/cart_stub_provider.dart';
 import 'providers/product_provider.dart';
-import 'ui/screens/product_list_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ProductProvider()..fetchAllProducts(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ProductProvider>(
+          create: (_) => ProductProvider()..fetchAllProducts(),
+        ),
+        ChangeNotifierProvider<CartStubProvider>(
+          create: (_) => CartStubProvider(),
+        ),
+      ],
       child: const PharosApp(),
     ),
   );
-}
-
-class PharosApp extends StatelessWidget {
-  const PharosApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Pharos E-commerce',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.indigo,
-        brightness: Brightness.light,
-      ),
-      home: const ProductListScreen(),
-    );
-  }
 }

@@ -1,29 +1,28 @@
-import 'package:flutter/material.dart';
-import '../../models/product_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../screens/product_detail_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../models/product_model.dart';
+import '../../navigation/catalog_navigation.dart';
 
 class ProductCard extends StatelessWidget {
+  const ProductCard({super.key, required this.product, this.onTap});
+
   final Product product;
   final VoidCallback? onTap;
 
-  const ProductCard({super.key, required this.product, this.onTap});
-
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap ??
             () {
-              Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => ProductDetailScreen(product: product),
-                ),
-              );
+              HapticFeedback.selectionClick();
+              CatalogNavigation.openProductDetail(context, product);
             },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,15 +40,18 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.text,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
                   Text(
                     '${product.price} PLN',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
+                    style: const TextStyle(
+                      color: AppColors.accent,
                       fontWeight: FontWeight.w900,
                       fontSize: 16,
                     ),
@@ -65,18 +67,30 @@ class ProductCard extends StatelessWidget {
 
   Widget _buildImage() {
     if (product.idImage == null) {
-      return const Center(child: Icon(Icons.image_not_supported, size: 50));
+      return ColoredBox(
+        color: AppColors.background,
+        child: Center(
+          child: Icon(
+            Icons.image_not_supported,
+            size: 50,
+            color: AppColors.text.withOpacity(0.35),
+          ),
+        ),
+      );
     }
 
     return CachedNetworkImage(
       imageUrl: product.imageUrl,
       width: double.infinity,
       fit: BoxFit.cover,
-      placeholder: (context, url) => Container(
-        color: Colors.grey[200],
+      placeholder: (BuildContext context, String url) => ColoredBox(
+        color: AppColors.background,
         child: const Center(child: CircularProgressIndicator()),
       ),
-      errorWidget: (context, url, error) => const Icon(Icons.error),
+      errorWidget: (BuildContext context, String url, Object error) => ColoredBox(
+        color: AppColors.background,
+        child: Icon(Icons.error, color: AppColors.accent),
+      ),
     );
   }
 }

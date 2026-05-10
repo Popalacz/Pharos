@@ -62,6 +62,7 @@ flutter:
 
   assets:
     - assets/mock/products_api_response.json
+    - logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
