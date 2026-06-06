@@ -66,7 +66,7 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (product.idImage == null) {
+    if (!product.hasImageUrl) {
       return ColoredBox(
         color: AppColors.background,
         child: Center(

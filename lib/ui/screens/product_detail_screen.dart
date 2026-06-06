@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/pharos_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/product_model.dart';
+import '../../models/cart_stub_line.dart';
 import '../../providers/cart_stub_provider.dart';
 import '../sheets/cart_preview_sheet.dart';
 import '../widgets/pharos_header_actions.dart';
@@ -47,7 +48,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _addToCart(BuildContext context) {
     HapticFeedback.mediumImpact();
     final CartStubProvider cart = context.read<CartStubProvider>();
-    final int lineIndex = cart.addLine(_product.name);
+    final int lineIndex = cart.addLine(CartStubLine.fromProduct(_product));
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(

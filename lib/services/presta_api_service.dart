@@ -38,10 +38,10 @@ class PrestaApiService {
         'output_format': 'JSON',
       });
 
-      if (response.data != null && response.data['products'] != null) {
-        return _mapProductsFromPayload(
-          Map<String, dynamic>.from(response.data as Map),
-        );
+      final Map<String, dynamic>? payload = _decodeResponseBodyToMap(response.data);
+
+      if (payload != null && payload['products'] != null) {
+        return _mapProductsFromPayload(payload);
       }
 
       return [];
@@ -50,6 +50,34 @@ class PrestaApiService {
     } catch (e) {
       throw Exception('Błąd podczas przetwarzania danych: $e');
     }
+  }
+
+  Map<String, dynamic>? _decodeResponseBodyToMap(Object? data) {
+    if (data == null) {
+      return null;
+    }
+
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+
+    if (data is String) {
+      final Object? decoded = json.decode(data);
+
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+    }
+
+    return null;
   }
 
   List<Product> _mapProductsFromPayload(Map<String, dynamic> payload) {

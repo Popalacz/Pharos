@@ -25,6 +25,7 @@ class PharosNavigationDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -40,35 +41,44 @@ class PharosNavigationDrawer extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
                     AppAssets.storeLogo,
-                    height: 48,
+                    height: 40,
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.medium,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   Text(
                     'Witaj w Pharos',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: AppColors.text,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     'Przeglądaj i zamawiaj wygodnie.',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppColors.text.withOpacity(0.75),
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Consumer<ProductProvider>(
                     builder: (BuildContext context, ProductProvider catalog, Widget? _) {
                       final int count = catalog.products.length;
 
                       return Text(
                         'Produkty w katalogu: $count',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w800,

@@ -1,36 +1,38 @@
 import 'package:flutter/foundation.dart';
 
+import '../models/cart_stub_line.dart';
+
 /// Demo cart lines for UI (badge, bottom sheet) until a real checkout flow exists.
 class CartStubProvider extends ChangeNotifier {
-  final List<String> _productNames = <String>[];
+  final List<CartStubLine> _lines = <CartStubLine>[];
 
-  List<String> get productNames => List<String>.unmodifiable(_productNames);
+  List<CartStubLine> get lines => List<CartStubLine>.unmodifiable(_lines);
 
-  int get lineCount => _productNames.length;
+  int get lineCount => _lines.length;
 
   /// Returns index of the inserted line (for undo UX).
-  int addLine(String productName) {
-    _productNames.add(productName);
+  int addLine(CartStubLine line) {
+    _lines.add(line);
     notifyListeners();
 
-    return _productNames.length - 1;
+    return _lines.length - 1;
   }
 
   void removeAt(int index) {
-    if (index < 0 || index >= _productNames.length) {
+    if (index < 0 || index >= _lines.length) {
       return;
     }
 
-    _productNames.removeAt(index);
+    _lines.removeAt(index);
     notifyListeners();
   }
 
   void clear() {
-    if (_productNames.isEmpty) {
+    if (_lines.isEmpty) {
       return;
     }
 
-    _productNames.clear();
+    _lines.clear();
     notifyListeners();
   }
 }
