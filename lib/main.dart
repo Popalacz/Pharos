@@ -12,7 +12,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<ProductProvider>(
-          create: (_) => ProductProvider()..fetchAllProducts(),
+          create: (_) => ProductProvider(),
         ),
         ChangeNotifierProvider<CartStubProvider>(
           create: (_) => CartStubProvider(),

@@ -27,7 +27,7 @@ class ProductCatalogSkeleton extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-              border: Border.all(color: AppColors.black.withOpacity(0.35)),
+              border: Border.all(color: AppColors.black.withValues(alpha: 0.35)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

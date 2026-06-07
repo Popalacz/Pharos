@@ -73,7 +73,7 @@ class ProductCard extends StatelessWidget {
           child: Icon(
             Icons.image_not_supported,
             size: 50,
-            color: AppColors.text.withOpacity(0.35),
+            color: AppColors.text.withValues(alpha: 0.35),
           ),
         ),
       );

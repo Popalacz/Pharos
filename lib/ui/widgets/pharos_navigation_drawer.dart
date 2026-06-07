@@ -66,7 +66,7 @@ class PharosNavigationDrawer extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.text.withOpacity(0.75),
+                      color: AppColors.text.withValues(alpha: 0.75),
                       height: 1.2,
                     ),
                   ),
