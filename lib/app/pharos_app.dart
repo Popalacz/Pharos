@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../core/theme/app_theme.dart';
-import '../ui/screens/product_list_screen.dart';
+import 'package:pharos/ui/screens/calendar_test_screen.dart'; // Import nowego ekranu UI
 
 class PharosApp extends StatelessWidget {
   const PharosApp({super.key});
@@ -9,10 +7,13 @@ class PharosApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Pharos App',
       debugShowCheckedModeBanner: false,
-      title: 'Pharos',
-      theme: AppTheme.dark,
-      home: const ProductListScreen(),
+      theme: ThemeData(
+        primarySwatch: Colors.orange,
+        useMaterial3: true,
+      ),
+      home: const CalendarTestScreen(), // Podpięcie ekranu jako domyślnego
     );
   }
 }

@@ -68,3 +68,15 @@
 	</array>
 </dict>
 </plist>
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+				<!-- Wklej tutaj swój odwrócony identyfikator klienta z pliku GoogleService-Info.plist -->
+            <string>com.googleusercontent.apps.1046612759895-pr38mluc57hllra9lqinjg1gsaq39351.apps.googleusercontent.com</string>
+        </array>
+    </dict>
+</array>

@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// 1. Dodaj import do nowo stworzonego widoku kalendarza:
+import 'ui/screens/calendar_test_screen.dart'; 
 
-import 'app/pharos_app.dart';
-import 'providers/cart_stub_provider.dart';
-import 'providers/product_provider.dart';
+class PharosApp extends StatelessWidget {
+  const PharosApp({super.key});
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<ProductProvider>(
-          create: (_) => ProductProvider(),
-        ),
-        ChangeNotifierProvider<CartStubProvider>(
-          create: (_) => CartStubProvider(),
-        ),
-      ],
-      child: const PharosApp(),
-    ),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Pharos App',
+      theme: ThemeData(
+        primarySwatch: Colors.orange,
+      ),
+      home: const CalendarTestScreen(), 
+    );
+  }
 }

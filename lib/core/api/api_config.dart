@@ -15,7 +15,8 @@ class ApiConfig {
   /// Use when the emulator/device cannot reach `localhost` (e.g. Docker on host).
   // static const String baseUrl = 'http://172.30.123.47:8112/api';
 
-  static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA';
+  // static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA'; // Presta base
+  static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA'; // HMP
 
 
   static Map<String, String> get headers {
