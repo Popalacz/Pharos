@@ -12,6 +12,12 @@
       },
       "price": "149.99",
       "id_default_image": "1",
+      "associations": {
+        "images": [
+          { "id": "1" },
+          { "id": "2" }
+        ]
+      },
       "description": {
         "language": [
           {

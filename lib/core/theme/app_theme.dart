@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../constants/pharos_layout.dart';
 import 'app_colors.dart';
@@ -39,15 +40,15 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        hintStyle: TextStyle(color: AppColors.text.withOpacity(0.55)),
+        hintStyle: TextStyle(color: AppColors.text.withValues(alpha: 0.55)),
         contentPadding: const EdgeInsets.symmetric(horizontal: PharosLayout.spaceMd, vertical: PharosLayout.spaceSm),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-          borderSide: BorderSide(color: AppColors.black.withOpacity(0.35)),
+          borderSide: BorderSide(color: AppColors.black.withValues(alpha: 0.35)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-          borderSide: BorderSide(color: AppColors.black.withOpacity(0.35)),
+          borderSide: BorderSide(color: AppColors.black.withValues(alpha: 0.35)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
@@ -59,10 +60,10 @@ abstract final class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppColors.black.withOpacity(0.35)),
+          side: BorderSide(color: AppColors.black.withValues(alpha: 0.35)),
         ),
       ),
-      dividerTheme: DividerThemeData(color: AppColors.text.withOpacity(0.12)),
+      dividerTheme: DividerThemeData(color: AppColors.text.withValues(alpha: 0.12)),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.accent,
       ),

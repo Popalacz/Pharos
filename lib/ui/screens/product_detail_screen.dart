@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +9,7 @@ import '../../models/cart_stub_line.dart';
 import '../../providers/cart_stub_provider.dart';
 import '../sheets/cart_preview_sheet.dart';
 import '../widgets/pharos_header_actions.dart';
+import '../widgets/product_image_gallery.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.product});
@@ -112,9 +112,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Hero(
-                      tag: 'product_image_${_product.id}',
-                      child: _buildDetailImage(),
+                    ProductImageGallery(
+                      product: _product,
+                      heroTag: 'product_image_${_product.id}',
                     ),
                     DecoratedBox(
                       decoration: BoxDecoration(
@@ -122,8 +122,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: <Color>[
-                            AppColors.black.withOpacity(0.05),
-                            AppColors.black.withOpacity(0.55),
+                            AppColors.black.withValues(alpha: 0.05),
+                            AppColors.black.withValues(alpha: 0.55),
                           ],
                         ),
                       ),
@@ -174,7 +174,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               _product.description ??
                   'Ten produkt nie posiada jeszcze opisu w systemie PrestaShop.',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: AppColors.text.withOpacity(0.88),
+                color: AppColors.text.withValues(alpha: 0.88),
                 height: 1.55,
               ),
             ),
@@ -186,11 +186,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border(
-            top: BorderSide(color: AppColors.black.withOpacity(0.35)),
+            top: BorderSide(color: AppColors.black.withValues(alpha: 0.35)),
           ),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: AppColors.black.withOpacity(0.25),
+              color: AppColors.black.withValues(alpha: 0.25),
               offset: const Offset(0, -4),
               blurRadius: 12,
             ),
@@ -221,34 +221,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailImage() {
-    if (!_product.hasImageUrl) {
-      return ColoredBox(
-        color: AppColors.surface,
-        child: Icon(
-          Icons.image_not_supported,
-          size: 100,
-          color: AppColors.text.withOpacity(0.35),
-        ),
-      );
-    }
-
-    return CachedNetworkImage(
-      imageUrl: _product.imageUrl,
-      width: double.infinity,
-      height: double.infinity,
-      fit: BoxFit.cover,
-      placeholder: (BuildContext context, String url) => ColoredBox(
-        color: AppColors.surface,
-        child: const Center(child: CircularProgressIndicator()),
-      ),
-      errorWidget: (BuildContext context, String url, Object error) => ColoredBox(
-        color: AppColors.surface,
-        child: Icon(Icons.error, size: 100, color: AppColors.accent),
       ),
     );
   }

@@ -39,7 +39,7 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                       Icon(
                         Icons.shopping_bag_outlined,
                         size: 56,
-                        color: AppColors.text.withOpacity(0.35),
+                        color: AppColors.text.withValues(alpha: 0.35),
                       ),
                       const SizedBox(height: PharosLayout.spaceMd),
                       Text(
@@ -54,7 +54,7 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                         'Nie posiadasz produktów w koszyku.',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.text.withOpacity(0.72),
+                              color: AppColors.text.withValues(alpha: 0.72),
                               height: 1.35,
                             ),
                       ),
@@ -82,7 +82,7 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                       child: ListView.separated(
                         shrinkWrap: true,
                         itemCount: cart.lineCount,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        separatorBuilder: (_, _) => const Divider(height: 1),
                         itemBuilder: (BuildContext context, int index) {
                           final CartStubLine line = cart.lines[index];
 
@@ -101,7 +101,7 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                             subtitle: Text(
                               '${line.unitPrice} PLN',
                               style: TextStyle(
-                                color: AppColors.accent.withOpacity(0.95),
+                                color: AppColors.accent.withValues(alpha: 0.95),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -170,7 +170,7 @@ class _CartLineThumbnail extends StatelessWidget {
                     color: AppColors.background,
                     child: Icon(
                       Icons.broken_image_outlined,
-                      color: AppColors.text.withOpacity(0.45),
+                      color: AppColors.text.withValues(alpha: 0.45),
                     ),
                   );
                 },
@@ -179,7 +179,7 @@ class _CartLineThumbnail extends StatelessWidget {
                 color: AppColors.background,
                 child: Icon(
                   Icons.image_not_supported_outlined,
-                  color: AppColors.text.withOpacity(0.35),
+                  color: AppColors.text.withValues(alpha: 0.35),
                 ),
               ),
       ),

@@ -17,7 +17,7 @@ class CatalogEmptyState extends StatelessWidget {
             Icon(
               Icons.inventory_2_outlined,
               size: 64,
-              color: AppColors.text.withOpacity(0.35),
+              color: AppColors.text.withValues(alpha: 0.35),
             ),
             const SizedBox(height: PharosLayout.spaceMd),
             Text(
@@ -32,7 +32,7 @@ class CatalogEmptyState extends StatelessWidget {
               'Sprawdź połączenie z PrestaShop lub odśwież katalog z menu.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.text.withOpacity(0.72),
+                    color: AppColors.text.withValues(alpha: 0.72),
                     height: 1.35,
                   ),
             ),
@@ -64,7 +64,7 @@ class CatalogNoSearchResults extends StatelessWidget {
             Icon(
               Icons.manage_search_rounded,
               size: 64,
-              color: AppColors.text.withOpacity(0.35),
+              color: AppColors.text.withValues(alpha: 0.35),
             ),
             const SizedBox(height: PharosLayout.spaceMd),
             Text(
@@ -79,7 +79,7 @@ class CatalogNoSearchResults extends StatelessWidget {
               'Dla zapytania „$query” nie znaleziono produktów.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.text.withOpacity(0.72),
+                    color: AppColors.text.withValues(alpha: 0.72),
                     height: 1.35,
                   ),
             ),

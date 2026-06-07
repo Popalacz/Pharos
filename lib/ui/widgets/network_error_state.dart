@@ -26,7 +26,7 @@ class NetworkErrorState extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-              border: Border.all(color: AppColors.black.withOpacity(0.35)),
+              border: Border.all(color: AppColors.black.withValues(alpha: 0.35)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(PharosLayout.spaceLg),
@@ -36,7 +36,7 @@ class NetworkErrorState extends StatelessWidget {
                   Icon(
                     Icons.wifi_tethering_error_rounded,
                     size: 56,
-                    color: AppColors.accent.withOpacity(0.95),
+                    color: AppColors.accent.withValues(alpha: 0.95),
                   ),
                   const SizedBox(height: PharosLayout.spaceMd),
                   Text(
@@ -52,7 +52,7 @@ class NetworkErrorState extends StatelessWidget {
                     message,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.text.withOpacity(0.78),
+                          color: AppColors.text.withValues(alpha: 0.78),
                           height: 1.35,
                         ),
                   ),

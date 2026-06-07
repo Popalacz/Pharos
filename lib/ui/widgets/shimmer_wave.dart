@@ -53,7 +53,7 @@ class _ShimmerWaveState extends State<ShimmerWave> with SingleTickerProviderStat
               end: Alignment(-math.cos(angle), -math.sin(angle)),
               colors: <Color>[
                 AppColors.surface,
-                AppColors.text.withOpacity(0.10),
+                AppColors.text.withValues(alpha: 0.10),
                 AppColors.surface,
               ],
               stops: const <double>[0.35, 0.50, 0.65],
