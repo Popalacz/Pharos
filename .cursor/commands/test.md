@@ -1,0 +1,1 @@
+Uruchom testy, w pliku modules/dediconfigurator/docs/testing.md są wytyczne, a komenda to composer run test. uruchom ją w głównym katalogu modułu dediconfigurator.

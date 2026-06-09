@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Coding Best Practices
+
+1. Code organization:
+   - Follow early return pattern for better readability
+   - Keep methods focused and single-purpose
+   - Use meaningful variable and method names
+
+2. Performance:
+   - Implement caching where appropriate
+   - Optimize database queries
+   - Use lazy loading when possible
+
+3. Security:
+   - Validate all user inputs
+   - Use DbQuery for database queries
+   - Follow proper authentication and authorization patterns

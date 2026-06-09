@@ -7,13 +7,21 @@ import '../core/api/api_config.dart';
 import '../models/product_model.dart';
 
 class PrestaApiService {
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: ApiConfig.baseUrl,
-    headers: {
-      'Authorization':
-          'Basic ${base64Encode(utf8.encode('${ApiConfig.apiKey}:'))}',
-    },
-  ));
+  final Dio _dio;
+
+  PrestaApiService({Dio? dio})
+      : _dio = dio ??
+            Dio(
+              BaseOptions(
+                baseUrl: ApiConfig.baseUrl,
+                connectTimeout: const Duration(seconds: 10),
+                receiveTimeout: const Duration(seconds: 10),
+                headers: {
+                  'Authorization':
+                      'Basic ${base64Encode(utf8.encode('${ApiConfig.apiKey}:'))}',
+                },
+              ),
+            );
 
   Future<List<Product>> getProducts() async {
     if (ApiConfig.useMockProductsJson) {
@@ -23,7 +31,7 @@ class PrestaApiService {
         final Object? decoded = json.decode(jsonString);
 
         if (decoded is! Map<String, dynamic>) {
-          return [];
+          return const [];
         }
 
         return _mapProductsFromPayload(decoded);
@@ -33,18 +41,19 @@ class PrestaApiService {
     }
 
     try {
-      final response = await _dio.get('/products', queryParameters: {
+      final response = await _dio.get<Object>('/products', queryParameters: {
         'display': 'full',
         'output_format': 'JSON',
       });
 
-      final Map<String, dynamic>? payload = _decodeResponseBodyToMap(response.data);
+      final Map<String, dynamic>? payload =
+          _decodeResponseBodyToMap(response.data);
 
       if (payload != null && payload['products'] != null) {
         return _mapProductsFromPayload(payload);
       }
 
-      return [];
+      return const [];
     } on DioException catch (e) {
       throw Exception('Problem z połączeniem z serwerem: ${e.message}');
     } catch (e) {
@@ -53,28 +62,14 @@ class PrestaApiService {
   }
 
   Map<String, dynamic>? _decodeResponseBodyToMap(Object? data) {
-    if (data == null) {
-      return null;
-    }
-
-    if (data is Map<String, dynamic>) {
-      return data;
-    }
-
-    if (data is Map) {
-      return Map<String, dynamic>.from(data);
-    }
+    if (data == null) return null;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
 
     if (data is String) {
       final Object? decoded = json.decode(data);
-
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-
-      if (decoded is Map) {
-        return Map<String, dynamic>.from(decoded);
-      }
+      if (decoded is Map<String, dynamic>) return decoded;
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
     }
 
     return null;
@@ -82,21 +77,20 @@ class PrestaApiService {
 
   List<Product> _mapProductsFromPayload(Map<String, dynamic> payload) {
     final Object? rawProducts = payload['products'];
-
-    if (rawProducts == null) {
-      return [];
-    }
+    if (rawProducts == null) return const [];
 
     List<dynamic> productList = [];
-
     if (rawProducts is List) {
       productList = rawProducts;
     } else if (rawProducts is Map) {
       productList = [rawProducts];
     }
 
-    return productList
-        .map((item) => Product.fromJson(Map<String, dynamic>.from(item as Map)))
-        .toList();
+    return productList.map((item) {
+      final Map<String, dynamic> itemMap = item is Map
+          ? Map<String, dynamic>.from(item)
+          : const <String, dynamic>{};
+      return Product.fromJson(itemMap);
+    }).toList();
   }
 }

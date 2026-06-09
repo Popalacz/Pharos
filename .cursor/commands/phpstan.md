@@ -1,0 +1,1 @@
+uruchom phpstan w folderze modules/dediconfigurator komenda: composer run analyse

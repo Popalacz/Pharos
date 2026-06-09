@@ -1,0 +1,15 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ObjectModel Rules
+
+1. Class naming and definition:
+   - Read ObjectModel class names from static `$definition` property
+   - Follow consistent naming convention for model classes
+
+2. Model structure:
+   - Define all required fields in `$definition`
+   - Implement proper validation methods
+   - Use early return pattern for validation and processing methods

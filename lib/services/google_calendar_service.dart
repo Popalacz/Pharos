@@ -1,12 +1,18 @@
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/calendar/v3.dart';
+// ignore: unused_import
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:flutter/material.dart';
 
-import 'package:http/http.dart' as http; // Zamiast usuniętej paczki, używamy standardowego protokołu HTTP
+// ROZWIĄZANIE DLA LINUKSA: Jawne pokazanie klas zapobiega ukrywaniu konstruktorów 
+// przez specyficzne dla platformy desktopowej pliki nagłówkowe w pub-cache paczki.
+import 'package:google_sign_in/google_sign_in.dart' show GoogleSignIn, GoogleSignInAccount;
+
+// Pełna izolacja klas kalendarza za pomocą aliasu 'gapi'
+import 'package:googleapis/calendar/v3.dart' as gapi;
 
 class GoogleCalendarService {
-  // Definiujemy zakres uprawnień (tylko zapis/odczyt kalendarza)
-  static const _scopes = [CalendarApi.calendarEventsScope];
+  static const _scopes = [gapi.CalendarApi.calendarEventsScope];
 
+  // Konstruktor bez słowa kluczowego const
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: _scopes,
   );
@@ -17,7 +23,7 @@ class GoogleCalendarService {
       final account = await _googleSignIn.signIn();
       return account;
     } catch (error) {
-      print('Błąd logowania Google Sign-In: $error');
+      debugPrint('Błąd logowania Google Sign-In: $error');
       return null;
     }
   }
@@ -29,54 +35,55 @@ class GoogleCalendarService {
     required double totalAmount,
     required List<String> items,
   }) async {
-    // Sprawdzenie, czy jesteśmy zalogowani
     var account = _googleSignIn.currentUser;
     account ??= await _googleSignIn.signInSilently();
 
     if (account == null) {
-      print('Użytkownik nie jest zalogowany do Google. Pomijam dodawanie do kalendarza.');
+      debugPrint('Użytkownik nie jest zalogowany do Google. Pomijam dodawanie do kalendarza.');
       return;
     }
 
-    // Pobranie uwierzytelnionego klienta HTTP dedykowanego dla API Google
+    // Pobranie uwierzytelnionego klienta HTTP z paczki rozszerzeń
     final httpClient = await _googleSignIn.authenticatedClient();
-    if (httpClient == null) return;
+    if (httpClient == null) {
+      debugPrint('Nie udało się uzyskać uwierzytelnionego klienta HTTP.');
+      return;
+    }
 
-    final calendarApi = CalendarApi(httpClient);
+    final calendarApi = gapi.CalendarApi(httpClient);
 
-    // Tworzenie opisu wydarzenia z listą produktów
-    // Budowanie opisu tekstowego - POPRAWIONE z writeline na writeln
     final descriptionBuilder = StringBuffer()
       ..writeln('Nowe zamówienie ze sklepu Pharos!')
       ..writeln('Klient: $customerName')
       ..writeln('Wartość: ${totalAmount.toStringAsFixed(2)} PLN')
-      ..writeln('\nZakupione produkty:')
-      ..writeAll(items.map((item) => '- $item'), '\n');
+      ..writeln('\nZakupione produkty:');
+    
+    for (final item in items) {
+      descriptionBuilder.writeln('- $item');
+    }
 
-    // Definicja czasu trwania zadania (np. 1 godzina na spakowanie paczki)
-    final startTime = DateTime.now().add(const Duration(minutes: 10)); // start za 10 minut
+    final startTime = DateTime.now().add(const Duration(minutes: 10));
     final endTime = startTime.add(const Duration(hours: 1));
 
-    final event = Event(
+    final event = gapi.Event(
       summary: '📦 Realizacja zamówienia #$orderId',
       description: descriptionBuilder.toString(),
-      start: EventDateTime(
+      start: gapi.EventDateTime(
         dateTime: startTime.toUtc(),
         timeZone: 'UTC',
       ),
-      end: EventDateTime(
+      end: gapi.EventDateTime(
         dateTime: endTime.toUtc(),
         timeZone: 'UTC',
       ),
-      colorId: '6', // Kolor jasnoczerwony/pomarańczowy w kalendarzu Google dla priorytetów
+      colorId: '6',
     );
 
     try {
-      // Wstawienie zdarzenia do głównego kalendarza użytkownika
       await calendarApi.events.insert(event, 'primary');
-      print('Zdarzenie dla zamówienia #$orderId pomyślnie dodane do kalendarza!');
+      debugPrint('Zdarzenie dla zamówienia #$orderId pomyślnie dodane do kalendarza!');
     } catch (e) {
-      print('Błąd podczas dodawania wydarzenia do Kalendarza Google: $e');
+      debugPrint('Błąd podczas dodawania wydarzenia do Kalendarza Google: $e');
     }
   }
 }

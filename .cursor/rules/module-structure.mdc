@@ -1,0 +1,19 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Module Structure Rules
+
+1. Use dynamic module names:
+   - Use `$module->name` or `$this->name` instead of hardcoding module names
+   - Pass module name as a variable in template files
+
+2. Template handling:
+   - Store template file paths in class-level `$templateFile` property
+   - Implement caching for methods returning templates
+   - Implement clear cache in methods where content is added / updated (e.g. post process in admin controller)
+
+3. Database queries:
+   - Use `DbQuery` class for all database operations
+   - Follow early return pattern for better code readability
