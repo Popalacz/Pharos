@@ -1,8 +1,22 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+dependencies {
+  // Import the Firebase BoM
+  implementation(platform("com.google.firebase:firebase-bom:34.14.1"))
+
+
+  // TODO: Add the dependencies for Firebase products you want to use
+  // When using the BoM, don't specify versions in Firebase dependencies
+  implementation("com.google.firebase:firebase-analytics")
+
+
+  // Add the dependencies for any other desired Firebase products
+  // https://firebase.google.com/docs/android/setup#available-libraries
 }
 
 android {
@@ -33,7 +47,7 @@ android {
 
     defaultConfig {
         applicationId = "pl.studia.pharos"
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -65,5 +79,3 @@ android {
 flutter {
     source = "../.."
 }
-
-apply(plugin = "com.google.gms.google-services")

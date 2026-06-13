@@ -1,4 +1,4 @@
-package com.example.pharos
+package pl.studia.pharos
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,1 +1,29 @@
-{"installed":{"client_id":"1046612759895-pr38mluc57hllra9lqinjg1gsaq39351.apps.googleusercontent.com","project_id":"pharos-498719","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs"}}
+{
+  "project_info": {
+    "project_number": "350268117127",
+    "project_id": "pharos-app-0620",
+    "storage_bucket": "pharos-app-0620.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350268117127:android:4dedf788e468af9c90e822",
+        "android_client_info": {
+          "package_name": "pl.studia.pharos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoN59vshD7eLTaUYWTCMxE9EVup1hyHSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

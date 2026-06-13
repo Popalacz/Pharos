@@ -1,3 +1,14 @@
+plugins {
+    // Usuwamy wersje z tych dwóch linii, ponieważ Flutter dostarcza je globalnie (w wersji 8.11.1):
+    id("com.android.application") apply false
+    id("org.jetbrains.kotlin.android") apply false
+
+   id("com.google.gms.google-services") version "4.4.4" apply false
+}
+
+
+
+// --- Reszta Twojego kodu poniżej (keystoreProperties, allprojects itp.) zostaje BEZ ZMIAN ---
 val keystoreProperties = java.util.Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
