@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pharos/data/models/localization_models.dart';
+import '../network/api_service.dart';
 
 class LocalizationProvider extends ChangeNotifier {
+  final ApiService _apiService = ApiService();
   List<LanguageModel> _languages = [];
   List<CurrencyModel> _currencies = [];
   
@@ -18,27 +20,38 @@ class LocalizationProvider extends ChangeNotifier {
   }
 
   Future<void> _loadFromPrestaShop() async {
-    // Symulacja pobrania z API PrestaShop
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    _languages = [
-      LanguageModel(id: 1, name: 'Polski', isoCode: 'pl', languageCode: 'pl'),
-      LanguageModel(id: 2, name: 'English', isoCode: 'gb', languageCode: 'en'),
-    ];
-    
-    _currencies = [
-      CurrencyModel(id: 1, name: 'Złoty', isoCode: 'PLN', symbol: 'zł', conversionRate: 1.0),
-      CurrencyModel(id: 2, name: 'Euro', isoCode: 'EUR', symbol: '€', conversionRate: 0.23),
-    ];
+    try {
+      // Pobieranie danych językowych i walutowych z endpointu konfiguracji modułu
+      final response = await _apiService.dio.get('/module/pharos_api/config');
+      
+      if (response.data['localization'] != null) {
+        final locData = response.data['localization'];
+        
+        _languages = (locData['languages'] as List)
+            .map((e) => LanguageModel.fromJson(e))
+            .toList();
+            
+        _currencies = (locData['currencies'] as List)
+            .map((e) => CurrencyModel.fromJson(e))
+            .toList();
 
-    _currentLanguage = _languages.first;
-    _currentCurrency = _currencies.first;
+        // Ustawienie domyślnych wartości (np. pierwszy z listy lub polski)
+        _currentLanguage = _languages.firstWhere((l) => l.isoCode == 'pl', orElse: () => _languages.first);
+        _currentCurrency = _currencies.firstWhere((c) => c.isoCode == 'PLN', orElse: () => _currencies.first);
+      }
+    } catch (e) {
+      debugPrint('Localization Load Error: $e');
+      // Backup/Default values
+      _languages = [LanguageModel(id: 1, name: 'Polski', isoCode: 'pl', languageCode: 'pl')];
+      _currencies = [CurrencyModel(id: 1, name: 'Złoty', isoCode: 'PLN', symbol: 'zł', conversionRate: 1.0)];
+      _currentLanguage = _languages.first;
+      _currentCurrency = _currencies.first;
+    }
     notifyListeners();
   }
 
   void setLanguage(LanguageModel lang) {
     _currentLanguage = lang;
-    // Tu docelowo odświeżamy API
     notifyListeners();
   }
 
@@ -47,7 +60,6 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Helper do formatowania cen zgodnie z wybraną walutą
   String formatPrice(double price) {
     if (_currentCurrency == null) return '${price.toStringAsFixed(2)} PLN';
     double converted = price * _currentCurrency!.conversionRate;

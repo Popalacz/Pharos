@@ -9,13 +9,19 @@ Moduł `pharos_api` ma przekształcić PrestaShop w system **Headless Commerce**
 - **Bezpieczeństwo:** Wykorzystaj klucze API Webservice z ograniczonymi uprawnieniami (ACL).
 - **CORS:** Upewnij się, że nagłówki pozwalają na komunikację z aplikacji mobilnej.
 
+## 2. Dynamiczne Źródła Danych (1:1 z PrestaShop)
+Moduł `pharos_api` nie powinien posiadać własnej bazy aktywnych walut czy metod płatności. Dane muszą być pobierane z klas rdzennych:
+- **Waluty:** `Currency::getCurrencies(true, true)`
+- **Języki:** `Language::getLanguages(true, Context::getContext()->shop->id)`
+- **Metody Płatności:** Pobranie listy modułów z hookiem `displayPaymentEU` lub `actionPaymentOptions`.
+- **Kurierzy:** `Carrier::getCarriers(...)` z uwzględnieniem stref i grup klientów.
+
 ## 3. SDUI & Configuration Endpoint
 **URL:** `/module/pharos_api/config`
-**Metoda:** `GET`
-**Zwraca:**
-- `store_info`: Nazwa, URL logo, kolor przewodny.
-- `home_config`: Tablica sekcji (BANNER_SLIDER, CATEGORY_CHIPS, PRODUCT_GRID).
-- `localization`: Lista aktywnych języków i walut z kursami.
+Endpoint ten musi agregować dane z:
+1. Tabeli `ps_configuration` (branding, kolory).
+2. Tabeli modułu (układ sekcji strony głównej).
+3. Klasy `Language` i `Currency` (aktualnie dostępne opcje).
 
 ## 4. API Endpoint Map (Niezbędne do działania aplikacji)
 
@@ -41,13 +47,29 @@ Moduł `pharos_api` ma przekształcić PrestaShop w system **Headless Commerce**
 - `GET /module/pharos_api/reviews?id_product=ID` - Pobranie opinii (moduł productcomments).
 - `POST /module/pharos_api/fcm-token` - Rejestracja tokena Push urządzenia.
 
-## 5. UI/UX Settings (Zarządzanie z Panelu PrestaShop)
-Administrator w panelu modułu musi mieć możliwość:
-- Zmiany nazwy wyświetlanej sklepu (`PHAROS_STORE_NAME`).
-- Wgrania logotypu aplikacji (`PHAROS_LOGO_URL`).
-- Zarządzania banerami (grafika + link do produktu).
-- Włączania/wyłączania metod płatności (BLIK, Google Pay).
-- Podglądu logów z Google Calendar Automation.
+## 5. Google Calendar Automation (Integracja Serwerowa)
+Przy każdym nowym zamówieniu (`hookActionValidateOrder`), moduł PHP powinien:
+1. Pobrać `Service Account JSON` z konfiguracji modułu.
+2. Użyć biblioteki `google/apiclient` do autoryzacji.
+3. Dodać wpis do `Kalendarza ID` z danymi zamówienia.
+
+## 6. Narzędzia Rozwoju
+Moduł musi wystawiać logi w formacie przyjaznym dla Fluttera (`tail -f` logów API), abyś mógł śledzić błędy w czasie rzeczywistym podczas developmentu.
+
+## 7. Deep Linking & SEO (Growth Hacks)
+Moduł `pharos_api` musi generować tzw. **Universal Links** (iOS) oraz **App Links** (Android).
+- Każdy link do produktu na stronie WWW powinien mieć swój odpowiednik otwierający aplikację: `https://twojsklep.pl/produkt-id` -> otwiera `ProductDetailsScreen(id)`.
+
+## 9. Real-time Stock Management
+Aplikacja musi otrzymywać precyzyjne dane o dostępności:
+- `quantity`: Aktualny stan magazynowy.
+- `out_of_stock`: Flaga czy zezwalać na zamówienia po wyczerpaniu (0 - nie, 1 - tak, 2 - globalne).
+- `minimal_quantity`: Minimalna ilość do koszyka.
+- API musi zwracać błąd 409 (Conflict), jeśli w momencie finalizacji zamówienia produkt został wyprzedany.
+
+## 10. Accessibility (Włączanie Cyfrowe)
+Wszystkie widgety Fluttera muszą posiadać atrybuty `Semantics`. Obrazy produktów muszą mieć opis alternatywny (`alt_text`) przesyłany z PrestaShop.
+
 
 
 ## 6. Wydajność

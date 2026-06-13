@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/providers/settings_provider.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/ui/screens/checkout_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lottie/lottie.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -81,6 +85,13 @@ import 'package:lottie/lottie.dart';
   }
 
   Widget _buildSummary(BuildContext context, CartProvider cart) {
+    final settings = context.watch<SettingsProvider>().settings;
+    final loc = context.watch<LocalizationProvider>();
+    final double threshold = settings.freeShippingThreshold;
+    final double current = cart.totalAmount;
+    final double progress = (current / threshold).clamp(0.0, 1.0);
+    final double remaining = threshold - current;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -90,19 +101,57 @@ import 'package:lottie/lottie.dart';
       child: SafeArea(
         child: Column(
           children: [
+            // Progress darmowej dostawy (Growth Guideline #1)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.local_shipping_outlined, 
+                      color: progress >= 1.0 ? Colors.green : Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        progress >= 1.0 
+                          ? 'Darmowa dostawa odblokowana!' 
+                          : 'Brakuje Ci ${loc.formatPrice(remaining)} do darmowej dostawy',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: progress >= 1.0 ? Colors.green : Colors.black,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 1.0 ? Colors.green : Colors.orange),
+                    minHeight: 8,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Suma częściowa', style: TextStyle(color: Colors.grey)),
-                Text('${cart.totalAmount.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(loc.formatPrice(cart.totalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Dostawa', style: TextStyle(color: Colors.grey)),
-                Text('GRATIS', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                const Text('Dostawa', style: TextStyle(color: Colors.grey)),
+                Text(progress >= 1.0 ? 'GRATIS' : 'Obliczana w kasie', 
+                  style: TextStyle(color: progress >= 1.0 ? Colors.green : Colors.black, fontWeight: FontWeight.bold)),
               ],
             ),
             const Divider(height: 32),
@@ -110,7 +159,7 @@ import 'package:lottie/lottie.dart';
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('RAZEM', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('${cart.totalAmount.toStringAsFixed(2)} PLN', 
+                Text(loc.formatPrice(cart.totalAmount),
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.orange)),
               ],
             ),

@@ -4,7 +4,9 @@ class ProductModel {
   final String description;
   final double price;
   final String imageUrl;
-  final bool isAvailable;
+  final int stockQuantity;
+  final bool allowOutOfStockOrders;
+  final int minimalQuantity;
 
   ProductModel({
     required this.id,
@@ -12,8 +14,13 @@ class ProductModel {
     required this.description,
     required this.price,
     required this.imageUrl,
-    this.isAvailable = true,
+    this.stockQuantity = 0,
+    this.allowOutOfStockOrders = false,
+    this.minimalQuantity = 1,
   });
+
+  bool get isAvailable => stockQuantity >= minimalQuantity || allowOutOfStockOrders;
+  bool get isLowStock => stockQuantity > 0 && stockQuantity <= 5;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     // Pomocnicza funkcja do wyciągania zlokalizowanych wartości z formatu PrestaShop
@@ -34,6 +41,9 @@ class ProductModel {
       name: getLocalizedValue(json['name']),
       description: getLocalizedValue(json['description']),
       price: double.parse(json['price'].toString()),
+      stockQuantity: int.tryParse(json['quantity']?.toString() ?? '0') ?? 0,
+      allowOutOfStockOrders: json['out_of_stock'] == '1' || json['out_of_stock'] == '2',
+      minimalQuantity: int.tryParse(json['minimal_quantity']?.toString() ?? '1') ?? 1,
       imageUrl: json['id_default_image'] != null 
           ? 'https://pharos-shop.pl/api/images/products/${json['id']}/${json['id_default_image']}' 
           : 'https://via.placeholder.com/300',

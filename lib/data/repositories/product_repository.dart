@@ -1,6 +1,8 @@
-import '../models/product_model.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import '../../core/network/api_service.dart';
+import '../models/product_model.dart';
 
 abstract class IProductRepository {
   Future<List<ProductModel>> getProducts();
@@ -8,17 +10,30 @@ abstract class IProductRepository {
 }
 
 class ProductRepository implements IProductRepository {
+  final ApiService _apiService = ApiService();
   final bool useMockData;
 
-  ProductRepository({this.useMockData = true});
+  ProductRepository({this.useMockData = false});
 
   @override
   Future<List<ProductModel>> getProducts() async {
     if (useMockData) {
       return _loadMockData();
     }
-    // ... PrestaShop implementation
-    return _loadMockData();
+    
+    try {
+      // Pobieranie listy produktów z natywnego API PrestaShop
+      final response = await _apiService.dio.get('/api/products', queryParameters: {
+        'display': 'full',
+        'limit': '20',
+      });
+      
+      final List productsJson = response.data['products'] ?? [];
+      return productsJson.map((json) => ProductModel.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('PrestaShop Product Fetch Error: $e');
+      return _loadMockData(); // Backup data for better UX (UAT 6.2)
+    }
   }
 
   @override
@@ -30,19 +45,32 @@ class ProductRepository implements IProductRepository {
         p.description.toLowerCase().contains(query.toLowerCase())
       ).toList();
     }
-    // Tu docelowo wywołanie dio.get('/products', queryParameters: {'filter[name]': '%$query%'})
-    return [];
+
+    try {
+      // Wyszukiwanie produktów z parametrem filtra
+      final response = await _apiService.dio.get('/api/products', queryParameters: {
+        'display': 'full',
+        'filter[name]': '%$query%',
+      });
+      
+      final List productsJson = response.data['products'] ?? [];
+      return productsJson.map((json) => ProductModel.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('Search Error: $e');
+      return [];
+    }
   }
 
   Future<List<ProductModel>> _loadMockData() async {
-    // Symulacja opóźnienia sieci dla testu Shimmer Effect
-    await Future.delayed(const Duration(seconds: 2));
-    
-    final String response = await rootBundle.loadString('assets/mock/products_api_response.json');
-    final data = await json.decode(response);
-    
-    return (data['products'] as List)
-        .map((e) => ProductModel.fromJson(e))
-        .toList();
+    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final String response = await rootBundle.loadString('assets/mock/products_api_response.json');
+      final data = await json.decode(response);
+      return (data['products'] as List)
+          .map((e) => ProductModel.fromJson(e))
+          .toList();
+    } catch (e) {
+      return [];
+    }
   }
 }

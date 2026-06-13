@@ -10,6 +10,7 @@ import 'package:pharos/ui/screens/profile_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
 import 'package:pharos/ui/screens/wishlist_screen.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
 
 import 'package:pharos/core/services/notification_service.dart';
@@ -39,13 +40,14 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<IProductRepository>(
-          create: (_) => ProductRepository(useMockData: true),
+          create: (_) => ProductRepository(useMockData: false),
         ),
         ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(create: (_) => LocalizationProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(create: (_) => RecentlyViewedProvider()),
         ChangeNotifierProvider(
           create: (context) => SearchProvider(context.read<IProductRepository>()),
         ),

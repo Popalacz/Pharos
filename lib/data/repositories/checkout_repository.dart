@@ -1,5 +1,6 @@
-import '../models/checkout_models.dart';
 import '../../core/network/api_service.dart';
+import '../models/checkout_models.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class ICheckoutRepository {
   Future<List<CarrierModel>> getCarriers();
@@ -11,48 +12,49 @@ class CheckoutRepository implements ICheckoutRepository {
   final ApiService _apiService = ApiService();
   final bool useMockData;
 
-  CheckoutRepository({this.useMockData = true});
+  CheckoutRepository({this.useMockData = false});
 
   @override
   Future<List<CarrierModel>> getCarriers() async {
-    if (useMockData) {
-      return [
-        CarrierModel(id: 1, name: 'InPost Paczkomaty', delay: '24h', price: 14.99),
-        CarrierModel(id: 2, name: 'DPD Kurier', delay: '1-2 dni', price: 19.00),
-        CarrierModel(id: 3, name: 'Odbiór osobisty', delay: 'Natychmiast', price: 0.0),
-      ];
+    try {
+      // Pobieranie kurierów (można filtrować po aktywnych)
+      final response = await _apiService.dio.get('/api/carriers', queryParameters: {
+        'display': 'full',
+        'filter[active]': '1',
+      });
+      
+      final List carriers = response.data['carriers'] ?? [];
+      return carriers.map((e) => CarrierModel.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Carrier Fetch Error: $e');
+      return [];
     }
-    
-    final response = await _apiService.dio.get('/carriers');
-    return (response.data['carriers'] as List)
-        .map((e) => CarrierModel.fromJson(e))
-        .toList();
   }
 
   @override
   Future<List<PaymentMethodModel>> getPaymentMethods() async {
-    if (useMockData) {
-      return [
-        PaymentMethodModel(id: 'blik', name: 'BLIK', description: 'Szybki przelew kodem'),
-        PaymentMethodModel(id: 'ps_checkout', name: 'Karta Płatnicza', description: 'Visa, Mastercard'),
-        PaymentMethodModel(id: 'google_pay', name: 'Google Pay', description: 'Płatność jednym kliknięciem'),
-      ];
+    try {
+      // Pobieranie aktywnych metod płatności z dedykowanego endpointu modułu pharos_api
+      // Zgodnie z PHAROS_MODULE_GUIDELINES.md: Lista płatności pobierana z systemu
+      final response = await _apiService.dio.get('/module/pharos_api/payments');
+      
+      final List methods = response.data['methods'] ?? [];
+      return methods.map((e) => PaymentMethodModel.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Payment Methods Fetch Error: $e');
+      return [];
     }
-    
-    final response = await _apiService.dio.get('/pharos/payment-methods');
-    return (response.data['methods'] as List)
-        .map((e) => PaymentMethodModel.fromJson(e))
-        .toList();
   }
 
   @override
   Future<Map<String, dynamic>> createOrder(Map<String, dynamic> orderData) async {
-    if (useMockData) {
-      await Future.delayed(const Duration(seconds: 2));
-      return {'success': true, 'order_id': 'PH-MOCK-123'};
+    try {
+      // Tworzenie zamówienia w PrestaShop
+      final response = await _apiService.dio.post('/api/orders', data: orderData);
+      return response.data;
+    } catch (e) {
+      debugPrint('Order Creation Error: $e');
+      rethrow;
     }
-    
-    final response = await _apiService.dio.post('/orders', data: orderData);
-    return response.data;
   }
 }

@@ -9,7 +9,9 @@ import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:pharos/ui/screens/search_screen.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
@@ -35,10 +37,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<Map<String, dynamic>> _fetchFullHomeData() async {
-    // Symulacja opóźnienia dla Shimmera
-    await Future.delayed(const Duration(seconds: 1));
-    final String response = await rootBundle.loadString('assets/mock/products_api_response.json');
-    return json.decode(response);
+    try {
+      final response = await context.read<SettingsProvider>().apiService.dio.get('/module/pharos_api/config');
+      
+      // Dodatkowo pobieramy produkty jeśli nie są zawarte w configu
+      final productsResponse = await context.read<IProductRepository>().getProducts();
+      
+      return {
+        'home_config': response.data['home_config'] ?? [],
+        'products': productsResponse, // Lista obiektów ProductModel
+      };
+    } catch (e) {
+      debugPrint('Home Data Fetch Error: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -58,8 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           final sectionsJson = snapshot.data!['home_config'] as List;
           final sections = sectionsJson.map((s) => HomeSection.fromJson(s)).toList();
-          final productsJson = snapshot.data!['products'] as List;
-          final products = productsJson.map((p) => ProductModel.fromJson(p)).toList();
+          final List<ProductModel> products = snapshot.data!['products'] as List<ProductModel>;
 
           return RefreshIndicator(
             onRefresh: () async => setState(() => _loadData()),
@@ -67,7 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
               physics: const BouncingScrollPhysics(), // Premium iOS feel
               slivers: [
                 _buildAppBar(context),
+                _buildCartRecoveryBanner(context),
                 for (var section in sections) _buildSliverSection(section, products),
+                _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ),
@@ -203,15 +216,114 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
     }
   }
 
+  Widget _buildCartRecoveryBanner(BuildContext context) {
+    final cart = context.watch<CartProvider>();
+    final settings = context.watch<SettingsProvider>().settings;
+    
+    if (!settings.cartRecoveryEnabled || cart.itemCount == 0) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.shade200),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.shopping_cart_checkout, color: Colors.orange),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Dokończ zakupy!', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('W Twoim koszyku czekają produkty o wartości ${context.read<LocalizationProvider>().formatPrice(cart.totalAmount)}', 
+                    style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Nawigacja do koszyka (zakładając że MainNavigation obsłuży zmianę indexu)
+                // W tym przypadku prościej przekierować do CartScreen jako push dla demonstracji
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              child: const Text('KOSZYK'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentlyViewedSection() {
+    return Consumer<RecentlyViewedProvider>(
+      builder: (context, recentProvider, child) {
+        if (recentProvider.recentProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+        
+        return SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionHeader(title: 'Ostatnio oglądane'),
+              SizedBox(
+                height: 250,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: recentProvider.recentProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = recentProvider.recentProducts[index];
+                    return Container(
+                      width: 160,
+                      margin: const EdgeInsets.only(right: 16),
+                      child: _ProductCard(product: product),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildErrorState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.grey),
+          Lottie.network(
+            'https://assets9.lottiefiles.com/packages/lf20_ghp9v6m3.json',
+            height: 200,
+          ),
           const SizedBox(height: 16),
-          const Text('Błąd synchronizacji z Pharos API', style: TextStyle(fontWeight: FontWeight.bold)),
-          TextButton(onPressed: () => setState(() => _loadData()), child: const Text('Spróbuj ponownie')),
+          const Text('Błąd synchronizacji z Pharos API', 
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 8),
+          const Text('Sprawdź połączenie z internetem i spróbuj ponownie.', 
+            textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => setState(() => _loadData()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('SPRÓBUJ PONOWNIE', style: TextStyle(color: Colors.white)),
+          ),
         ],
       ),
     );
@@ -375,11 +487,20 @@ class _ProductCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w600)
             ),
             const SizedBox(height: 4),
-            Consumer<LocalizationProvider>(
-              builder: (context, loc, child) => Text(
-                loc.formatPrice(product.price),
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Consumer<LocalizationProvider>(
+                  builder: (context, loc, child) => Text(
+                    loc.formatPrice(product.price),
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                  ),
+                ),
+                if (!product.isAvailable)
+                  const Text('BRAK', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold))
+                else if (product.isLowStock)
+                  const Text('OSTATNIE SZTUKI', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+              ],
             ),
           ],
         ),

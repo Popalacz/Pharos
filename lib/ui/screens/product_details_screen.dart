@@ -4,26 +4,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/core/providers/recently_viewed_provider.dart';
 
 import 'package:pharos/data/models/review_model.dart';
 import 'package:pharos/data/repositories/review_repository.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 
+import 'package:pharos/core/providers/recently_viewed_provider.dart';
+
 class ProductDetailsScreen extends StatefulWidget {
-  final ProductModel product;
-  const ProductDetailsScreen({super.key, required this.product});
-
-  @override
-  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
-}
-
-class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  late Future<List<ReviewModel>> _reviewsFuture;
-
+// ... inside _ProductDetailsScreenState
   @override
   void initState() {
     super.initState();
     _reviewsFuture = ReviewRepository(useMockData: true).getProductReviews(widget.product.id);
+    
+    // Growth Guideline: Logowanie ostatnio oglądanych
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RecentlyViewedProvider>().addProduct(widget.product);
+    });
   }
 
   @override
@@ -151,26 +150,41 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 56),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () {
-                    context.read<CartProvider>().addItem(widget.product);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Dodano ${widget.product.name} do koszyka!'),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Colors.green,
-                        action: SnackBarAction(label: 'KOSZYK', textColor: Colors.white, onPressed: () {}),
+                child: widget.product.isAvailable
+                  ? ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                    );
-                  },
-                  child: const Text('DODAJ DO KOSZYKA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
+                      onPressed: () {
+                        context.read<CartProvider>().addItem(widget.product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Dodano ${widget.product.name} do koszyka!'),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                      child: const Text('DODAJ DO KOSZYKA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    )
+                  : OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        minimumSize: const Size(double.infinity, 56),
+                        side: const BorderSide(color: Colors.black),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        // Logika zapisu na powiadomienie (moduł ps_emailalerts)
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Powiadomimy Cię, gdy produkt wróci do sprzedaży!'), backgroundColor: Colors.blue),
+                        );
+                      },
+                      child: const Text('POWIADOM MNIE O DOSTĘPNOŚCI', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
               ),
             ],
           ),

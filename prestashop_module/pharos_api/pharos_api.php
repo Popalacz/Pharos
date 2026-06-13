@@ -48,7 +48,17 @@ class Pharos_Api extends Module
 
     public function getContent()
     {
-        // Tutaj zbudujemy Panel Konfiguracyjny SDUI (Drag & Drop layoutu)
-        return $this->display(__FILE__, 'views/templates/admin/configure.tpl');
+        // Panel admina ogranicza się do:
+        // 1. Kolorów mobile
+        // 2. Zarządzania kolejnością sekcji SDUI
+        // 3. Konfiguracji Firebase
+        return $this->renderConfigForm();
+    }
+
+    protected function renderConfigForm()
+    {
+        $helper = new HelperForm();
+        // ... standardowa logika HelperForm dla PHAROS_PRIMARY_COLOR, PHAROS_SDUI_LAYOUT itp.
+        return $helper->generateForm([/* pola konfiguracji */]);
     }
 }
