@@ -97,10 +97,13 @@ class CartScreen extends StatelessWidget {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  // Tu startujemy proces Checkout zintegrowany z PrestaShop
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: const Text('PRZEJDŹ DO PŁATNOŚCI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text('PRZEJDŹ DO KASY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             )
           ],
