@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 abstract class IProductRepository {
   Future<List<ProductModel>> getProducts();
+  Future<List<ProductModel>> searchProducts(String query);
 }
 
 class ProductRepository implements IProductRepository {
@@ -16,14 +17,21 @@ class ProductRepository implements IProductRepository {
     if (useMockData) {
       return _loadMockData();
     }
-    
-    try {
-      // Tu docelowo będzie wywołanie Dio do PrestaShop
-      // return await _fetchFromPrestaShop();
-      return _loadMockData(); 
-    } catch (e) {
-      return _loadMockData(); // Backup w razie błędu sieci
+    // ... PrestaShop implementation
+    return _loadMockData();
+  }
+
+  @override
+  Future<List<ProductModel>> searchProducts(String query) async {
+    if (useMockData) {
+      final allProducts = await _loadMockData();
+      return allProducts.where((p) => 
+        p.name.toLowerCase().contains(query.toLowerCase()) || 
+        p.description.toLowerCase().contains(query.toLowerCase())
+      ).toList();
     }
+    // Tu docelowo wywołanie dio.get('/products', queryParameters: {'filter[name]': '%$query%'})
+    return [];
   }
 
   Future<List<ProductModel>> _loadMockData() async {

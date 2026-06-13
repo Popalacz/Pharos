@@ -3,11 +3,28 @@ import 'package:pharos/data/models/product_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/providers/wishlist_provider.dart';
 
-class ProductDetailsScreen extends StatelessWidget {
+import 'package:pharos/data/models/review_model.dart';
+import 'package:pharos/data/repositories/review_repository.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
+
+class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
-
   const ProductDetailsScreen({super.key, required this.product});
+
+  @override
+  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+}
+
+class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  late Future<List<ReviewModel>> _reviewsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewsFuture = ReviewRepository(useMockData: true).getProductReviews(widget.product.id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +38,9 @@ class ProductDetailsScreen extends StatelessWidget {
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Hero(
-                    tag: 'product_${product.id}',
+                    tag: 'product_${widget.product.id}',
                     child: CachedNetworkImage(
-                      imageUrl: product.imageUrl,
+                      imageUrl: widget.product.imageUrl,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -40,97 +57,124 @@ class ProductDetailsScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              product.name,
+                              widget.product.name,
                               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          Text(
-                            '${product.price.toStringAsFixed(2)} PLN',
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.orange),
+                          Consumer<LocalizationProvider>(
+                            builder: (context, loc, child) => Text(
+                              loc.formatPrice(widget.product.price),
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.orange),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      const Row(
-                        children: [
-                          Icon(Icons.star, color: Colors.amber, size: 20),
-                          Icon(Icons.star, color: Colors.amber, size: 20),
-                          Icon(Icons.star, color: Colors.amber, size: 20),
-                          Icon(Icons.star, color: Colors.amber, size: 20),
-                          Icon(Icons.star_half, color: Colors.amber, size: 20),
-                          SizedBox(width: 8),
-                          Text('(128 opinii)', style: TextStyle(color: Colors.grey)),
-                        ],
-                      ),
                       const SizedBox(height: 24),
-                      const Text(
-                        'Opis produktu',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
+                      const Text('Opis produktu', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Text(
-                        product.description,
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700], height: 1.5),
-                      ),
-                      const SizedBox(height: 100), // Miejsce na sticky button
+                      Text(widget.product.description, style: TextStyle(fontSize: 16, color: Colors.grey[700], height: 1.5)),
+                      
+                      const Divider(height: 48),
+                      const Text('Opinie klientów', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      _buildReviewsList(),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          
-          // Sticky Bottom Action Bar
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-              ),
-              child: SafeArea(
-                child: Row(
+          _buildBottomAction(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsList() {
+    return FutureBuilder<List<ReviewModel>>(
+      future: _reviewsFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (snapshot.data!.isEmpty) return const Text('Brak opinii o tym produkcie.');
+        
+        return Column(
+          children: snapshot.data!.map((review) => Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.favorite_border),
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 56),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          context.read<CartProvider>().addItem(product);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Dodano ${product.name} do koszyka!'),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.green,
-                              action: SnackBarAction(label: 'KOSZYK', textColor: Colors.white, onPressed: () {}),
-                            ),
-                          );
-                        },
-                        child: const Text('DODAJ DO KOSZYKA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
+                    Text(review.customerName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Row(children: List.generate(5, (i) => Icon(Icons.star, size: 14, color: i < review.rating ? Colors.amber : Colors.grey[300]))),
                   ],
                 ),
-              ),
+                const SizedBox(height: 8),
+                Text(review.comment, style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(review.date, style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
             ),
+          )).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomAction(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Consumer<WishlistProvider>(
+                builder: (context, wishlist, child) {
+                  final isFav = wishlist.isFavorite(widget.product.id);
+                  return Container(
+                    decoration: BoxDecoration(border: Border.all(color: isFav ? Colors.red : Colors.grey[300]!), borderRadius: BorderRadius.circular(12)),
+                    child: IconButton(
+                      icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.black),
+                      onPressed: () => wishlist.toggleWishlist(widget.product),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    context.read<CartProvider>().addItem(widget.product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Dodano ${widget.product.name} do koszyka!'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.green,
+                        action: SnackBarAction(label: 'KOSZYK', textColor: Colors.white, onPressed: () {}),
+                      ),
+                    );
+                  },
+                  child: const Text('DODAJ DO KOSZYKA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

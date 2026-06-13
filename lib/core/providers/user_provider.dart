@@ -56,7 +56,18 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  void selectAddress(int id) {
-    // Możemy tu dodać logikę domyślnego adresu
+  Future<void> logisticsAutomation({required String orderId, required double amount}) async {
+    try {
+      // Pobieramy dane o zamówieniu (w prawdziwej apce z PrestaShop)
+      // Tutaj używamy naszego serwisu Google Calendar (Twój Cel nr 5)
+      await _googleService.addOrderEvent(
+        orderId: orderId,
+        customerName: _user?.displayName ?? 'Klient Pharos',
+        totalAmount: amount,
+        items: ['Zamówienie z aplikacji mobilnej'], // Docelowo lista z koszyka
+      );
+    } catch (e) {
+      debugPrint('Logistics Automation Error: $e');
+    }
   }
 }

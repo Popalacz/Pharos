@@ -6,7 +6,10 @@ import 'package:pharos/data/models/home_config_model.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
+import 'package:pharos/ui/screens/search_screen.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/core/providers/settings_provider.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
@@ -75,56 +78,95 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      floating: true,
-      pinned: true,
-      expandedHeight: 120,
-      backgroundColor: Colors.white,
-      elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        title: const Text(
-          'PHAROS',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 20),
-        ),
-        centerTitle: false,
-      ),
-      actions: [
-        IconButton(icon: const Icon(Icons.search, color: Colors.black), onPressed: () {}),
-        Consumer<CartProvider>(
-          builder: (context, cart, child) {
-            return Stack(
-              alignment: Alignment.center,
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        final settings = settingsProvider.settings;
+        return SliverAppBar(
+          floating: true,
+          pinned: true,
+          expandedHeight: 120,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          flexibleSpace: FlexibleSpaceBar(
+            titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black),
-                  onPressed: () {
-                    // Przejście do koszyka
-                  },
-                ),
-                if (cart.itemCount > 0)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                      child: Text(
-                        '${cart.itemCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
+                if (settings.logoUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: CachedNetworkImage(
+                      imageUrl: settings.logoUrl!,
+                      height: 24,
+                      errorWidget: (context, url, error) => const SizedBox.shrink(),
                     ),
                   ),
+                Text(
+                  settings.storeName.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    fontSize: 18,
+                  ),
+                ),
               ],
-            );
-          },
-        ),
-      ],
+            ),
+            centerTitle: false,
+          ),
+import 'package:pharos/ui/screens/scanner_screen.dart';
+
+// ... (wewnątrz _buildAppBar actions)
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner, color: Colors.black),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ScannerScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.search, color: Colors.black),
+// ...
+
+            Consumer<CartProvider>(
+              builder: (context, cart, child) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black),
+                      onPressed: () {
+                        // Przejście do koszyka
+                      },
+                    ),
+                    if (cart.itemCount > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          child: Text(
+                            '${cart.itemCount}',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -268,54 +310,79 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailsScreen(product: product),
-          ),
-        );
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
-                children: [
-                  Hero(
-                    tag: 'product_${product.id}',
-                    child: CachedNetworkImage(
-                      imageUrl: product.imageUrl,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: Colors.grey[200]),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[100],
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(product: product),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  children: [
+                    Hero(
+                      tag: 'product_${product.id}',
+                      child: CachedNetworkImage(
+                        imageUrl: product.imageUrl,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 400, // Optymalizacja pamięci RAM dla miniatur
+                        placeholder: (context, url) => Container(color: Colors.grey[200]),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[100],
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    top: 8, right: 8,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: 16,
-                      child: Icon(Icons.favorite_border, size: 18, color: Colors.grey[800]),
+                    Positioned(
+                      top: 8, right: 8,
+                      child: Consumer<WishlistProvider>(
+                        builder: (context, wishlist, child) {
+                          final isFav = wishlist.isFavorite(product.id);
+                          return GestureDetector(
+                            onTap: () => wishlist.toggleWishlist(product),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.white.withOpacity(0.9),
+                              radius: 16,
+                              child: Icon(
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                size: 18,
+                                color: isFav ? Colors.red : Colors.grey[800],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text('${product.price.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              product.name, 
+              maxLines: 1, 
+              overflow: TextOverflow.ellipsis, 
+              style: const TextStyle(fontWeight: FontWeight.w600)
+            ),
+            const SizedBox(height: 4),
+            Consumer<LocalizationProvider>(
+              builder: (context, loc, child) => Text(
+                loc.formatPrice(product.price),
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

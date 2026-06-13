@@ -9,17 +9,26 @@ class ApiService {
   ApiService() : dio = Dio(BaseOptions(
     baseUrl: baseUrl,
     queryParameters: {'output_format': 'JSON'},
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
+    connectTimeout: const Duration(seconds: 5), // Szybszy feedback dla użytkownika
+    receiveTimeout: const Duration(seconds: 5),
+    headers: {
+      'Accept': 'application/json',
+      'X-Pharos-Platform': 'mobile-flutter',
+    },
   )) {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        // Autoryzacja PrestaShop (Basic Auth lub Token)
         options.headers['Authorization'] = 'Basic ${base64Encode(utf8.encode('$apiKey:'))}';
         return handler.next(options);
       },
+      onResponse: (response, handler) {
+        // Tu można dodać cache'owanie odpowiedzi dla poprawy wydajności
+        return handler.next(response);
+      },
       onError: (e, handler) {
-        debugPrint('API ERROR: ${e.message}');
+        if (e.type == DioExceptionType.connectionTimeout) {
+          debugPrint('API Timeout - Sprawdź połączenie');
+        }
         return handler.next(e);
       },
     ));

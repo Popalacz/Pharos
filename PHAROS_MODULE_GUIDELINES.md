@@ -9,29 +9,46 @@ Moduł `pharos_api` ma przekształcić PrestaShop w system **Headless Commerce**
 - **Bezpieczeństwo:** Wykorzystaj klucze API Webservice z ograniczonymi uprawnieniami (ACL).
 - **CORS:** Upewnij się, że nagłówki pozwalają na komunikację z aplikacji mobilnej.
 
-## 3. SDUI (Server-Driven UI) - Specyfikacja
-Punkt końcowy `/module/pharos_api/config` musi zwracać strukturę zgodną z modelami Flutter:
-- `BANNER_SLIDER`: Tablica obiektów `image` i `title`.
-- `CATEGORY_CHIPS`: Lista kategorii z ikonami.
-- `PRODUCT_GRID`: Dynamiczna lista ID produktów.
+## 3. SDUI & Configuration Endpoint
+**URL:** `/module/pharos_api/config`
+**Metoda:** `GET`
+**Zwraca:**
+- `store_info`: Nazwa, URL logo, kolor przewodny.
+- `home_config`: Tablica sekcji (BANNER_SLIDER, CATEGORY_CHIPS, PRODUCT_GRID).
+- `localization`: Lista aktywnych języków i walut z kursami.
 
-## 4. Integracja Google Ecosystem
-### Google Calendar Automation:
-Przy hooku `actionValidateOrder`, moduł powinien:
-1. Pobrać dane o nowym zamówieniu.
-2. Sformatować je dla Google Calendar (zgodnie ze strukturą `orderId`, `customerName`, `totalAmount`).
-3. Wysłać powiadomienie do aplikacji (poprzez Firebase FCM) lub bezpośrednio do API Google, jeśli administrator jest zalogowany.
+## 4. API Endpoint Map (Niezbędne do działania aplikacji)
 
-### Firebase FCM:
-Implementacja w PHP wysyłania powiadomień Push przy:
-- Zmianie statusu zamówienia.
-- Porzuconym koszyku (CRON job co 24h).
+### Produkty i Discovery:
+- `GET /products?display=full&output_format=JSON` - Lista produktów.
+- `GET /products?filter[name]=%query%` - Wyszukiwarka.
+- `GET /products?filter[ean13]=code` - Skaner EAN.
+- `GET /categories?display=full` - Kategorie dla Chipsów.
+
+### Konta i Adresy:
+- `GET /addresses?filter[id_customer]=ID` - Lista adresów klienta.
+- `POST /addresses` - Dodanie nowego adresu.
+- `DELETE /addresses/ID` - Usunięcie adresu.
+
+### Koszyk i Zamówienia (Checkout):
+- `GET /carriers?id_address_delivery=ID` - Lista dostępnych kurierów dla adresu.
+- `GET /module/pharos_api/payments` - Lista aktywnych metod płatności w aplikacji.
+- `POST /orders` - Finalizacja zamówienia (Tworzenie zamówienia w PrestaShop).
+
+### Funkcje Społecznościowe i Push:
+- `GET /module/pharos_api/wishlist` - Pobranie ulubionych.
+- `POST /module/pharos_api/wishlist/toggle` - Dodaj/Usuń z ulubionych.
+- `GET /module/pharos_api/reviews?id_product=ID` - Pobranie opinii (moduł productcomments).
+- `POST /module/pharos_api/fcm-token` - Rejestracja tokena Push urządzenia.
 
 ## 5. UI/UX Settings (Zarządzanie z Panelu PrestaShop)
 Administrator w panelu modułu musi mieć możliwość:
-- Zmiany koloru przewodniego aplikacji (`PHAROS_PRIMARY_COLOR`).
-- Włączania/wyłączania trybu "Tylko dla zalogowanych".
-- Wyboru metod płatności aktywnych w aplikacji (Google Pay, BLIK).
+- Zmiany nazwy wyświetlanej sklepu (`PHAROS_STORE_NAME`).
+- Wgrania logotypu aplikacji (`PHAROS_LOGO_URL`).
+- Zarządzania banerami (grafika + link do produktu).
+- Włączania/wyłączania metod płatności (BLIK, Google Pay).
+- Podglądu logów z Google Calendar Automation.
+
 
 ## 6. Wydajność
 - Stosuj Cache dla ciężkich zapytań SQL (np. lista produktów na stronie głównej).

@@ -8,9 +8,32 @@ import 'package:pharos/core/theme/app_theme.dart';
 import 'package:pharos/ui/screens/home_screen.dart';
 import 'package:pharos/ui/screens/profile_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
+import 'package:pharos/ui/screens/wishlist_screen.dart';
+import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/core/providers/search_provider.dart';
 
-void main() {
+import 'package:pharos/core/services/notification_service.dart';
+
+import 'package:pharos/core/providers/localization_provider.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Zapobieganie migotaniu przy ładowaniu ustawień
+  final settingsProvider = SettingsProvider();
+  
+  // Globalna obsługa błędów (Senior Standard)
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('GLOBAL ERROR: ${details.exception}');
+  };
+
+  // Inicjalizacja Powiadomień Push
+  try {
+    await NotificationService().initialize();
+  } catch (e) {
+    debugPrint('FCM Init Error: $e');
+  }
   
   runApp(
     MultiProvider(
@@ -18,9 +41,14 @@ void main() {
         Provider<IProductRepository>(
           create: (_) => ProductRepository(useMockData: true),
         ),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider.value(value: settingsProvider),
+        ChangeNotifierProvider(create: (_) => LocalizationProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(
+          create: (context) => SearchProvider(context.read<IProductRepository>()),
+        ),
       ],
       child: const PharosApp(),
     ),
@@ -32,11 +60,15 @@ class PharosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Pharos Premium Store',
-      theme: AppTheme.dark,
-      home: const MainNavigation(),
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: settingsProvider.settings.storeName,
+          theme: AppTheme.dark,
+          home: const MainNavigation(),
+        );
+      },
     );
   }
 }
@@ -53,6 +85,7 @@ class _MainNavigationState extends State<MainNavigation> {
   
   final List<Widget> _screens = [
     const HomeScreen(),
+    const WishlistScreen(),
     const CartScreen(),
     const ProfileScreen(),
   ];
@@ -80,6 +113,7 @@ class _MainNavigationState extends State<MainNavigation> {
           elevation: 0,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Sklep'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), activeIcon: Icon(Icons.favorite), label: 'Ulubione'),
             BottomNavigationBarItem(icon: Icon(Icons.shopping_bag_outlined), activeIcon: Icon(Icons.shopping_bag), label: 'Koszyk'),
             BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
           ],

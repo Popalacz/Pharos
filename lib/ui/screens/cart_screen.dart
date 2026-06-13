@@ -38,21 +38,44 @@ class CartScreen extends StatelessWidget {
     );
   }
 
+import 'package:lottie/lottie.dart';
+
+// ... (wewnątrz _buildEmptyCart)
   Widget _buildEmptyCart(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.shopping_basket_outlined, size: 100, color: Colors.grey[300]),
-          const SizedBox(height: 24),
-          const Text('Twój koszyk jest pusty', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('WRÓĆ DO SKLEPU'),
-          )
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.network(
+              'https://assets5.lottiefiles.com/packages/lf20_qh5z2fdq.json', // Premium Empty Box
+              height: 200,
+              repeat: true,
+            ),
+            const SizedBox(height: 24),
+            const Text('Twój koszyk jest pusty', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            const Text(
+              'Wygląda na to, że jeszcze nic nie wybrałeś. Twoje wymarzone produkty czekają!',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('ZACZNIJ ZAKUPY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

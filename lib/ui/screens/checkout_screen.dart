@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/data/repositories/checkout_repository.dart';
 import 'package:pharos/data/models/checkout_models.dart';
-
+import 'package:pharos/data/models/address_model.dart';
+import 'package:pharos/core/services/payment_service.dart';
+import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/ui/screens/address_selection_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -17,6 +20,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   CarrierModel? _selectedCarrier;
   PaymentMethodModel? _selectedPayment;
   AddressModel? _selectedAddress;
+  bool _isProcessing = false;
   
   late Future<List<CarrierModel>> _carriersFuture;
   late Future<List<PaymentMethodModel>> _paymentsFuture;
@@ -28,7 +32,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _carriersFuture = repo.getCarriers();
     _paymentsFuture = repo.getPaymentMethods();
     
-    // Inicjalizacja domyślnego adresu z providera
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = context.read<UserProvider>();
       if (userProvider.addresses.isNotEmpty) {
@@ -42,40 +45,60 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
+    final loc = context.watch<LocalizationProvider>();
     final double shippingCost = _selectedCarrier?.price ?? 0.0;
     final double total = cart.totalAmount + shippingCost;
+    final String formattedTotal = loc.formatPrice(total);
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text('Finalizacja zamówienia', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader('1. Adres dostawy', Icons.location_on_outlined),
-            _buildAddressCard(context),
-            
-            const SizedBox(height: 32),
-            _buildSectionHeader('2. Metoda dostawy', Icons.local_shipping_outlined),
-            _buildCarrierList(),
-            
-            const SizedBox(height: 32),
-            _buildSectionHeader('3. Płatność', Icons.payment_outlined),
-            _buildPaymentList(),
-            
-            const SizedBox(height: 40),
-            _buildOrderSummary(cart, shippingCost, total),
-            const SizedBox(height: 100),
-          ],
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.grey[50],
+          appBar: AppBar(
+            title: const Text('Finalizacja zamówienia', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.black),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader('1. Adres dostawy', Icons.location_on_outlined),
+                _buildAddressCard(context),
+                
+                const SizedBox(height: 32),
+                _buildSectionHeader('2. Metoda dostawy', Icons.local_shipping_outlined),
+                _buildCarrierList(loc),
+                
+                const SizedBox(height: 32),
+                _buildSectionHeader('3. Płatność', Icons.payment_outlined),
+                _buildPaymentList(),
+                
+                const SizedBox(height: 40),
+                _buildOrderSummary(cart, shippingCost, total, loc),
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+          bottomSheet: _buildBottomBar(total, formattedTotal),
         ),
-      ),
-      bottomSheet: _buildBottomBar(total),
+        if (_isProcessing)
+          Container(
+            color: Colors.black.withOpacity(0.5),
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.orange),
+                  SizedBox(height: 16),
+                  Text('Przetwarzanie zamówienia...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, decoration: TextDecoration.none, fontSize: 16)),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -133,7 +156,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildCarrierList() {
+  Widget _buildCarrierList(LocalizationProvider loc) {
     return FutureBuilder<List<CarrierModel>>(
       future: _carriersFuture,
       builder: (context, snapshot) {
@@ -144,7 +167,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             groupValue: _selectedCarrier,
             title: Text(carrier.name, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text(carrier.delay),
-            secondary: Text('${carrier.price.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.bold)),
+            secondary: Text(loc.formatPrice(carrier.price), style: const TextStyle(fontWeight: FontWeight.bold)),
             activeColor: Colors.orange,
             onChanged: (val) => setState(() => _selectedCarrier = val),
             contentPadding: EdgeInsets.zero,
@@ -185,14 +208,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildOrderSummary(CartProvider cart, double shipping, double total) {
+  Widget _buildOrderSummary(CartProvider cart, double shipping, double total, LocalizationProvider loc) {
     return Column(
       children: [
-        _summaryRow('Wartość produktów', '${cart.totalAmount.toStringAsFixed(2)} PLN'),
+        _summaryRow('Wartość produktów', loc.formatPrice(cart.totalAmount)),
         const SizedBox(height: 8),
-        _summaryRow('Koszt dostawy', shipping == 0 ? 'GRATIS' : '${shipping.toStringAsFixed(2)} PLN'),
+        _summaryRow('Koszt dostawy', shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping)),
         const Divider(height: 32),
-        _summaryRow('ŁĄCZNIE', '${total.toStringAsFixed(2)} PLN', isTotal: true),
+        _summaryRow('ŁĄCZNIE', loc.formatPrice(total), isTotal: true),
       ],
     );
   }
@@ -215,7 +238,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildBottomBar(double total) {
+  Widget _buildBottomBar(double total, String formattedTotal) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -228,29 +251,109 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           height: 56,
           child: ElevatedButton(
             onPressed: (_selectedCarrier != null && _selectedPayment != null && _selectedAddress != null)
-              ? () => _placeOrder() 
+              ? () => _placeOrder(total) 
               : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               disabledBackgroundColor: Colors.grey[300],
             ),
-            child: const Text('ZAMAWIAM I PŁACĘ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text('ZAPŁAĆ $formattedTotal', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
           ),
         ),
       ),
     );
   }
 
-  void _placeOrder() {
-    // Tutaj logika wysłania zamówienia do PrestaShop API
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sukces!'),
-        content: const Text('Twoje zamówienie zostało przekazane do PrestaShop. Status możesz śledzić w profilu.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
-      ),
-    );
+  void _placeOrder(double totalAmount) async {
+    final cart = context.read<CartProvider>();
+    final loc = context.read<LocalizationProvider>();
+
+    bool paymentSuccess = false;
+
+    if (_selectedPayment?.id == 'blik') {
+      paymentSuccess = await PaymentService.processBlik(context, totalAmount);
+    } else if (_selectedPayment?.id == 'google_pay') {
+      paymentSuccess = await PaymentService.processGooglePay(context, totalAmount);
+    } else {
+      paymentSuccess = true;
+    }
+
+    if (!paymentSuccess) return;
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      await CheckoutRepository(useMockData: true).createOrder({
+        'id_carrier': _selectedCarrier!.id,
+        'id_address': _selectedAddress!.id,
+        'payment_module': _selectedPayment!.id,
+        'id_currency': loc.currentCurrency?.id,
+        'id_lang': loc.currentLanguage?.id,
+        'cart': cart.items.values.map((e) => {'id': e.product.id, 'qty': e.quantity}).toList(),
+      });
+
+      await context.read<UserProvider>().logisticsAutomation(
+        orderId: 'PH-${DateTime.now().millisecondsSinceEpoch}',
+        amount: totalAmount,
+      );
+
+      cart.clear();
+
+import 'package:lottie/lottie.dart';
+
+// ... (in _placeOrder method)
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Lottie.network(
+                    'https://raw.githubusercontent.com/xvrh/lottie-flutter/master/example/assets/LottieLogo1.json', // Placeholder, tu wrzuć sukces
+                    height: 150,
+                    repeat: false,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('SUKCES!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  const SizedBox(height: 8),
+                  const Text('Zamówienie zostało złożone poprawnie.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                      child: const Text('OK', style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Błąd składania zamówienia: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 }

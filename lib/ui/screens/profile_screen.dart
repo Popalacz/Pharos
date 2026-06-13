@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/data/models/order_model.dart';
+import 'package:pharos/ui/screens/order_tracking_screen.dart';
+import 'package:pharos/ui/screens/localization_settings_screen.dart';
+import 'package:pharos/core/providers/settings_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -37,7 +40,6 @@ class ProfileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nagłówek profilu
           Row(
             children: [
               CircleAvatar(
@@ -48,8 +50,12 @@ class ProfileScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.displayName ?? 'Użytkownik Pharos', 
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Consumer<SettingsProvider>(
+                    builder: (context, settings, child) => Text(
+                      user.displayName ?? 'Użytkownik ${settings.settings.storeName}', 
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+                    ),
+                  ),
                   Text(user.email, style: TextStyle(color: Colors.grey[600])),
                 ],
               )
@@ -59,17 +65,18 @@ class ProfileScreen extends StatelessWidget {
           
           const Text('Moje Zamówienia', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          
-          // Historia zamówień (Mock)
-          _buildOrderHistory(),
+          _buildOrderHistory(context),
           
           const SizedBox(height: 32),
           const Text('Ustawienia i Pomoc', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           
-          _buildMenuTile(Icons.headset_mic_outlined, 'Wsparcie techniczne', 'Skontaktuj się z nami'),
-          _buildMenuTile(Icons.location_on_outlined, 'Moje adresy', 'Zarządzaj adresami dostaw'),
-          _buildMenuTile(Icons.notifications_none_outlined, 'Powiadomienia', 'Ustawienia push'),
+          _buildMenuTile(context, Icons.language_outlined, 'Język i Waluta', 'Zmień ustawienia regionalne', () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen()));
+          }),
+          _buildMenuTile(context, Icons.person_outline, 'Moje dane', 'Edytuj informacje o profilu', () {}),
+          _buildMenuTile(context, Icons.location_on_outlined, 'Moje adresy', 'Zarządzaj adresami dostaw', () {}),
+          _buildMenuTile(context, Icons.notifications_none_outlined, 'Powiadomienia', 'Ustawienia push', () {}),
         ],
       ),
     );
@@ -110,8 +117,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderHistory() {
-    // Przykładowe dane zamówień (Mock PrestaShop response)
+  Widget _buildOrderHistory(BuildContext context) {
     final mockOrders = [
       OrderModel(id: 102, reference: 'PH-X921', date: '2024-03-10', totalPaid: 549.99, status: 'Wysłano', paymentMethod: 'Google Pay'),
       OrderModel(id: 105, reference: 'PH-A112', date: '2024-03-15', totalPaid: 129.00, status: 'Oczekiwanie', paymentMethod: 'BLIK'),
@@ -123,39 +129,42 @@ class ProfileScreen extends StatelessWidget {
       itemCount: mockOrders.length,
       itemBuilder: (context, index) {
         final order = mockOrders[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Zamówienie #${order.reference}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(order.date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900)),
-                  Text(order.status, style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
-                ],
-              )
-            ],
+        return GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen(order: order))),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Zamówienie #${order.reference}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(order.date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900)),
+                    Text(order.status, style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                )
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildMenuTile(IconData icon, String title, String subtitle) {
+  Widget _buildMenuTile(BuildContext context, IconData icon, String title, String subtitle, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -167,7 +176,7 @@ class ProfileScreen extends StatelessWidget {
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         trailing: const Icon(Icons.chevron_right, size: 20),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }
