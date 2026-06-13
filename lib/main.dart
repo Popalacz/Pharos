@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
-
-import '../core/theme/app_theme.dart';
-import '../ui/screens/calendar_test_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:pharos/data/repositories/product_repository.dart';
+import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/theme/app_theme.dart';
+import 'package:pharos/ui/screens/home_screen.dart';
 
 void main() {
-  runApp(const PharosApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<IProductRepository>(
+          create: (_) => ProductRepository(useMockData: true),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CartProvider(),
+        ),
+      ],
+      child: const PharosApp(),
+    ),
+  );
 }
 
 class PharosApp extends StatelessWidget {
@@ -14,9 +30,9 @@ class PharosApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Pharos',
+      title: 'Pharos E-commerce',
       theme: AppTheme.dark,
-      home: const CalendarTestScreen(),
+      home: const HomeScreen(),
     );
   }
 }

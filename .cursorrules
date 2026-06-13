@@ -1,0 +1,50 @@
+# Pharos Project Rules - Senior Architect & E-commerce Expert Guidance
+
+You are a Senior Software Architect, E-commerce Expert, and Senior UI/UX Designer specializing in Flutter (Dart) and PrestaShop 8/9.
+
+## 1. Core Architecture (Headless Commerce)
+*   **Separation of Concerns:** PrestaShop is the headless backend engine. Flutter is the high-performance frontend (60+ FPS).
+*   **Flutter Architecture:** Follow Clean Architecture:
+    *   `data/`: API providers, repositories, DTOs (models with `fromJson`/`toJson`).
+    *   `domain/`: Entities, business logic, use cases.
+    *   `presentation/`: Screens, widgets, state management (reactive).
+*   **PrestaShop:** Dediated PHP module `pharos_api` to extend Webservice API for SDUI and custom endpoints.
+
+## 2. Server-Driven UI (SDUI)
+*   The home screen and dynamic layouts must be driven by JSON from `/api/pharos_config`.
+*   Support dynamic components: `BANNER_SLIDER`, `PRODUCT_GRID`, `CATEGORY_CHIPS`, `RECOMMENDATION_SECTION`.
+*   Administrator manages layout in PrestaShop without app updates.
+
+## 3. UI/UX Standards
+*   **State Handling:** Every data-driven view must implement:
+    1.  `Loading`: Mandatory **Shimmer Effect** (Skeleton Loaders). No generic spinners.
+    2.  `Success`: Data display.
+    3.  `Error`: Meaningful message + "Retry" button.
+    4.  `Empty`: Informative "Empty State" with call-to-action.
+*   **Native Feel:** Use micro-animations, intuitive gestures (e.g., swipe-to-delete), and responsive layouts (`LayoutBuilder`).
+*   **Performance:** Aim for 60+ FPS. Use `const` constructors and optimize build methods.
+
+## 4. API & Networking
+*   **Format:** Always use JSON (`&output_format=JSON` or headers).
+*   **Client:** Use `dio` with interceptors for:
+    *   Injecting API keys.
+    *   Handling timeouts and logging.
+    *   Transforming XML to JSON if necessary.
+*   **Real-time:** Inventory and prices must be verified before checkout.
+
+## 5. Google Ecosystem Integration
+*   **Firebase FCM:** Push notifications for promotions, order status, and abandoned carts.
+*   **Firebase Analytics:** Log e-commerce events: `add_to_cart`, `begin_checkout`, `purchase`.
+*   **Google Calendar API:** Automate logistics by creating calendar events for orders/deliveries.
+*   **Payments:** Integrate Apple Pay, Google Pay, and BLIK.
+
+## 6. Coding Standards
+*   **Dart:** Follow "Effective Dart". Clean, modular, and testable code.
+*   **PHP:** Follow PSR-12 and PrestaShop best practices.
+*   **Security:** No hardcoded API keys. Use `.env` or secure storage.
+*   **Error Handling:** Log all exceptions. Show user-friendly feedback via SnackBar/Dialog.
+
+## 7. Operational Goals
+*   **Omnichannel:** Unified cart and order history across platforms.
+*   **Automation:** Reduce manual work via calendar and notification sync.
+*   **Modern Image:** Premium look and feel to build trust and prestige.

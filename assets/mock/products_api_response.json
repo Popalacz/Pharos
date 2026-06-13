@@ -1,57 +1,43 @@
 {
+  "home_config": [
+    { "type": "BANNER_SLIDER", "data": [
+      { "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800", "title": "Nowa Kolekcja Audio" },
+      { "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800", "title": "Smartwatche -20%" }
+    ]},
+    { "type": "CATEGORY_CHIPS", "data": [
+      { "id": 1, "name": "Oświetlenie" },
+      { "id": 2, "name": "Smart Home" },
+      { "id": 3, "name": "Audio" },
+      { "id": 4, "name": "Akcesoria" }
+    ]},
+    { "type": "SECTION_HEADER", "data": { "title": "Bestsellery", "show_all": true }},
+    { "type": "PRODUCT_GRID", "data": "all_products" }
+  ],
   "products": [
     {
       "id": "1",
-      "name": {
-        "language": [
-          {
-            "id": "1",
-            "value": "Lampa biurkowa LED Pharos"
-          }
-        ]
-      },
+      "name": { "language": [{ "id": "1", "value": "Lampa biurkowa LED Pharos" }] },
       "price": "149.99",
       "id_default_image": "1",
-      "associations": {
-        "images": [
-          { "id": "1" },
-          { "id": "2" }
-        ]
-      },
-      "description": {
-        "language": [
-          {
-            "id": "1",
-            "value": "Lampa biurkowa LED z regulacją jasności i barwy światła. Idealna do pracy przy komputerze."
-          }
-        ]
-      }
+      "description": { "language": [{ "id": "1", "value": "Premium desk lamp." }] }
     },
     {
       "id": "2",
-      "name": {
-        "language": [
-          {
-            "id": "1",
-            "value": "Żarówka smart E27"
-          }
-        ]
-      },
-      "price": "39.50",
+      "name": { "language": [{ "id": "1", "value": "Słuchawki Hi-Fi Gold" }] },
+      "price": "899.00",
       "id_default_image": "2"
     },
     {
       "id": "3",
-      "name": {
-        "language": [
-          {
-            "id": "1",
-            "value": "Panel ścienny RGB (mock API)"
-          }
-        ]
-      },
-      "price": "259.00",
+      "name": { "language": [{ "id": "1", "value": "Głośnik Pharos Beam" }] },
+      "price": "450.00",
       "id_default_image": "3"
+    },
+    {
+      "id": "4",
+      "name": { "language": [{ "id": "1", "value": "Smart Hub V2" }] },
+      "price": "299.00",
+      "id_default_image": "4"
     }
   ]
 }

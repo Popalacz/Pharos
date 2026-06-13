@@ -1,102 +1,77 @@
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gapi;
-import 'package:http/http.dart' as http;
-
-/// Klasa pomocnicza (Uwierzytelniony klient HTTP), która zastępuje problematyczną paczkę rozszerzeń
-class AuthenticatedClient extends http.BaseClient {
-  final http.Client _inner = http.Client();
-  final Map<String, String> _headers;
-
-  AuthenticatedClient(this._headers);
-
-  @override
-  Future<http.StreamedResponse> send(http.BaseRequest request) {
-    request.headers.addAll(_headers);
-    return _inner.send(request);
-  }
-}
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:flutter/material.dart';
 
 class GoogleCalendarService {
+  // Scopes wymagane do zapisu w kalendarzu
   static const _scopes = [gapi.CalendarApi.calendarEventsScope];
 
-  // Instancja Singleton (.instance)
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  // Singleton pattern dla serwisu
+  static final GoogleCalendarService _instance = GoogleCalendarService._internal();
+  factory GoogleCalendarService() => _instance;
+  GoogleCalendarService._internal();
 
-  /// Metoda odpowiedzialna za zalogowanie administratora do konta Google
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: _scopes,
+  );
+
+  /// Zwraca aktualnie zalogowanego użytkownika lub null
+  GoogleSignInAccount? get currentUser => _googleSignIn.currentUser;
+
   Future<GoogleSignInAccount?> signIn() async {
     try {
-      await _googleSignIn.initialize();
-      final account = await _googleSignIn.authenticate();
+      // Próba cichego logowania (jeśli już raz się zalogował)
+      var account = await _googleSignIn.signInSilently();
+      account ??= await _googleSignIn.signIn();
       return account;
     } catch (error) {
-      debugPrint('Błąd logowania Google Sign-In: $error');
+      debugPrint('Google Sign-In Error: $error');
       return null;
     }
   }
 
-  /// Automatyczne dodawanie zdarzenia e-commerce do Kalendarza Google
   Future<void> addOrderEvent({
     required String orderId,
     required String customerName,
     required double totalAmount,
     required List<String> items,
   }) async {
-    await _googleSignIn.initialize();
-
-    var account = await _googleSignIn.attemptLightweightAuthentication();
-    account ??= await _googleSignIn.authenticate();
-
-    if (account == null) {
-      debugPrint('Użytkownik nie jest zalogowany do Google. Pomijam dodawanie do kalendarza.');
-      return;
-    }
-
     try {
-      // NOWOŚĆ: Pobieramy nagłówki autoryzacyjne wprost z nowego systemu Google SDK
-      final Map<String, String>? authHeaders = await account.authorizationClient
-          .authorizationHeaders(_scopes, promptIfNecessary: true);
+      final account = _googleSignIn.currentUser;
+      if (account == null) throw Exception('Użytkownik niezalogowany');
 
-      if (authHeaders == null) {
-        debugPrint('Nie udało się uzyskać nagłówków autoryzacyjnych.');
-        return;
-      }
+      // Używamy oficjalnego rozszerzenia do pobrania uwierzytelnionego klienta
+      final httpClient = await account.authenticatedClient();
+      if (httpClient == null) throw Exception('Błąd uwierzytelnienia klienta');
 
-      // Tworzymy czysty, bezpieczny klient HTTP przy użyciu naszej klasy pomocniczej
-      final httpClient = AuthenticatedClient(authHeaders);
       final calendarApi = gapi.CalendarApi(httpClient);
 
-      final descriptionBuilder = StringBuffer()
-        ..writeln('Nowe zamówienie ze sklepu Pharos!')
-        ..writeln('Klient: $customerName')
+      final description = StringBuffer()
+        ..writeln('🛒 Nowe zamówienie Pharos: #$orderId')
+        ..writeln('Odbiorca: $customerName')
         ..writeln('Wartość: ${totalAmount.toStringAsFixed(2)} PLN')
-        ..writeln('\nZakupione produkty:');
-      
-      for (final item in items) {
-        descriptionBuilder.writeln('- $item');
-      }
-
-      final startTime = DateTime.now().add(const Duration(minutes: 10));
-      final endTime = startTime.add(const Duration(hours: 1));
+        ..writeln('\nProdukty:')
+        ..writeAll(items.map((e) => '- $e'), '\n');
 
       final event = gapi.Event(
-        summary: '📦 Realizacja zamówienia #$orderId',
-        description: descriptionBuilder.toString(),
+        summary: '📦 Realizacja #$orderId',
+        description: description.toString(),
         start: gapi.EventDateTime(
-          dateTime: startTime.toUtc(),
+          dateTime: DateTime.now().add(const Duration(hours: 2)).toUtc(),
           timeZone: 'UTC',
         ),
         end: gapi.EventDateTime(
-          dateTime: endTime.toUtc(),
+          dateTime: DateTime.now().add(const Duration(hours: 3)).toUtc(),
           timeZone: 'UTC',
         ),
-        colorId: '6',
+        colorId: '6', // Pomarańczowy kolor Pharos
       );
 
       await calendarApi.events.insert(event, 'primary');
-      debugPrint('Zdarzenie dla zamówienia #$orderId pomyślnie dodane do kalendarza!');
     } catch (e) {
-      debugPrint('Błąd podczas dodawania wydarzenia do Kalendarza Google: $e');
+      debugPrint('Calendar API Error: $e');
+      rethrow;
     }
   }
 }
