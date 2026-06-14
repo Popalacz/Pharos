@@ -4,10 +4,9 @@ import 'package:pharos/core/providers/search_provider.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
-
 import 'package:pharos/ui/widgets/search_filter_drawer.dart';
-
 import 'package:pharos/core/providers/settings_provider.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -26,33 +25,34 @@ class _SearchScreenState extends State<SearchScreen> {
     
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
       endDrawer: const SearchFilterDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: TextField(
           controller: _controller,
           autofocus: true,
+          style: const TextStyle(color: Colors.white),
           onChanged: (val) => context.read<SearchProvider>().onQueryChanged(val),
           decoration: InputDecoration(
             hintText: 'Szukaj w ${settings.storeName}...',
             border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.grey[400]),
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+            filled: false,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune, color: Colors.black),
+            icon: const Icon(Icons.tune),
             onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
           ),
           if (_controller.text.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.black),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 _controller.clear();
                 context.read<SearchProvider>().clearSearch();
@@ -100,12 +100,12 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 80, color: Colors.grey[200]),
+            Icon(Icons.search_off, size: 80, color: Colors.white.withOpacity(0.05)),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
+              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 16),
             ),
           ],
         ),
@@ -140,6 +140,7 @@ class _SearchProductCard extends StatelessWidget {
                     width: double.infinity,
                     height: double.infinity,
                     fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
                   ),
                   Positioned(
                     top: 8, right: 8,
@@ -147,12 +148,12 @@ class _SearchProductCard extends StatelessWidget {
                       builder: (context, wishlist, child) {
                         final isFav = wishlist.isFavorite(product.id);
                         return CircleAvatar(
-                          backgroundColor: Colors.white,
+                          backgroundColor: Colors.black.withOpacity(0.5),
                           radius: 16,
                           child: Icon(
                             isFav ? Icons.favorite : Icons.favorite_border,
                             size: 18,
-                            color: isFav ? Colors.red : Colors.grey[800],
+                            color: isFav ? Colors.red : Colors.white,
                           ),
                         );
                       },
@@ -163,9 +164,14 @@ class _SearchProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
           const SizedBox(height: 4),
-          Text('${product.price.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+          Consumer<LocalizationProvider>(
+            builder: (context, loc, child) => Text(
+              loc.formatPrice(product.price), 
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange)
+            ),
+          ),
         ],
       ),
     );

@@ -15,15 +15,12 @@ class ProfileScreen extends StatelessWidget {
     final user = userProvider.user;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Mój Profil', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Mój Profil', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           if (userProvider.isLoggedIn)
             IconButton(
-              icon: const Icon(Icons.logout, color: Colors.black),
+              icon: const Icon(Icons.logout),
               onPressed: () => userProvider.signOut(),
             )
         ],
@@ -44,7 +41,9 @@ class ProfileScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage(user.photoUrl ?? 'https://via.placeholder.com/150'),
+                backgroundColor: Colors.white.withOpacity(0.05),
+                backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+                child: user.photoUrl == null ? const Icon(Icons.person, color: Colors.white) : null,
               ),
               const SizedBox(width: 20),
               Column(
@@ -53,22 +52,22 @@ class ProfileScreen extends StatelessWidget {
                   Consumer<SettingsProvider>(
                     builder: (context, settings, child) => Text(
                       user.displayName ?? 'Użytkownik ${settings.settings.storeName}', 
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)
                     ),
                   ),
-                  Text(user.email, style: TextStyle(color: Colors.grey[600])),
+                  Text(user.email, style: TextStyle(color: Colors.white.withOpacity(0.5))),
                 ],
               )
             ],
           ),
           const SizedBox(height: 32),
           
-          const Text('Moje Zamówienia', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Moje Zamówienia', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 16),
           _buildOrderHistory(context),
           
           const SizedBox(height: 32),
-          const Text('Ustawienia i Pomoc', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Ustawienia i Pomoc', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 16),
           
           _buildMenuTile(context, Icons.language_outlined, 'Język i Waluta', 'Zmień ustawienia regionalne', () {
@@ -89,13 +88,13 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.account_circle_outlined, size: 100, color: Colors.grey),
+            Icon(Icons.account_circle_outlined, size: 100, color: Colors.white.withOpacity(0.2)),
             const SizedBox(height: 24),
             const Text('Zaloguj się, aby kontynuować', 
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 8),
-            const Text('Zyskaj dostęp do historii zamówień i szybkich płatności.', 
-              textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            Text('Zyskaj dostęp do historii zamówień i szybkich płatności.', 
+              textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.5))),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -105,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
                 icon: const Icon(Icons.login),
                 label: const Text('ZALOGUJ PRZEZ GOOGLE'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -135,9 +134,9 @@ class ProfileScreen extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -145,14 +144,14 @@ class ProfileScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Zamówienie #${order.reference}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text(order.date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text('Zamówienie #${order.reference}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(order.date, style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 12)),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900)),
+                    Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.orange)),
                     Text(order.status, style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 )
@@ -168,14 +167,15 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.black),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-        trailing: const Icon(Icons.chevron_right, size: 20),
+        leading: Icon(icon, color: Colors.orange),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5))),
+        trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.white24),
         onTap: onTap,
       ),
     );

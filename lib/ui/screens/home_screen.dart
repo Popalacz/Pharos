@@ -7,13 +7,19 @@ import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:pharos/ui/screens/search_screen.dart';
+import 'package:pharos/ui/screens/scanner_screen.dart';
+import 'package:pharos/ui/screens/cart_screen.dart';
+import 'package:pharos/data/repositories/category_repository.dart';
+import 'package:pharos/data/models/category_model.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +30,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Map<String, dynamic>> _homeDataFuture;
+  int? _selectedCategoryId;
 
   @override
   void initState() {
@@ -32,20 +39,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadData() {
-    // W Senior UX ładujemy wszystko jednym rzutem, aby uniknąć skoków UI
     _homeDataFuture = _fetchFullHomeData();
   }
 
   Future<Map<String, dynamic>> _fetchFullHomeData() async {
     try {
-      final response = await context.read<SettingsProvider>().apiService.dio.get('/module/pharos_api/config');
+      final settingsProvider = context.read<SettingsProvider>();
+      final response = await settingsProvider.apiService.dio.get('/index.php', queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'config',
+      });
       
-      // Dodatkowo pobieramy produkty jeśli nie są zawarte w configu
-      final productsResponse = await context.read<IProductRepository>().getProducts();
+      final productsResponse = await context.read<IProductRepository>().getProducts(categoryId: _selectedCategoryId);
+      final categoriesResponse = await context.read<ICategoryRepository>().getCategories();
       
       return {
         'home_config': response.data['home_config'] ?? [],
-        'products': productsResponse, // Lista obiektów ProductModel
+        'products': productsResponse, 
+        'categories': categoriesResponse,
       };
     } catch (e) {
       debugPrint('Home Data Fetch Error: $e');
@@ -53,33 +65,49 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onCategorySelected(int? id) {
+    setState(() {
+      _selectedCategoryId = id;
+      _loadData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Usunięto hardkodowane Colors.white, aby używać AppColors.background z motywu dark
       body: FutureBuilder<Map<String, dynamic>>(
         future: _homeDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ProductShimmer(); // Możemy dopracować shimmer dla bannerów
+            return const ProductShimmer();
           }
 
           if (snapshot.hasError) {
             return _buildErrorState();
           }
 
-          final sectionsJson = snapshot.data!['home_config'] as List;
+          final dynamic rawHomeConfig = snapshot.data!['home_config'];
+          List sectionsJson = [];
+          
+          if (rawHomeConfig is List) {
+            sectionsJson = rawHomeConfig;
+          } else if (rawHomeConfig is Map && rawHomeConfig['sections'] is List) {
+            sectionsJson = rawHomeConfig['sections'];
+          }
+
           final sections = sectionsJson.map((s) => HomeSection.fromJson(s)).toList();
           final List<ProductModel> products = snapshot.data!['products'] as List<ProductModel>;
+          final List<CategoryModel> categories = snapshot.data!['categories'] as List<CategoryModel>;
 
           return RefreshIndicator(
             onRefresh: () async => setState(() => _loadData()),
             child: CustomScrollView(
-              physics: const BouncingScrollPhysics(), // Premium iOS feel
+              physics: const BouncingScrollPhysics(),
               slivers: [
                 _buildAppBar(context),
                 _buildCartRecoveryBanner(context),
-                for (var section in sections) _buildSliverSection(section, products),
+                for (var section in sections) _buildSliverSection(section, products, categories),
                 _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
@@ -98,8 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
           floating: true,
           pinned: true,
           expandedHeight: 120,
-          backgroundColor: Colors.white,
-          elevation: 0,
+          // Tło AppBar teraz automatycznie dopasuje się do motywu (ciemne)
           flexibleSpace: FlexibleSpaceBar(
             titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             title: Row(
@@ -117,7 +144,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   settings.storeName.toUpperCase(),
                   style: const TextStyle(
-                    color: Colors.black,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 2,
                     fontSize: 18,
@@ -127,12 +153,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             centerTitle: false,
           ),
-import 'package:pharos/ui/screens/scanner_screen.dart';
-
-// ... (wewnątrz _buildAppBar actions)
           actions: [
             IconButton(
-              icon: const Icon(Icons.qr_code_scanner, color: Colors.black),
+              icon: const Icon(Icons.qr_code_scanner),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -141,18 +164,23 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
               },
             ),
             IconButton(
-              icon: const Icon(Icons.search, color: Colors.black),
-// ...
-
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
+              },
+            ),
             Consumer<CartProvider>(
               builder: (context, cart, child) {
                 return Stack(
                   alignment: Alignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black),
+                      icon: const Icon(Icons.shopping_bag_outlined),
                       onPressed: () {
-                        // Przejście do koszyka
+                         Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
                       },
                     ),
                     if (cart.itemCount > 0)
@@ -183,19 +211,28 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
     );
   }
 
-  Widget _buildSliverSection(HomeSection section, List<ProductModel> products) {
+  Widget _buildSliverSection(HomeSection section, List<ProductModel> products, List<CategoryModel> categories) {
+    if (section.data == null && section.type != HomeSectionType.PRODUCT_GRID && section.type != HomeSectionType.CATEGORY_CHIPS) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
     switch (section.type) {
       case HomeSectionType.BANNER_SLIDER:
         return SliverToBoxAdapter(
-          child: _BannerSlider(data: section.data),
+          child: _BannerSlider(data: section.data ?? []),
         );
       case HomeSectionType.CATEGORY_CHIPS:
         return SliverToBoxAdapter(
-          child: _CategoryList(data: section.data),
+          child: _CategoryList(
+            categories: categories, 
+            selectedId: _selectedCategoryId,
+            onSelected: _onCategorySelected,
+          ),
         );
       case HomeSectionType.SECTION_HEADER:
+        final String title = (section.data is Map) ? (section.data['title'] ?? '') : 'Sekcja';
         return SliverToBoxAdapter(
-          child: _SectionHeader(title: section.data['title']),
+          child: _SectionHeader(title: title),
         );
       case HomeSectionType.PRODUCT_GRID:
         return SliverPadding(
@@ -229,9 +266,9 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
         margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.orange.shade50,
+          color: Colors.orange.shade900.withOpacity(0.2), // Bardziej "Dark Mode"
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.orange.shade200),
+          border: Border.all(color: Colors.orange.shade800),
         ),
         child: Row(
           children: [
@@ -241,16 +278,14 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Dokończ zakupy!', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Dokończ zakupy!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   Text('W Twoim koszyku czekają produkty o wartości ${context.read<LocalizationProvider>().formatPrice(cart.totalAmount)}', 
-                    style: const TextStyle(fontSize: 12)),
+                    style: const TextStyle(fontSize: 12, color: Colors.white70)),
                 ],
               ),
             ),
             ElevatedButton(
               onPressed: () {
-                // Nawigacja do koszyka (zakładając że MainNavigation obsłuży zmianę indexu)
-                // W tym przypadku prościej przekierować do CartScreen jako push dla demonstracji
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
               },
               style: ElevatedButton.styleFrom(
@@ -308,10 +343,11 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
           Lottie.network(
             'https://assets9.lottiefiles.com/packages/lf20_ghp9v6m3.json',
             height: 200,
+            errorBuilder: (context, error, stackTrace) => const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.grey),
           ),
           const SizedBox(height: 16),
           const Text('Błąd synchronizacji z Pharos API', 
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
           const SizedBox(height: 8),
           const Text('Sprawdź połączenie z internetem i spróbuj ponownie.', 
             textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
@@ -319,7 +355,7 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
           ElevatedButton(
             onPressed: () => setState(() => _loadData()),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
+              backgroundColor: Colors.orange,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('SPRÓBUJ PONOWNIE', style: TextStyle(color: Colors.white)),
@@ -330,14 +366,13 @@ import 'package:pharos/ui/screens/scanner_screen.dart';
   }
 }
 
-// --- Komponenty pomocnicze UI ---
-
 class _BannerSlider extends StatelessWidget {
   final dynamic data;
   const _BannerSlider({required this.data});
 
   @override
   Widget build(BuildContext context) {
+    if ((data as List).isEmpty) return const SizedBox.shrink();
     return SizedBox(
       height: 200,
       child: PageView.builder(
@@ -370,8 +405,15 @@ class _BannerSlider extends StatelessWidget {
 }
 
 class _CategoryList extends StatelessWidget {
-  final dynamic data;
-  const _CategoryList({required this.data});
+  final List<CategoryModel> categories;
+  final int? selectedId;
+  final Function(int?) onSelected;
+
+  const _CategoryList({
+    required this.categories, 
+    this.selectedId, 
+    required this.onSelected
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -380,18 +422,31 @@ class _CategoryList extends StatelessWidget {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        itemCount: (data as List).length,
+        itemCount: categories.length + 1,
         itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            child: Chip(
-              label: Text(data[index]['name']),
-              backgroundColor: Colors.grey[100],
-              side: BorderSide.none,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            ),
-          );
+          if (index == 0) {
+            return _buildChip('Wszystko', null);
+          }
+          final category = categories[index - 1];
+          return _buildChip(category.name, category.id);
         },
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, int? id) {
+    final isSelected = selectedId == id;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (selected) => onSelected(id),
+        selectedColor: Colors.orange,
+        backgroundColor: Colors.white.withOpacity(0.05),
+        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
+        showCheckmark: false,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
       ),
     );
   }
@@ -408,7 +463,7 @@ class _SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
           const Text('Zobacz wszystko', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
         ],
       ),
@@ -447,10 +502,10 @@ class _ProductCard extends StatelessWidget {
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        memCacheWidth: 400, // Optymalizacja pamięci RAM dla miniatur
-                        placeholder: (context, url) => Container(color: Colors.grey[200]),
+                        memCacheWidth: 400,
+                        placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
                         errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[100],
+                          color: Colors.white.withOpacity(0.05),
                           child: const Icon(Icons.broken_image, color: Colors.grey),
                         ),
                       ),
@@ -463,12 +518,12 @@ class _ProductCard extends StatelessWidget {
                           return GestureDetector(
                             onTap: () => wishlist.toggleWishlist(product),
                             child: CircleAvatar(
-                              backgroundColor: Colors.white.withOpacity(0.9),
+                              backgroundColor: Colors.black.withOpacity(0.5),
                               radius: 16,
                               child: Icon(
                                 isFav ? Icons.favorite : Icons.favorite_border,
                                 size: 18,
-                                color: isFav ? Colors.red : Colors.grey[800],
+                                color: isFav ? Colors.red : Colors.white,
                               ),
                             ),
                           );
@@ -482,9 +537,9 @@ class _ProductCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               product.name, 
-              maxLines: 1, 
+              maxLines: 2, 
               overflow: TextOverflow.ellipsis, 
-              style: const TextStyle(fontWeight: FontWeight.w600)
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.white)
             ),
             const SizedBox(height: 4),
             Row(
@@ -493,13 +548,17 @@ class _ProductCard extends StatelessWidget {
                 Consumer<LocalizationProvider>(
                   builder: (context, loc, child) => Text(
                     loc.formatPrice(product.price),
-                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.orange),
                   ),
                 ),
                 if (!product.isAvailable)
-                  const Text('BRAK', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold))
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.red.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
+                    child: const Text('BRAK', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+                  )
                 else if (product.isLowStock)
-                  const Text('OSTATNIE SZTUKI', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                  const Text('OSTATNIE', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
               ],
             ),
           ],

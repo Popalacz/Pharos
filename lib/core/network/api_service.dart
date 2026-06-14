@@ -7,18 +7,13 @@ import 'package:flutter/foundation.dart';
 class ApiService {
   final Dio dio;
   
-  // KONFIGURACJA DLA WAMP / LOCALHOST
-  // Jeśli używasz emulatora Android: 10.0.2.2
-  // Jeśli używasz fizycznego urządzenia: wpisz IP komputera (np. 192.168.1.XX)
-  // Jeśli PrestaShop jest w podfolderze, dodaj go: 'http://10.0.2.2/presta-folder'
-  static const String localUrl = 'http://10.0.2.2'; 
-  static const String prodUrl = 'https://pharos-shop.pl';
+  // TWÓJ PRODUKCYJNY ENDPOINT NA SEOHOST
+  static const String prodUrl = 'https://pharos-api.tech';
   
   static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA';
 
   ApiService() : dio = Dio(BaseOptions(
-    baseUrl: kDebugMode ? localUrl : prodUrl,
-    queryParameters: {'output_format': 'JSON'},
+    baseUrl: prodUrl,
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 15),
     headers: {
@@ -28,8 +23,8 @@ class ApiService {
     },
   )) {
     
-    // Bypass SSL dla WAMP (self-signed certificates)
-    if (kDebugMode && !kIsWeb) {
+    // Ominięcie weryfikacji certyfikatu SSL dla fazy deweloperskiej (Senior Debug)
+    if (!kIsWeb) {
       (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (client) {
         client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
         return client;
@@ -38,13 +33,19 @@ class ApiService {
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
+        // Zawsze żądamy formatu JSON od PrestaShop
+        options.queryParameters['output_format'] = 'JSON';
+
+        // Autoryzacja przez Basic Auth (Klucz : puste hasło)
         options.headers['Authorization'] = 'Basic ${base64Encode(utf8.encode('$apiKey:'))}';
+
         return handler.next(options);
       },
       onError: (e, handler) {
-        debugPrint('--- PHAROS API ERROR ---');
-        debugPrint('Full URL: ${e.requestOptions.uri}');
+        debugPrint('--- PHAROS PRODUCTION API ERROR ---');
+        debugPrint('URL: ${e.requestOptions.uri}');
         debugPrint('Status: ${e.response?.statusCode}');
+        debugPrint('Error Type: ${e.type}');
         debugPrint('Message: ${e.message}');
         return handler.next(e);
       },

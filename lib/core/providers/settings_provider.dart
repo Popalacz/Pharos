@@ -14,18 +14,20 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     try {
-      // Pobieranie konfiguracji z dedykowanego endpointu modułu pharos_api
-      final response = await apiService.dio.get('/module/pharos_api/config');
+      // Używamy bezpośredniego wywołania kontrolera modułu
+      final response = await apiService.dio.get('/index.php', queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'config',
+      });
       
       if (response.statusCode == 200) {
         _settings = RemoteSettings.fromJson(response.data);
         debugPrint('Konfiguracja Pharos załadowana pomyślnie.');
       }
     } catch (e) {
-      debugPrint('Błąd ładowania ustawień zdalnych (Używam domyślnych): $e');
-      // _settings pozostaje zainicjalizowane przez defaultSettings() w modelu
+      debugPrint('Błąd ładowania ustawień zdalnych: $e');
     }
-    
     notifyListeners();
   }
 }

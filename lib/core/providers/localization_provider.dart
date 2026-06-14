@@ -21,8 +21,11 @@ class LocalizationProvider extends ChangeNotifier {
 
   Future<void> _loadFromPrestaShop() async {
     try {
-      // Pobieranie danych językowych i walutowych z endpointu konfiguracji modułu
-      final response = await _apiService.dio.get('/module/pharos_api/config');
+      final response = await _apiService.dio.get('/index.php', queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'config',
+      });
       
       if (response.data['localization'] != null) {
         final locData = response.data['localization'];

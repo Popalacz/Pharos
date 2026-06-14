@@ -11,10 +11,7 @@ class LocalizationSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Język i Waluta', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text('Język i Waluta', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -23,27 +20,31 @@ class LocalizationSettingsScreen extends StatelessWidget {
           children: [
             const Text('WYBIERZ JĘZYK', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
             const SizedBox(height: 12),
-            _buildLanguageList(locProvider),
+            _buildLanguageList(context, locProvider),
             
             const SizedBox(height: 40),
             const Text('WYBIERZ WALUTĘ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
             const SizedBox(height: 12),
-            _buildCurrencyList(locProvider),
+            _buildCurrencyList(context, locProvider),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLanguageList(LocalizationProvider provider) {
+  Widget _buildLanguageList(BuildContext context, LocalizationProvider provider) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color, 
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
       child: Column(
         children: provider.languages.map((lang) => RadioListTile(
           value: lang.id,
           groupValue: provider.currentLanguage?.id,
-          title: Text(lang.name),
-          secondary: Text(lang.isoCode.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(lang.name, style: const TextStyle(color: Colors.white)),
+          secondary: Text(lang.isoCode.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
           activeColor: Colors.orange,
           onChanged: (val) => provider.setLanguage(lang),
         )).toList(),
@@ -51,15 +52,19 @@ class LocalizationSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrencyList(LocalizationProvider provider) {
+  Widget _buildCurrencyList(BuildContext context, LocalizationProvider provider) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color, 
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
       child: Column(
         children: provider.currencies.map((curr) => RadioListTile(
           value: curr.id,
           groupValue: provider.currentCurrency?.id,
-          title: Text(curr.name),
-          secondary: Text(curr.symbol, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          title: Text(curr.name, style: const TextStyle(color: Colors.white)),
+          secondary: Text(curr.symbol, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.orange)),
           activeColor: Colors.orange,
           onChanged: (val) => provider.setCurrency(curr),
         )).toList(),

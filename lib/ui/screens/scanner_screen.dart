@@ -74,15 +74,15 @@ class _ScannerOverlayShape extends ShapeBorder {
   EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
 
   @override
-  Path getInnerPath(Rect rect, {TextDirection? direction}) => Path();
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) => Path();
 
   @override
-  Path getOuterPath(Rect rect, {TextDirection? direction}) {
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
     return Path()..addRect(rect);
   }
 
   @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? direction}) {
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
     final width = rect.width;
     final height = rect.height;
     final boxRect = Rect.fromCenter(

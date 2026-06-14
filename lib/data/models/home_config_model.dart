@@ -33,11 +33,20 @@ class HomeConfig {
   });
 
   factory HomeConfig.fromJson(Map<String, dynamic> json) {
+    final dynamic rawSections = json['home_config'];
+    List sectionsList = [];
+    
+    if (rawSections is List) {
+      sectionsList = rawSections;
+    } else if (rawSections is Map && rawSections['sections'] is List) {
+      sectionsList = rawSections['sections'];
+    }
+
     return HomeConfig(
       storeName: json['store_info']['name'] ?? 'Pharos Store',
       primaryColor: json['store_info']['primary_color'] ?? '#FF9800',
       currencySymbol: json['store_info']['currency'] ?? 'PLN',
-      sections: (json['home_config'] as List)
+      sections: sectionsList
           .map((s) => HomeSection.fromJson(s))
           .toList(),
     );

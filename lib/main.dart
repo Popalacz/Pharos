@@ -16,9 +16,30 @@ import 'package:pharos/core/providers/search_provider.dart';
 import 'package:pharos/core/services/notification_service.dart';
 
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/data/repositories/category_repository.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'dart:io';
+
+// Klasa do całkowitego ominięcia weryfikacji SSL (Tylko do fazy dev!)
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Włączenie omijania certyfikatów SSL globalnie
+  HttpOverrides.global = MyHttpOverrides();
+  
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase Init Error: $e');
+  }
   
   // Zapobieganie migotaniu przy ładowaniu ustawień
   final settingsProvider = SettingsProvider();
@@ -39,10 +60,13 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<IProductRepository>(
-          create: (_) => ProductRepository(useMockData: false),
-        ),
         ChangeNotifierProvider.value(value: settingsProvider),
+        ProxyProvider<SettingsProvider, IProductRepository>(
+          update: (_, settings, __) => ProductRepository(useMockData: settings.settings.useMockData),
+        ),
+        Provider<ICategoryRepository>(
+          create: (_) => CategoryRepository(),
+        ),
         ChangeNotifierProvider(create: (_) => LocalizationProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
@@ -64,6 +88,25 @@ class PharosApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
       builder: (context, settingsProvider, child) {
+        // Dynamiczna obsługa błędów na bazie ustawień modułu
+        if (settingsProvider.settings.appDebug) {
+          ErrorWidget.builder = (details) => Scaffold(
+            body: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  'DEBUG ERROR:\n\n${details.exception}\n\nSTACK:\n${details.stack}',
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            ),
+          );
+        } else {
+          ErrorWidget.builder = (details) => const Scaffold(
+            body: Center(child: Text('Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.')),
+          );
+        }
+
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: settingsProvider.settings.storeName,

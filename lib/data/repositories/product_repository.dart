@@ -5,7 +5,7 @@ import '../../core/network/api_service.dart';
 import '../models/product_model.dart';
 
 abstract class IProductRepository {
-  Future<List<ProductModel>> getProducts();
+  Future<List<ProductModel>> getProducts({int? categoryId});
   Future<List<ProductModel>> searchProducts(String query);
 }
 
@@ -16,47 +16,50 @@ class ProductRepository implements IProductRepository {
   ProductRepository({this.useMockData = false});
 
   @override
-  Future<List<ProductModel>> getProducts() async {
+  Future<List<ProductModel>> getProducts({int? categoryId}) async {
     if (useMockData) {
       return _loadMockData();
     }
     
     try {
-      // Pobieranie listy produktów z natywnego API PrestaShop
-      final response = await _apiService.dio.get('/api/products', queryParameters: {
+      final Map<String, dynamic> params = {
         'display': 'full',
-        'limit': '20',
-      });
+        'limit': '50',
+      };
+
+      if (categoryId != null) {
+        params['filter[id_category_default]'] = '[$categoryId]';
+      }
+
+      final response = await _apiService.dio.get('/api/products', queryParameters: params);
+      final dynamic rawData = response.data['products'];
       
-      final List productsJson = response.data['products'] ?? [];
-      return productsJson.map((json) => ProductModel.fromJson(json)).toList();
+      if (rawData == null || rawData == '') return [];
+      if (rawData is Map) return [ProductModel.fromJson(rawData as Map<String, dynamic>)];
+      if (rawData is List) return rawData.map((json) => ProductModel.fromJson(json)).toList();
+      
+      return [];
     } catch (e) {
-      debugPrint('PrestaShop Product Fetch Error: $e');
-      return _loadMockData(); // Backup data for better UX (UAT 6.2)
+      debugPrint('LIVE Product Fetch Error: $e');
+      return []; 
     }
   }
 
   @override
   Future<List<ProductModel>> searchProducts(String query) async {
-    if (useMockData) {
-      final allProducts = await _loadMockData();
-      return allProducts.where((p) => 
-        p.name.toLowerCase().contains(query.toLowerCase()) || 
-        p.description.toLowerCase().contains(query.toLowerCase())
-      ).toList();
-    }
-
     try {
-      // Wyszukiwanie produktów z parametrem filtra
       final response = await _apiService.dio.get('/api/products', queryParameters: {
         'display': 'full',
         'filter[name]': '%$query%',
       });
       
-      final List productsJson = response.data['products'] ?? [];
-      return productsJson.map((json) => ProductModel.fromJson(json)).toList();
+      final dynamic rawData = response.data['products'];
+      if (rawData == null || rawData == '') return [];
+      if (rawData is Map) return [ProductModel.fromJson(rawData as Map<String, dynamic>)];
+      if (rawData is List) return rawData.map((json) => ProductModel.fromJson(json)).toList();
+      
+      return [];
     } catch (e) {
-      debugPrint('Search Error: $e');
       return [];
     }
   }

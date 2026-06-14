@@ -17,10 +17,7 @@ class CartScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Twój Koszyk', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text('Twój Koszyk', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: items.isEmpty 
         ? _buildEmptyCart(context)
@@ -42,9 +39,6 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-import 'package:lottie/lottie.dart';
-
-// ... (wewnątrz _buildEmptyCart)
   Widget _buildEmptyCart(BuildContext context) {
     return Center(
       child: Padding(
@@ -53,9 +47,10 @@ import 'package:lottie/lottie.dart';
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Lottie.network(
-              'https://assets5.lottiefiles.com/packages/lf20_qh5z2fdq.json', // Premium Empty Box
+              'https://assets5.lottiefiles.com/packages/lf20_qh5z2fdq.json', 
               height: 200,
               repeat: true,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_basket_outlined, size: 100, color: Colors.grey),
             ),
             const SizedBox(height: 24),
             const Text('Twój koszyk jest pusty', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -72,7 +67,7 @@ import 'package:lottie/lottie.dart';
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('ZACZNIJ ZAKUPY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -95,13 +90,14 @@ import 'package:lottie/lottie.dart';
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -10))],
+        color: Theme.of(context).cardTheme.color,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, -10))],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Progress darmowej dostawy (Growth Guideline #1)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -117,7 +113,7 @@ import 'package:lottie/lottie.dart';
                           : 'Brakuje Ci ${loc.formatPrice(remaining)} do darmowej dostawy',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: progress >= 1.0 ? Colors.green : Colors.black,
+                          color: progress >= 1.0 ? Colors.green : Colors.white,
                           fontSize: 13,
                         ),
                       ),
@@ -129,7 +125,7 @@ import 'package:lottie/lottie.dart';
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: Colors.white.withOpacity(0.05),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       progress >= 1.0 ? Colors.green : Colors.orange),
                     minHeight: 8,
@@ -151,7 +147,7 @@ import 'package:lottie/lottie.dart';
               children: [
                 const Text('Dostawa', style: TextStyle(color: Colors.grey)),
                 Text(progress >= 1.0 ? 'GRATIS' : 'Obliczana w kasie', 
-                  style: TextStyle(color: progress >= 1.0 ? Colors.green : Colors.black, fontWeight: FontWeight.bold)),
+                  style: TextStyle(color: progress >= 1.0 ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
               ],
             ),
             const Divider(height: 32),
@@ -174,7 +170,10 @@ import 'package:lottie/lottie.dart';
                     MaterialPageRoute(builder: (context) => const CheckoutScreen()),
                   );
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange, 
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                ),
                 child: const Text('PRZEJDŹ DO KASY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             )
@@ -195,9 +194,9 @@ class _CartItemTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[100]!),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Row(
         children: [
@@ -213,16 +212,16 @@ class _CartItemTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1),
+                Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1),
                 const SizedBox(height: 4),
-                Text('${item.product.price.toStringAsFixed(2)} PLN', style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                Text(context.read<LocalizationProvider>().formatPrice(item.product.price), style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     _QtyBtn(icon: Icons.remove, onTap: () {}),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                     _QtyBtn(icon: Icons.add, onTap: () {}),
                   ],
@@ -252,10 +251,10 @@ class _QtyBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Icon(icon, size: 16),
+        child: Icon(icon, size: 16, color: Colors.white),
       ),
     );
   }

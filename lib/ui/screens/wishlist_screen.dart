@@ -4,6 +4,7 @@ import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
 
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
@@ -13,11 +14,8 @@ class WishlistScreen extends StatelessWidget {
     final wishlistProvider = context.watch<WishlistProvider>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('ULUBIONE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, letterSpacing: 2)),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('ULUBIONE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
         centerTitle: true,
       ),
       body: wishlistProvider.isLoading
@@ -35,14 +33,14 @@ class WishlistScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.favorite_border, size: 100, color: Colors.grey[200]),
+            Icon(Icons.favorite_border, size: 100, color: Colors.white.withOpacity(0.05)),
             const SizedBox(height: 24),
-            const Text('Twoja lista życzeń jest pusta', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Twoja lista życzeń jest pusta', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Zapisuj produkty, które Ci się podobają, aby wrócić do nich później.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.white.withOpacity(0.5)),
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -53,7 +51,7 @@ class WishlistScreen extends StatelessWidget {
                   // Powrót do zakupów (np. zmiana taba w MainNavigation)
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text('ODKRYWAJ PRODUKTY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -111,16 +109,17 @@ class _WishlistProductCard extends StatelessWidget {
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
                     ),
                   ),
                   Positioned(
                     top: 8, right: 8,
                     child: GestureDetector(
                       onTap: () => context.read<WishlistProvider>().toggleWishlist(product),
-                      child: const CircleAvatar(
-                        backgroundColor: Colors.white,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black.withOpacity(0.5),
                         radius: 16,
-                        child: Icon(Icons.favorite, size: 18, color: Colors.red),
+                        child: const Icon(Icons.favorite, size: 18, color: Colors.red),
                       ),
                     ),
                   ),
@@ -129,9 +128,14 @@ class _WishlistProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
           const SizedBox(height: 4),
-          Text('${product.price.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+          Consumer<LocalizationProvider>(
+            builder: (context, loc, child) => Text(
+              loc.formatPrice(product.price), 
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange)
+            ),
+          ),
         ],
       ),
     );

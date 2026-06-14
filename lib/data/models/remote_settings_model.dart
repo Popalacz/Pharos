@@ -14,6 +14,10 @@ class RemoteSettings {
   final bool cartRecoveryEnabled;
   final bool lowStockBadgeEnabled;
 
+  // Debug Flags
+  final bool appDebug;
+  final bool useMockData;
+
   // Design
   final Map<String, String> theme;
   
@@ -34,6 +38,8 @@ class RemoteSettings {
     this.recentlyViewedEnabled = true,
     this.cartRecoveryEnabled = true,
     this.lowStockBadgeEnabled = true,
+    required this.appDebug,
+    required this.useMockData,
     required this.theme,
     required this.onboarding,
     required this.enabledPaymentMethods,
@@ -53,6 +59,8 @@ class RemoteSettings {
       recentlyViewedEnabled: json['recently_viewed_enabled'] ?? true,
       cartRecoveryEnabled: json['cart_recovery_enabled'] ?? true,
       lowStockBadgeEnabled: json['low_stock_badge_enabled'] ?? true,
+      appDebug: json['app_config']?['app_debug'] ?? false,
+      useMockData: json['app_config']?['use_mock_data'] ?? false,
       theme: Map<String, String>.from(json['theme'] ?? {}),
       onboarding: (json['onboarding'] as List? ?? [])
           .map((item) => OnboardingSlide.fromJson(item))
@@ -68,6 +76,8 @@ class RemoteSettings {
       maintenanceMode: false,
       forceUpdateVersion: '1.0.0',
       freeShippingThreshold: 200.0,
+      appDebug: false,
+      useMockData: false,
       theme: {'primary_color': '#FF9800'},
       onboarding: [],
       enabledPaymentMethods: ['blik', 'ps_checkout', 'google_pay'],
