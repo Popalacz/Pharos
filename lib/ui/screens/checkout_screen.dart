@@ -7,8 +7,9 @@ import 'package:pharos/data/models/address_model.dart';
 import 'package:pharos/core/services/payment_service.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/ui/screens/order_confirmation_screen.dart';
 import 'package:pharos/ui/screens/address_selection_screen.dart';
-import 'package:lottie/lottie.dart';
+import 'package:flutter/services.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -173,7 +174,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               subtitle: Text(carrier.delay, style: TextStyle(color: Colors.white.withOpacity(0.5))),
               secondary: Text(loc.formatPrice(carrier.price), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
               activeColor: Colors.orange,
-              onChanged: (val) => setState(() => _selectedCarrier = val),
+              onChanged: (val) {
+                HapticFeedback.lightImpact();
+                setState(() => _selectedCarrier = val);
+              },
             ),
           )).toList(),
         );
@@ -194,17 +198,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: _selectedPayment?.id == method.id ? Colors.orange : Colors.white.withOpacity(0.05)),
             ),
-            child: ListTile(
-              leading: const Icon(Icons.account_balance_wallet_outlined, color: Colors.orange),
-              title: Text(method.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: Text(method.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.5))),
-              trailing: Radio<String>(
-                value: method.id,
-                groupValue: _selectedPayment?.id,
-                activeColor: Colors.orange,
-                onChanged: (val) => setState(() => _selectedPayment = method),
+            child: Material(
+              color: Colors.transparent,
+              child: ListTile(
+                leading: const Icon(Icons.account_balance_wallet_outlined, color: Colors.orange),
+                title: Text(method.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                subtitle: Text(method.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                trailing: Radio<String>(
+                  value: method.id,
+                  groupValue: _selectedPayment?.id,
+                  activeColor: Colors.orange,
+                  onChanged: (val) {
+                    HapticFeedback.lightImpact();
+                    setState(() => _selectedPayment = method);
+                  },
+                ),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() => _selectedPayment = method);
+                },
               ),
-              onTap: () => setState(() => _selectedPayment = method),
             ),
           )).toList(),
         );
@@ -291,68 +304,49 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
 
     try {
-      await CheckoutRepository(useMockData: false).createOrder({
+      final orderRef = 'PH-${DateTime.now().millisecondsSinceEpoch}';
+      
+      // Senior Update: Wysyłamy ID zsynchronizowanego koszyka
+      final result = await CheckoutRepository(useMockData: false).createOrder({
+        'id_cart': cart.idCart, // KLUCZOWE: Używamy ID z MySQL PrestaShop
         'id_carrier': _selectedCarrier!.id,
-        'id_address': _selectedAddress!.id,
+        'id_address_delivery': _selectedAddress!.id,
+        'id_address_invoice': _selectedAddress!.id,
         'payment_module': _selectedPayment!.id,
         'id_currency': loc.currentCurrency?.id,
         'id_lang': loc.currentLanguage?.id,
-        'cart': cart.items.values.map((e) => {'id': e.product.id, 'qty': e.quantity}).toList(),
+        'total_amount': totalAmount,
       });
 
-      await context.read<UserProvider>().logisticsAutomation(
-        orderId: 'PH-${DateTime.now().millisecondsSinceEpoch}',
-        amount: totalAmount,
-      );
+      if (result['success'] == true) {
+        await context.read<UserProvider>().logisticsAutomation(
+          orderId: orderRef,
+          amount: totalAmount,
+        );
 
-      cart.clear();
+        cart.clear();
 
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => Dialog(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.05))),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Lottie.network(
-                    'https://assets10.lottiefiles.com/packages/lf20_ye6m86df.json',
-                    height: 150,
-                    repeat: false,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('SUKCES!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
-                  const SizedBox(height: 8),
-                  Text('Zamówienie zostało złożone poprawnie.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.5))),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange, 
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-                      ),
-                      child: const Text('OK', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                ],
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => OrderConfirmationScreen(
+                orderReference: result['reference'] ?? orderRef, 
+                totalAmount: totalAmount
               ),
             ),
-          ),
-        );
+            (route) => false,
+          );
+        }
+      } else {
+        throw Exception(result['message'] ?? 'Serwer odrzucił zamówienie.');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Błąd składania zamówienia: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Błąd składania zamówienia: ${e.toString().replaceAll('Exception:', '')}'), 
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } finally {
       if (mounted) {

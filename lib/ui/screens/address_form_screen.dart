@@ -46,11 +46,12 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
     super.dispose();
   }
 
-  void _saveForm() {
+  void _saveForm() async {
     if (_formKey.currentState!.validate()) {
-      // W prawdziwej aplikacji tutaj wywołujemy repository.addAddress
-      final newAddress = AddressModel(
-        id: widget.address?.id ?? DateTime.now().millisecondsSinceEpoch,
+      final userProvider = context.read<UserProvider>();
+      
+      final address = AddressModel(
+        id: widget.address?.id ?? 0,
         alias: _aliasController.text,
         firstname: _firstnameController.text,
         lastname: _lastnameController.text,
@@ -61,22 +62,43 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
         phone: _phoneController.text,
       );
 
-      // Symulacja sukcesu i powrót
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Adres został zapisany w PrestaShop'), backgroundColor: Colors.green),
-      );
-      Navigator.pop(context, newAddress);
+      bool success;
+      if (widget.address == null) {
+        success = await userProvider.addAddress(address);
+      } else {
+        success = await userProvider.updateAddress(address);
+      }
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Adres został zapisany pomyślnie'), backgroundColor: Colors.green),
+          );
+          // Odświeżamy adresy u dostawcy danych, aby lista w SelectionScreen była aktualna
+          userProvider.fetchAddresses();
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(userProvider.addressError ?? 'Błąd podczas zapisywania adresu'), 
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: Text(widget.address == null ? 'Nowy adres' : 'Edytuj adres', style: const TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text(widget.address == null ? 'Nowy adres' : 'Edytuj adres', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -98,13 +120,26 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildField(_postcodeController, 'Kod pocztowy', Icons.markunread_mailbox_outlined)),
+                  Expanded(child: _buildField(_postcodeController, 'Kod pocztowy (np. 00-000)', Icons.markunread_mailbox_outlined, 
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Pole wymagane';
+                      if (!RegExp(r'^\d{2}-\d{3}$').hasMatch(v)) return 'Błędny format (00-000)';
+                      return null;
+                    }
+                  )),
                   const SizedBox(width: 16),
                   Expanded(child: _buildField(_cityController, 'Miasto', Icons.location_city_outlined)),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildField(_phoneController, 'Numer telefonu', Icons.phone_android_outlined, keyboardType: TextInputType.phone),
+              _buildField(_phoneController, 'Numer telefonu', Icons.phone_android_outlined, 
+                keyboardType: TextInputType.phone,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Pole wymagane';
+                  if (v.length < 9) return 'Za krótki numer';
+                  return null;
+                }
+              ),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -125,20 +160,26 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType keyboardType = TextInputType.text, String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(color: Colors.white60),
         prefixIcon: Icon(icon, color: Colors.orange),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white10),
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.orange, width: 2),
         ),
       ),
-      validator: (value) => value == null || value.isEmpty ? 'Pole wymagane' : null,
+      validator: validator ?? (value) => value == null || value.isEmpty ? 'Pole wymagane' : null,
     );
   }
 }

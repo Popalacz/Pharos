@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    // Usunięcie id("org.jetbrains.kotlin.android") - Flutter sam zarządza Kotlinem w nowszych wersjach
     id("com.google.gms.google-services")
     id("dev.flutter.flutter-gradle-plugin")
 }

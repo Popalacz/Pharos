@@ -16,6 +16,10 @@ import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/ui/widgets/pharos_product_card.dart';
+import 'package:pharos/ui/widgets/pharos_navigation_drawer.dart';
+import 'package:pharos/ui/widgets/localization_selector.dart';
+import 'package:pharos/ui/screens/catalog_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
@@ -44,18 +48,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<Map<String, dynamic>> _fetchFullHomeData() async {
     try {
+      debugPrint('HOME: Fetching full data...');
       final settingsProvider = context.read<SettingsProvider>();
+      
       final response = await settingsProvider.apiService.dio.get('/index.php', queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'config',
       });
       
+      var configData = response.data;
+      if (configData is String) {
+        configData = jsonDecode(configData);
+      }
+      
       final productsResponse = await context.read<IProductRepository>().getProducts(categoryId: _selectedCategoryId);
       final categoriesResponse = await context.read<ICategoryRepository>().getCategories();
       
       return {
-        'home_config': response.data['home_config'] ?? [],
+        'home_config': configData['home_config'] ?? [],
         'products': productsResponse, 
         'categories': categoriesResponse,
       };
@@ -75,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: PharosNavigationDrawer(onRefreshCatalog: _loadData),
       // Usunięto hardkodowane Colors.white, aby używać AppColors.background z motywu dark
       body: FutureBuilder<Map<String, dynamic>>(
         future: _homeDataFuture,
@@ -105,8 +117,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                _buildAppBar(context),
-                _buildCartRecoveryBanner(context),
+            _buildAppBar(context),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: LocalizationSelector(),
+              ),
+            ),
+            _buildCartRecoveryBanner(context),
                 for (var section in sections) _buildSliverSection(section, products, categories),
                 _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
@@ -126,6 +144,10 @@ class _HomeScreenState extends State<HomeScreen> {
           floating: true,
           pinned: true,
           expandedHeight: 120,
+          leading: IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
           // Tło AppBar teraz automatycznie dopasuje się do motywu (ciemne)
           flexibleSpace: FlexibleSpaceBar(
             titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -232,7 +254,20 @@ class _HomeScreenState extends State<HomeScreen> {
       case HomeSectionType.SECTION_HEADER:
         final String title = (section.data is Map) ? (section.data['title'] ?? '') : 'Sekcja';
         return SliverToBoxAdapter(
-          child: _SectionHeader(title: title),
+          child: _SectionHeader(
+            title: title,
+            onSeeAll: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CatalogScreen(
+                    title: title,
+                    categoryId: _selectedCategoryId,
+                  ),
+                ),
+              );
+            },
+          ),
         );
       case HomeSectionType.PRODUCT_GRID:
         return SliverPadding(
@@ -245,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSpacing: 16,
             ),
             delegate: SliverChildBuilderDelegate(
-              (context, index) => _ProductCard(product: products[index]),
+              (context, index) => PharosProductCard(product: products[index], heroTagPrefix: 'home'),
               childCount: products.length,
             ),
           ),
@@ -323,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Container(
                       width: 160,
                       margin: const EdgeInsets.only(right: 16),
-                      child: _ProductCard(product: product),
+                      child: PharosProductCard(product: product, heroTagPrefix: 'recent'),
                     );
                   },
                 ),
@@ -454,7 +489,8 @@ class _CategoryList extends StatelessWidget {
 
 class _SectionHeader extends StatelessWidget {
   final String title;
-  const _SectionHeader({required this.title});
+  final VoidCallback? onSeeAll;
+  const _SectionHeader({required this.title, this.onSeeAll});
 
   @override
   Widget build(BuildContext context) {
@@ -464,105 +500,14 @@ class _SectionHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-          const Text('Zobacz wszystko', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+          InkWell(
+            onTap: onSeeAll,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text('Zobacz wszystko', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+            ),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _ProductCard extends StatelessWidget {
-  final ProductModel product;
-  const _ProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(product: product),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  children: [
-                    Hero(
-                      tag: 'product_${product.id}',
-                      child: CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 400,
-                        placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.white.withOpacity(0.05),
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8, right: 8,
-                      child: Consumer<WishlistProvider>(
-                        builder: (context, wishlist, child) {
-                          final isFav = wishlist.isFavorite(product.id);
-                          return GestureDetector(
-                            onTap: () => wishlist.toggleWishlist(product),
-                            child: CircleAvatar(
-                              backgroundColor: Colors.black.withOpacity(0.5),
-                              radius: 16,
-                              child: Icon(
-                                isFav ? Icons.favorite : Icons.favorite_border,
-                                size: 18,
-                                color: isFav ? Colors.red : Colors.white,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              product.name, 
-              maxLines: 2, 
-              overflow: TextOverflow.ellipsis, 
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.white)
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Consumer<LocalizationProvider>(
-                  builder: (context, loc, child) => Text(
-                    loc.formatPrice(product.price),
-                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.orange),
-                  ),
-                ),
-                if (!product.isAvailable)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.red.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
-                    child: const Text('BRAK', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
-                  )
-                else if (product.isLowStock)
-                  const Text('OSTATNIE', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

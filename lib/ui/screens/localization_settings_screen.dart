@@ -11,24 +11,34 @@ class LocalizationSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Język i Waluta', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Ustawienia regionalne', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('WYBIERZ JĘZYK', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+            _buildSectionHeader('WYBIERZ JĘZYK'),
             const SizedBox(height: 12),
             _buildLanguageList(context, locProvider),
             
             const SizedBox(height: 40),
-            const Text('WYBIERZ WALUTĘ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+            _buildSectionHeader('WYBIERZ WALUTĘ'),
             const SizedBox(height: 12),
             _buildCurrencyList(context, locProvider),
+            
+            const SizedBox(height: 40),
+            _buildInfoText('Ceny produktów zostaną automatycznie przeliczone zgodnie z aktualnym kursem w Twoim sklepie.'),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title, 
+      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, letterSpacing: 1.2, fontSize: 13)
     );
   }
 
@@ -68,6 +78,20 @@ class LocalizationSettingsScreen extends StatelessWidget {
           activeColor: Colors.orange,
           onChanged: (val) => provider.setCurrency(curr),
         )).toList(),
+      ),
+    );
+  }
+
+  Widget _buildInfoText(String text) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Colors.grey, size: 20),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: const TextStyle(color: Colors.grey, fontSize: 12))),
+        ],
       ),
     );
   }

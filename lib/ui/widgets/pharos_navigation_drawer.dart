@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pharos/ui/screens/categories_screen.dart';
+import 'package:pharos/ui/screens/wishlist_screen.dart';
+import 'package:pharos/ui/screens/localization_settings_screen.dart';
+import 'package:pharos/core/theme/app_colors.dart';
+import 'package:pharos/core/providers/settings_provider.dart';
 
-import '../../core/app_assets.dart';
-import '../../core/theme/app_colors.dart';
-import '../../providers/product_provider.dart';
-
-/// Side navigation — structure only; most entries show “coming soon” for now.
 class PharosNavigationDrawer extends StatelessWidget {
   const PharosNavigationDrawer({
     super.key,
@@ -17,144 +17,78 @@ class PharosNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final settings = context.watch<SettingsProvider>().settings;
 
     return Drawer(
-      backgroundColor: AppColors.surface,
+      backgroundColor: const Color(0xFF121212),
       child: SafeArea(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.surface,
-                    AppColors.background,
-                  ],
-                ),
+                color: Color(0xFF1A1A1A),
                 border: Border(
-                  bottom: BorderSide(color: AppColors.accent, width: 3),
+                  bottom: BorderSide(color: Colors.orange, width: 2),
                 ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(
-                    AppAssets.storeLogo,
-                    height: 40,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.medium,
+                  Text(
+                    settings.storeName.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 24,
+                      letterSpacing: 2,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Witaj w Pharos',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: AppColors.text,
-                      fontWeight: FontWeight.bold,
+                  const Text(
+                    'Premium E-commerce Experience',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Przeglądaj i zamawiaj wygodnie.',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.text.withValues(alpha: 0.75),
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Consumer<ProductProvider>(
-                    builder: (BuildContext context, ProductProvider catalog, Widget? _) {
-                      final int count = catalog.products.length;
-
-                      return Text(
-                        'Produkty w katalogu: $count',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      );
-                    },
                   ),
                 ],
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.home_outlined, color: AppColors.text),
-              title: const Text('Strona główna'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.grid_view_rounded, color: AppColors.text),
-              title: const Text('Kategorie'),
-              onTap: () {
-                final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(context);
-                messenger.hideCurrentSnackBar();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Ta funkcja pojawi się wkrótce.')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.local_offer_outlined, color: AppColors.text),
-              title: const Text('Promocje'),
-              onTap: () {
-                final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(context);
-                messenger.hideCurrentSnackBar();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Ta funkcja pojawi się wkrótce.')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite_outline, color: AppColors.text),
-              title: const Text('Ulubione'),
-              onTap: () {
-                final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(context);
-                messenger.hideCurrentSnackBar();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Ta funkcja pojawi się wkrótce.')),
-                );
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.refresh_rounded, color: AppColors.accent),
-              title: const Text('Odśwież katalog'),
-              onTap: () {
-                onRefreshCatalog();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined, color: AppColors.text),
-              title: const Text('Ustawienia'),
-              onTap: () {
-                final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(context);
-                messenger.hideCurrentSnackBar();
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Ta funkcja pojawi się wkrótce.')),
-                );
-              },
-            ),
+            _buildMenuItem(context, Icons.home_outlined, 'Strona główna', () {
+              Navigator.pop(context);
+            }),
+            _buildMenuItem(context, Icons.grid_view_rounded, 'Kategorie', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()));
+            }),
+            _buildMenuItem(context, Icons.favorite_outline, 'Ulubione', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen()));
+            }),
+            _buildMenuItem(context, Icons.language_outlined, 'Język i Waluta', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen()));
+            }),
+            const Divider(color: Colors.white10, height: 32),
+            _buildMenuItem(context, Icons.refresh_rounded, 'Odśwież sklep', () {
+              Navigator.pop(context);
+              onRefreshCatalog();
+            }, iconColor: Colors.orange),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMenuItem(BuildContext context, IconData icon, String title, VoidCallback onTap, {Color? iconColor}) {
+    return ListTile(
+      leading: Icon(icon, color: iconColor ?? Colors.white70),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      onTap: onTap,
+      hoverColor: Colors.orange.withOpacity(0.1),
     );
   }
 }

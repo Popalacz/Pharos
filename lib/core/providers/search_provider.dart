@@ -51,8 +51,9 @@ class SearchProvider extends ChangeNotifier {
     value.isSelected = !value.isSelected;
     
     // Po każdej zmianie filtra odświeżamy wyniki
-    onQueryChanged(_query);
+    _isSearching = true;
     notifyListeners();
+    _performSearch(_query);
   }
 
   void clearFilters() {
@@ -61,8 +62,9 @@ class SearchProvider extends ChangeNotifier {
         value.isSelected = false;
       }
     }
-    onQueryChanged(_query);
+    _isSearching = true;
     notifyListeners();
+    _performSearch(_query);
   }
 
   void onQueryChanged(String newQuery) {
@@ -79,11 +81,28 @@ class SearchProvider extends ChangeNotifier {
     _isSearching = true;
     notifyListeners();
 
-    _debounce = Timer(const Duration(milliseconds: 500), () async {
-      _searchResults = await _repository.searchProducts(newQuery);
-      _isSearching = false;
-      notifyListeners();
-    });
+    _debounce = Timer(const Duration(milliseconds: 500), () => _performSearch(newQuery));
+  }
+
+  Map<String, List<String>> getSelectedFilters() {
+    final Map<String, List<String>> selected = {};
+    for (var group in _availableFilters) {
+      final selectedValues = group.values
+          .where((v) => v.isSelected)
+          .map((v) => v.id)
+          .toList();
+      if (selectedValues.isNotEmpty) {
+        selected[group.id] = selectedValues;
+      }
+    }
+    return selected;
+  }
+
+  Future<void> _performSearch(String query) async {
+    final filters = getSelectedFilters();
+    _searchResults = await _repository.searchProducts(query, filters: filters);
+    _isSearching = false;
+    notifyListeners();
   }
 
   void clearSearch() {

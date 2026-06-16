@@ -18,6 +18,16 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Twój Koszyk', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          if (cart.isSyncing)
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: SizedBox(
+                width: 20, height: 20, 
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)
+              ),
+            )
+        ],
       ),
       body: items.isEmpty 
         ? _buildEmptyCart(context)
@@ -65,7 +75,23 @@ class CartScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  // Senior Fix: Zamiast pop (który wywala czarny ekran), 
+                  // przełączamy index w głównym nawigatorze na Home (0)
+                  final state = context.findAncestorStateOfType<State<StatefulWidget>>();
+                  if (state != null && state.toString().contains('MainNavigation')) {
+                    // Próba dostania się do MainNavigationState
+                    try {
+                      (state as dynamic).setState(() {
+                        (state as dynamic)._selectedIndex = 0;
+                      });
+                    } catch (e) {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
+                  } else {
+                     Navigator.of(context).popUntil((route) => route.isFirst);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -138,7 +164,7 @@ class CartScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Suma częściowa', style: TextStyle(color: Colors.grey)),
-                Text(loc.formatPrice(cart.totalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(loc.formatPrice(cart.subtotalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
@@ -146,8 +172,8 @@ class CartScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Dostawa', style: TextStyle(color: Colors.grey)),
-                Text(progress >= 1.0 ? 'GRATIS' : 'Obliczana w kasie', 
-                  style: TextStyle(color: progress >= 1.0 ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
+                Text(cart.shippingAmount == 0 ? 'GRATIS' : loc.formatPrice(cart.shippingAmount), 
+                  style: TextStyle(color: cart.shippingAmount == 0 ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
               ],
             ),
             const Divider(height: 32),
@@ -218,12 +244,18 @@ class _CartItemTile extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _QtyBtn(icon: Icons.remove, onTap: () {}),
+                    _QtyBtn(
+                      icon: Icons.remove, 
+                      onTap: () => context.read<CartProvider>().updateQuantity(item.key, -1)
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
-                    _QtyBtn(icon: Icons.add, onTap: () {}),
+                    _QtyBtn(
+                      icon: Icons.add, 
+                      onTap: () => context.read<CartProvider>().updateQuantity(item.key, 1)
+                    ),
                   ],
                 )
               ],
@@ -231,7 +263,16 @@ class _CartItemTile extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red),
-            onPressed: () => context.read<CartProvider>().removeItem(item.product.id),
+            onPressed: () {
+              context.read<CartProvider>().removeItem(item.key);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Usunięto z koszyka'),
+                  duration: Duration(seconds: 1),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           )
         ],
       ),

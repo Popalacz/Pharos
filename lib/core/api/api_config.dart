@@ -10,7 +10,10 @@ class ApiConfig {
   // static const String apiKey = 'NVDCB76VU3UTJFY5GMXPFE7RGIFZ8LNS';
 
   /// PrestaShop Web Services base (path must end with `/api`).
-  static const String baseUrl = 'http://localhost:8112/api';
+  static const String baseUrl = 'https://pharos-api.tech/api';
+
+  /// Use for local development
+  // static const String baseUrl = 'http://localhost:8112/api';
 
   /// Use when the emulator/device cannot reach `localhost` (e.g. Docker on host).
   // static const String baseUrl = 'http://172.30.123.47:8112/api';

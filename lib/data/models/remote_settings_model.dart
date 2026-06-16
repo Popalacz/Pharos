@@ -9,19 +9,14 @@ class RemoteSettings {
   final Map<String, String>? eventTheme;
   final double freeShippingThreshold;
   
-  // Feature Flags from Growth Guidelines
   final bool recentlyViewedEnabled;
   final bool cartRecoveryEnabled;
   final bool lowStockBadgeEnabled;
 
-  // Debug Flags
   final bool appDebug;
   final bool useMockData;
 
-  // Design
   final Map<String, String> theme;
-  
-  // Marketing
   final List<OnboardingSlide> onboarding;
   final List<String> enabledPaymentMethods;
 
@@ -46,26 +41,38 @@ class RemoteSettings {
   });
 
   factory RemoteSettings.fromJson(Map<String, dynamic> json) {
+    // Mapowanie pod strukturę z modułu pharosapi
+    final storeInfo = json['store_info'] ?? {};
+    final appConfig = json['app_config'] ?? {};
+    final design = appConfig['design_overrides'] ?? {};
+    final marketing = appConfig['marketing_onboarding'] ?? {};
+    final growth = appConfig['growth_experience'] ?? {};
+    final maintenance = appConfig['maintenance'] ?? {};
+
     return RemoteSettings(
-      storeName: json['store_name'] ?? 'Pharos Store',
-      logoUrl: json['logo_url'],
-      fontFamily: json['font_family'] ?? 'Montserrat',
-      maintenanceMode: json['maintenance_mode'] ?? false,
-      forceUpdateVersion: json['force_update_version'] ?? '1.0.0',
-      appOnlyDiscountCode: json['app_discount'],
-      whatsappNumber: json['whatsapp'],
-      eventTheme: json['event_theme'] != null ? Map<String, String>.from(json['event_theme']) : null,
-      freeShippingThreshold: double.tryParse(json['free_shipping_threshold']?.toString() ?? '200.0') ?? 200.0,
-      recentlyViewedEnabled: json['recently_viewed_enabled'] ?? true,
-      cartRecoveryEnabled: json['cart_recovery_enabled'] ?? true,
-      lowStockBadgeEnabled: json['low_stock_badge_enabled'] ?? true,
-      appDebug: json['app_config']?['app_debug'] ?? false,
-      useMockData: json['app_config']?['use_mock_data'] ?? false,
-      theme: Map<String, String>.from(json['theme'] ?? {}),
-      onboarding: (json['onboarding'] as List? ?? [])
+      storeName: storeInfo['name'] ?? 'Pharos Store',
+      logoUrl: storeInfo['mobile_logo_url'],
+      fontFamily: design['mobile_typography']?['value'] ?? 'Montserrat',
+      maintenanceMode: maintenance['maintenance_mode']?['enabled'] ?? false,
+      forceUpdateVersion: maintenance['force_update']?['min_version'] ?? '1.0.0',
+      appOnlyDiscountCode: marketing['app_only_discount']?['code'],
+      whatsappNumber: appConfig['social_media']?['instagram']?['url'], // Przykładowe użycie
+      freeShippingThreshold: (json['free_shipping_threshold'] as num?)?.toDouble() ?? 200.0,
+      recentlyViewedEnabled: growth['recently_viewed']?['enabled'] ?? true,
+      cartRecoveryEnabled: growth['cart_recovery_banner']?['enabled'] ?? true,
+      lowStockBadgeEnabled: growth['low_stock_badge']?['enabled'] ?? true,
+      appDebug: appConfig['app_debug'] ?? false,
+      useMockData: appConfig['use_mock_data'] ?? false,
+      theme: {
+        'primary_color': storeInfo['primary_color'] ?? '#FF9800',
+        'card_style': design['product_card_style']?['value'] ?? 'standard',
+      },
+      onboarding: (marketing['onboarding']?['slides'] as List? ?? [])
           .map((item) => OnboardingSlide.fromJson(item))
           .toList(),
-      enabledPaymentMethods: List<String>.from(json['payment_methods'] ?? []),
+      enabledPaymentMethods: (json['payments'] as List? ?? [])
+          .map((item) => item['name'].toString())
+          .toList(),
     );
   }
 
@@ -95,8 +102,8 @@ class OnboardingSlide {
   factory OnboardingSlide.fromJson(Map<String, dynamic> json) {
     return OnboardingSlide(
       title: json['title'] ?? '',
-      description: json['desc'] ?? '',
-      imageUrl: json['image'] ?? '',
+      description: json['description'] ?? json['desc'] ?? '',
+      imageUrl: json['image_url'] ?? json['image'] ?? '',
     );
   }
 }

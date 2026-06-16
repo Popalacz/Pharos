@@ -1,62 +1,71 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
+import '../api/api_config.dart';
 
 class ApiService {
   final Dio dio;
+  static String? _sessionCookie; 
   
-  // TWÓJ PRODUKCYJNY ENDPOINT NA SEOHOST
-  static const String prodUrl = 'https://pharos-api.tech';
+  static void clearSession() {
+    _sessionCookie = null;
+    debugPrint('SESSION: Cleared session cookie');
+  }
   
-  static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA';
+  // Pobieramy czysty host bez /api
+  static String get baseUrl => ApiConfig.baseUrl.split('/api').first;
+  static String get apiKey => ApiConfig.apiKey;
 
   ApiService() : dio = Dio(BaseOptions(
-    baseUrl: prodUrl,
+    baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 15),
     headers: {
       'Accept': 'application/json',
       'X-Pharos-Platform': 'mobile-flutter',
-      'X-Pharos-Device': kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase(),
     },
   )) {
     
-    // Ominięcie weryfikacji certyfikatu SSL dla fazy deweloperskiej (Senior Debug)
-    if (!kIsWeb) {
-      (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (client) {
-        client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-        return client;
-      };
-    }
-
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        // Zawsze żądamy formatu JSON od PrestaShop
-        options.queryParameters['output_format'] = 'JSON';
+        // Logika ścieżek
+        if (!options.path.contains('index.php') && !options.path.startsWith('/api')) {
+           options.path = '/api${options.path.startsWith('/') ? '' : '/'}${options.path}';
+        }
 
-        // Autoryzacja przez Basic Auth (Klucz : puste hasło)
-        options.headers['Authorization'] = 'Basic ${base64Encode(utf8.encode('$apiKey:'))}';
+        // Webservice (/api) wymaga ws_key LUB Authorization. 
+        // Twój test w przeglądarce potwierdził, że ws_key działa najlepiej.
+        if (options.path.contains('/api/')) {
+          options.queryParameters['output_format'] = 'JSON';
+          options.queryParameters['ws_key'] = apiKey;
+          options.headers.remove('Authorization'); 
+        } else {
+          // Zapytania do MODUŁU (index.php) NIE MOGĄ mieć Authorization Basic
+          options.headers.remove('Authorization');
+        }
+        
+        if (_sessionCookie != null) {
+          options.headers['Cookie'] = _sessionCookie;
+        }
 
         return handler.next(options);
       },
+      onResponse: (response, handler) {
+        final cookies = response.headers['set-cookie'];
+        if (cookies != null && cookies.isNotEmpty) {
+          _sessionCookie = cookies.first.split(';').first;
+        }
+        return handler.next(response);
+      },
       onError: (e, handler) {
-        debugPrint('--- PHAROS PRODUCTION API ERROR ---');
-        debugPrint('URL: ${e.requestOptions.uri}');
-        debugPrint('Status: ${e.response?.statusCode}');
-        debugPrint('Error Type: ${e.type}');
-        debugPrint('Message: ${e.message}');
+        debugPrint('API ERROR: ${e.message}');
         return handler.next(e);
       },
     ));
     
     if (kDebugMode) {
-      dio.interceptors.add(LogInterceptor(
-        responseBody: true, 
-        requestBody: true,
-        requestHeader: true,
-      ));
+      dio.interceptors.add(LogInterceptor(responseBody: true, requestHeader: true));
     }
   }
 }

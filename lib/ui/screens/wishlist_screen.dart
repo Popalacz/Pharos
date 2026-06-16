@@ -115,7 +115,17 @@ class _WishlistProductCard extends StatelessWidget {
                   Positioned(
                     top: 8, right: 8,
                     child: GestureDetector(
-                      onTap: () => context.read<WishlistProvider>().toggleWishlist(product),
+                      onTap: () {
+                        context.read<WishlistProvider>().toggleWishlist(product);
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Usunięto z ulubionych'),
+                            duration: Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
                       child: CircleAvatar(
                         backgroundColor: Colors.black.withOpacity(0.5),
                         radius: 16,

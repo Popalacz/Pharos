@@ -32,6 +32,17 @@ class MyHttpOverrides extends HttpOverrides {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // ROZSZERZONA DIAGNOSTYKA (Senior Architect Debug)
+  debugPrint('NETWORK: Starting system-wide DNS check...');
+  for (var host in ['google.com', 'pharos-api.tech']) {
+    try {
+      final result = await InternetAddress.lookup(host);
+      debugPrint('DNS SUCCESS [$host]: Resolved to ${result[0].address}');
+    } catch (e) {
+      debugPrint('DNS FAILURE [$host]: $e');
+    }
+  }
+
   // Włączenie omijania certyfikatów SSL globalnie
   HttpOverrides.global = MyHttpOverrides();
   
@@ -68,9 +79,15 @@ void main() async {
           create: (_) => CategoryRepository(),
         ),
         ChangeNotifierProvider(create: (_) => LocalizationProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProxyProvider<UserProvider, CartProvider>(
+          create: (_) => CartProvider(),
+          update: (_, user, cart) => cart!..updateUser(user),
+        ),
+        ChangeNotifierProxyProvider<UserProvider, WishlistProvider>(
+          create: (_) => WishlistProvider(),
+          update: (_, user, wishlist) => wishlist!..updateUser(user),
+        ),
         ChangeNotifierProvider(create: (_) => RecentlyViewedProvider()),
         ChangeNotifierProvider(
           create: (context) => SearchProvider(context.read<IProductRepository>()),
@@ -80,6 +97,8 @@ void main() async {
     ),
   );
 }
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class PharosApp extends StatelessWidget {
   const PharosApp({super.key});
@@ -108,6 +127,7 @@ class PharosApp extends StatelessWidget {
         }
 
         return MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           title: settingsProvider.settings.storeName,
           theme: AppTheme.dark,
@@ -125,9 +145,33 @@ class MainNavigation extends StatefulWidget {
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObserver {
   int _selectedIndex = 0;
   
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Real-time Refresh on App Resume
+    if (state == AppLifecycleState.resumed) {
+      debugPrint('APP RESUMED: Refreshing critical e-commerce data...');
+      context.read<IProductRepository>().getProducts();
+      if (context.read<UserProvider>().isLoggedIn) {
+        context.read<WishlistProvider>().fetchWishlist();
+      }
+    }
+  }
+
   final List<Widget> _screens = [
     const HomeScreen(),
     const WishlistScreen(),

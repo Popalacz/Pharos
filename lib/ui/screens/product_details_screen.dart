@@ -9,6 +9,10 @@ import 'package:pharos/data/models/review_model.dart';
 import 'package:pharos/data/repositories/review_repository.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 
+import 'package:pharos/ui/screens/review_form_screen.dart';
+import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/ui/screens/cart_screen.dart';
+
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
   const ProductDetailsScreen({super.key, required this.product});
@@ -24,7 +28,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _reviewsFuture = ReviewRepository(useMockData: true).getProductReviews(widget.product.id);
+    _reviewsFuture = ReviewRepository(useMockData: false).getProductReviews(widget.product.id);
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<RecentlyViewedProvider>().addProduct(widget.product);
@@ -60,7 +64,32 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       const SizedBox(height: 32),
                       _buildTechnicalDetails(),
                       const Divider(height: 64, color: Colors.white10),
-                      _buildSectionTitle('OPINIE KLIENTÓW'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildSectionTitle('OPINIE KLIENTÓW'),
+                          if (context.watch<UserProvider>().isLoggedIn)
+                            TextButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ReviewFormScreen(
+                                      productId: widget.product.id,
+                                      title: 'Oceń produkt',
+                                    ),
+                                  ),
+                                ).then((_) {
+                                  setState(() {
+                                    _reviewsFuture = ReviewRepository(useMockData: false).getProductReviews(widget.product.id);
+                                  });
+                                });
+                              },
+                              icon: const Icon(Icons.add, size: 18, color: Colors.orange),
+                              label: const Text('DODAJ', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                            ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
                       _buildReviewsList(),
                       const SizedBox(height: 120),
@@ -162,7 +191,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     return Column(
       children: [
         _detailRow('Nr referencyjny', widget.product.reference),
-        _detailRow('Dostępność', widget.product.isAvailable ? 'W magazynie' : 'Na zamówienie'),
+        _detailRow('Dostępność', widget.product.isAvailable ? 'W magazynie' : (widget.product.availableLaterLabel.isNotEmpty ? widget.product.availableLaterLabel : 'Na zamówienie')),
         _detailRow('Minimalna ilość', widget.product.minimalQuantity.toString()),
       ],
     );
@@ -242,18 +271,51 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    minimumSize: const Size(double.infinity, 60),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  onPressed: widget.product.isAvailable ? () {
-                    context.read<CartProvider>().addItem(widget.product);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Dodano ${widget.product.name}'), backgroundColor: Colors.green));
-                  } : null,
-                  child: Text(widget.product.isAvailable ? 'DODAJ DO KOSZYKA' : 'NIEDOSTĘPNY', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
+                child: widget.product.canBeAddedToCart
+                  ? ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        minimumSize: const Size(double.infinity, 60),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () {
+                        context.read<CartProvider>().addItem(widget.product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(widget.product.isOnOrder ? 'Dodano produkt (Na zamówienie)' : 'Dodano do koszyka'),
+                            backgroundColor: Colors.green,
+                            action: SnackBarAction(
+                              label: 'KOSZYK',
+                              textColor: Colors.white,
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => CartScreen()));
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(widget.product.isOnOrder ? 'KUP NA ZAMÓWIENIE' : 'DODAJ DO KOSZYKA', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    )
+                  : widget.product.shouldShowNotifyMe
+                    ? OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange,
+                          minimumSize: const Size(double.infinity, 60),
+                          side: const BorderSide(color: Colors.orange),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Zapisano Cię na powiadomienie o dostępności!'), backgroundColor: Colors.blue),
+                          );
+                        },
+                        child: const Text('POWIADOM O DOSTĘPNOŚCI', style: TextStyle(fontWeight: FontWeight.bold)),
+                      )
+                    : Container(
+                        height: 60,
+                        alignment: Alignment.center,
+                        child: const Text('PRODUKT NIEDOSTĘPNY', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      ),
               ),
             ],
           ),

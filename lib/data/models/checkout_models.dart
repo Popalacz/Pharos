@@ -15,17 +15,17 @@ class CarrierModel {
 
   factory CarrierModel.fromJson(Map<String, dynamic> json) {
     return CarrierModel(
-      id: int.parse(json['id'].toString()),
+      id: int.tryParse(json['id'].toString()) ?? 0,
       name: json['name'] ?? 'Kurier',
       delay: json['delay'] ?? '',
-      price: double.parse(json['price'] ?? '0.0'),
-      imageUrl: json['image_url'], // Pobierane z Twojego modułu pharos_api
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      imageUrl: json['image_url'],
     );
   }
 }
 
 class PaymentMethodModel {
-  final String id; // Nazwa modułu w PrestaShop (np. 'ps_checkout', 'blik')
+  final String id;
   final String name;
   final String? description;
   final String? iconUrl;
@@ -39,7 +39,7 @@ class PaymentMethodModel {
 
   factory PaymentMethodModel.fromJson(Map<String, dynamic> json) {
     return PaymentMethodModel(
-      id: json['id_module'] ?? '',
+      id: json['code'] ?? json['id_module'] ?? '',
       name: json['name'] ?? '',
       description: json['description'],
       iconUrl: json['icon_url'],

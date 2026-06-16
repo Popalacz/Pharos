@@ -33,8 +33,8 @@ class AddressModel {
       address2: json['address2'],
       postcode: json['postcode'] ?? '',
       city: json['city'] ?? '',
-      country: json['country_name'] ?? 'Polska', // W PrestaShop często id_country, tu zakładamy nazwę z pharos_api
-      phone: json['phone'],
+      country: json['country_name'] ?? (json['id_country'] == '14' ? 'Polska' : 'Polska'), 
+      phone: json['phone'] is String ? json['phone'] : null,
     );
   }
 

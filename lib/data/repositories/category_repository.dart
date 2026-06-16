@@ -17,11 +17,20 @@ class CategoryRepository implements ICategoryRepository {
         'filter[active]': '1',
       });
       
-      final List categoriesJson = response.data['categories'] ?? [];
-      // Filtrujemy, aby nie pokazywać kategorii głównej (Root/Home) jeśli to konieczne
+      final dynamic rawData = response.data['categories'];
+      
+      if (rawData == null || rawData == '') return [];
+      
+      List categoriesJson = [];
+      if (rawData is List) {
+        categoriesJson = rawData;
+      } else if (rawData is Map) {
+        categoriesJson = [rawData];
+      }
+
       return categoriesJson
           .map((json) => CategoryModel.fromJson(json))
-          .where((cat) => cat.id > 2) // Omijamy Root i Home zazwyczaj
+          .where((cat) => cat.id > 2)
           .toList();
     } catch (e) {
       debugPrint('Category Fetch Error: $e');

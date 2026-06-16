@@ -12,26 +12,33 @@ class CategoryModel {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    String getLocalizedValue(dynamic field) {
+    String parseLocalized(dynamic field) {
       if (field == null) return '';
-      if (field is String) return field;
-      if (field is List && field.isNotEmpty) {
-        return (field[0]['value'] ?? '').toString();
-      }
-      if (field is Map && field['language'] != null) {
-        var languages = field['language'];
-        if (languages is List && languages.isNotEmpty) {
-          return (languages[0]['value'] ?? '').toString();
+      String rawValue = '';
+      
+      if (field is String) {
+        rawValue = field;
+      } else if (field is List && field.isNotEmpty) {
+        rawValue = (field[0] is Map) ? (field[0]['value'] ?? '').toString() : field[0].toString();
+      } else if (field is Map) {
+        if (field['language'] != null) {
+          var lang = field['language'];
+          if (lang is List && lang.isNotEmpty) rawValue = (lang[0]['value'] ?? '').toString();
+          else if (lang is Map) rawValue = (lang['value'] ?? '').toString();
+        } else {
+          rawValue = (field['value'] ?? field['name'] ?? '').toString();
         }
+      } else {
+        rawValue = field.toString();
       }
-      return field.toString();
+      return rawValue.replaceAll(RegExp(r'<[^>]*>|&nbsp;|&amp;|&quot;'), ' ').trim();
     }
 
     return CategoryModel(
       id: int.parse(json['id'].toString()),
-      name: getLocalizedValue(json['name']),
-      description: getLocalizedValue(json['description']),
-      idParent: json['id_parent'] != null ? int.parse(json['id_parent'].toString()) : null,
+      name: parseLocalized(json['name']),
+      description: parseLocalized(json['description']),
+      idParent: json['id_parent'] != null ? int.tryParse(json['id_parent'].toString()) : null,
     );
   }
 }

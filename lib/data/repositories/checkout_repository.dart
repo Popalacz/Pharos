@@ -1,6 +1,7 @@
 import '../../core/network/api_service.dart';
 import '../models/checkout_models.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 
 abstract class ICheckoutRepository {
   Future<List<CarrierModel>> getCarriers();
@@ -17,16 +18,19 @@ class CheckoutRepository implements ICheckoutRepository {
   @override
   Future<List<CarrierModel>> getCarriers() async {
     try {
-      // Pobieranie kurierów (można filtrować po aktywnych)
-      final response = await _apiService.dio.get('/api/carriers', queryParameters: {
-        'display': 'full',
-        'filter[active]': '1',
+      final response = await _apiService.dio.get('/index.php', queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'config',
       });
       
-      final List carriers = response.data['carriers'] ?? [];
+      dynamic data = response.data;
+      if (data is String) data = jsonDecode(data);
+      
+      final List carriers = data['carriers'] ?? [];
       return carriers.map((e) => CarrierModel.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Carrier Fetch Error: $e');
+      debugPrint('FETCH CARRIERS ERROR: $e');
       return [];
     }
   }
@@ -34,14 +38,27 @@ class CheckoutRepository implements ICheckoutRepository {
   @override
   Future<List<PaymentMethodModel>> getPaymentMethods() async {
     try {
-      // Pobieranie aktywnych metod płatności z dedykowanego endpointu modułu pharos_api
-      // Zgodnie z PHAROS_MODULE_GUIDELINES.md: Lista płatności pobierana z systemu
-      final response = await _apiService.dio.get('/module/pharos_api/payments');
+      final response = await _apiService.dio.get('/index.php', queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'config',
+      });
       
-      final List methods = response.data['methods'] ?? [];
+      dynamic data = response.data;
+      if (data is String) data = jsonDecode(data);
+      
+      final List methods = data['payments'] ?? [];
+
+      if (methods.isEmpty) {
+        return [
+          PaymentMethodModel(id: 'ps_wirepayment', name: 'Przelew bankowy', description: 'Zapłać tradycyjnym przelewem'),
+          PaymentMethodModel(id: 'ps_checkpayment', name: 'Płatność przy odbiorze', description: 'Zapłać kurierowi przy dostawie'),
+        ];
+      }
+      
       return methods.map((e) => PaymentMethodModel.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Payment Methods Fetch Error: $e');
+      debugPrint('FETCH PAYMENTS ERROR: $e');
       return [];
     }
   }
@@ -49,11 +66,21 @@ class CheckoutRepository implements ICheckoutRepository {
   @override
   Future<Map<String, dynamic>> createOrder(Map<String, dynamic> orderData) async {
     try {
-      // Tworzenie zamówienia w PrestaShop
-      final response = await _apiService.dio.post('/api/orders', data: orderData);
+      // Senior Strategy: Zamiast wysyłać listę produktów, wysyłamy id_cart, 
+      // który PrestaShop już zna i ma przeliczony (zniżki, podatki).
+      final response = await _apiService.dio.post('/index.php', 
+        queryParameters: {
+          'fc': 'module',
+          'module': 'pharosapi',
+          'controller': 'order', // Zmieniamy na kontroler zamówień
+          'action': 'create',
+        },
+        data: orderData
+      );
+      
       return response.data;
     } catch (e) {
-      debugPrint('Order Creation Error: $e');
+      debugPrint('ORDER CREATION CRITICAL ERROR: $e');
       rethrow;
     }
   }

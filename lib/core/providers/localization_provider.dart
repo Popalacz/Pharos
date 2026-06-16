@@ -63,8 +63,12 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Formatowanie ceny z uwzględnieniem wybranej waluty i jej kursu
   String formatPrice(double price) {
     if (_currentCurrency == null) return '${price.toStringAsFixed(2)} PLN';
+    
+    // PrestaShop przesyła ceny w walucie domyślnej (zazwyczaj PLN lub EUR)
+    // Jeśli użytkownik wybrał inną walutę, przeliczamy ją wg kursu z Presty
     double converted = price * _currentCurrency!.conversionRate;
     return '${converted.toStringAsFixed(2)} ${_currentCurrency!.symbol}';
   }
