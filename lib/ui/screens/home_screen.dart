@@ -19,11 +19,11 @@ import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
 import 'package:pharos/ui/widgets/pharos_navigation_drawer.dart';
 import 'package:pharos/ui/widgets/localization_selector.dart';
+import 'package:pharos/core/network/api_service.dart';
+import 'package:pharos/ui/widgets/network_error_state.dart';
 import 'package:pharos/ui/screens/catalog_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:convert';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,33 +47,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<Map<String, dynamic>> _fetchFullHomeData() async {
-    try {
-      debugPrint('HOME: Fetching full data...');
-      final settingsProvider = context.read<SettingsProvider>();
-      
-      final response = await settingsProvider.apiService.dio.get('/index.php', queryParameters: {
+    final settingsProvider = context.read<SettingsProvider>();
+
+    final response = await settingsProvider.apiService.getSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
-        'controller': 'config',
-      });
-      
-      var configData = response.data;
-      if (configData is String) {
-        configData = jsonDecode(configData);
-      }
-      
-      final productsResponse = await context.read<IProductRepository>().getProducts(categoryId: _selectedCategoryId);
-      final categoriesResponse = await context.read<ICategoryRepository>().getCategories();
-      
-      return {
-        'home_config': configData['home_config'] ?? [],
-        'products': productsResponse, 
-        'categories': categoriesResponse,
-      };
-    } catch (e) {
-      debugPrint('Home Data Fetch Error: $e');
-      rethrow;
-    }
+        'controller': 'home',
+      },
+      mapper: (json) => json,
+    );
+
+    return response.fold(
+      (failure) => {'error': failure.message, 'sections': <dynamic>[]},
+      (data) {
+        if (data is Map && data['status'] == 'success') {
+          return {
+            'sections': data['sections'] ?? [],
+            'cart_count': data['cart_count'] ?? 0,
+          };
+        }
+        return {'sections': <dynamic>[]};
+      },
+    );
   }
 
   void _onCategorySelected(int? id) {
@@ -87,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: PharosNavigationDrawer(onRefreshCatalog: _loadData),
-      // Usunięto hardkodowane Colors.white, aby używać AppColors.background z motywu dark
       body: FutureBuilder<Map<String, dynamic>>(
         future: _homeDataFuture,
         builder: (context, snapshot) {
@@ -99,33 +95,34 @@ class _HomeScreenState extends State<HomeScreen> {
             return _buildErrorState();
           }
 
-          final dynamic rawHomeConfig = snapshot.data!['home_config'];
-          List sectionsJson = [];
-          
-          if (rawHomeConfig is List) {
-            sectionsJson = rawHomeConfig;
-          } else if (rawHomeConfig is Map && rawHomeConfig['sections'] is List) {
-            sectionsJson = rawHomeConfig['sections'];
+          final data = snapshot.data ?? {};
+          if (data['error'] != null) {
+            return NetworkErrorState(
+              message: data['error'].toString(),
+              onRetry: () => setState(() => _loadData()),
+            );
           }
 
-          final sections = sectionsJson.map((s) => HomeSection.fromJson(s)).toList();
-          final List<ProductModel> products = snapshot.data!['products'] as List<ProductModel>;
-          final List<CategoryModel> categories = snapshot.data!['categories'] as List<CategoryModel>;
+          final List sectionsData = data['sections'] ?? [];
 
           return RefreshIndicator(
             onRefresh: () async => setState(() => _loadData()),
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-            _buildAppBar(context),
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: LocalizationSelector(),
-              ),
-            ),
-            _buildCartRecoveryBanner(context),
-                for (var section in sections) _buildSliverSection(section, products, categories),
+                _buildAppBar(context),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: LocalizationSelector(),
+                  ),
+                ),
+                _buildCartRecoveryBanner(context),
+                
+                if (sectionsData.isNotEmpty)
+                  for (final sectionMap in sectionsData)
+                    _buildUnifiedSection(sectionMap as Map<String, dynamic>),
+
                 _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
@@ -134,6 +131,63 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
+  }
+
+  List<HomeSection> _getLegacySections(List<ProductModel> products, List<CategoryModel> categories) {
+    // Prosty mapper dla starego formatu danych
+    return [
+      HomeSection(type: HomeSectionType.BANNER_SLIDER, data: []),
+      HomeSection(type: HomeSectionType.CATEGORY_CHIPS, data: null),
+      HomeSection(type: HomeSectionType.SECTION_HEADER, data: {'title': 'Produkty'}),
+      HomeSection(type: HomeSectionType.PRODUCT_GRID, data: null),
+    ];
+  }
+
+  Widget _buildUnifiedSection(Map<String, dynamic> sectionMap) {
+    final typeStr = sectionMap['type'] as String;
+    final HomeSectionType type = HomeSectionType.values.firstWhere(
+      (e) => e.name == typeStr,
+      orElse: () => HomeSectionType.SECTION_HEADER,
+    );
+
+    final items = sectionMap['items'] ?? [];
+    if (items is List && items.isEmpty && type != HomeSectionType.SECTION_HEADER) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    switch (type) {
+      case HomeSectionType.BANNER_SLIDER:
+        return SliverToBoxAdapter(child: _BannerSlider(data: items));
+      case HomeSectionType.CATEGORY_CHIPS:
+        final categories = (items as List).map((i) => CategoryModel(id: i['id'], name: i['name'])).toList();
+        return SliverToBoxAdapter(
+          child: _CategoryList(
+            categories: categories,
+            selectedId: _selectedCategoryId,
+            onSelected: _onCategorySelected,
+          ),
+        );
+      case HomeSectionType.SECTION_HEADER:
+        return SliverToBoxAdapter(child: _SectionHeader(title: sectionMap['title'] ?? 'Sekcja'));
+      case HomeSectionType.PRODUCT_GRID:
+        final products = (items as List).map((i) => ProductModel.fromJson(i)).toList();
+        
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.65,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => PharosProductCard(product: products[index], heroTagPrefix: 'home'),
+              childCount: products.length,
+            ),
+          ),
+        );
+    }
   }
 
   Widget _buildAppBar(BuildContext context) {
@@ -148,7 +202,6 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
-          // Tło AppBar teraz automatycznie dopasuje się do motywu (ciemne)
           flexibleSpace: FlexibleSpaceBar(
             titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             title: Row(
@@ -301,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.orange.shade900.withOpacity(0.2), // Bardziej "Dark Mode"
+          color: Colors.orange.shade900.withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.orange.shade800),
         ),
@@ -512,3 +565,4 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
+

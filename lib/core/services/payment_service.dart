@@ -60,61 +60,62 @@ class PaymentService {
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Google Pay', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
-              ],
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.credit_card),
-              title: const Text('Visa •••• 1234'),
-              subtitle: const Text('jan.kowalski@gmail.com'),
-              trailing: const Text('ZMIEŃ', style: TextStyle(color: Colors.blue)),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Łącznie', style: TextStyle(fontSize: 16)),
-                Text('${amount.toStringAsFixed(2)} PLN', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Symulacja autoryzacji biometrycznej
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.fingerprint, color: Colors.white),
-                    SizedBox(width: 12),
-                    Text('ZAPŁAĆ TERAZ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
+      builder: (context) => Material(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Google Pay', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.black)),
+                ],
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.credit_card, color: Colors.black54),
+                title: const Text('Visa •••• 1234', style: TextStyle(color: Colors.black)),
+                subtitle: const Text('jan.kowalski@gmail.com', style: TextStyle(color: Colors.black54)),
+                trailing: const Text('ZMIEŃ', style: TextStyle(color: Colors.blue)),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Łącznie', style: TextStyle(fontSize: 16, color: Colors.black)),
+                  Text('${amount.toStringAsFixed(2)} PLN', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
+                ],
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Symulacja autoryzacji biometrycznej
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.fingerprint, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text('ZAPŁAĆ TERAZ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

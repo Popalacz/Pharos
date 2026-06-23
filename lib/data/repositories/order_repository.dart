@@ -1,51 +1,54 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/data/models/order_model.dart';
-import 'package:flutter/foundation.dart';
+import '../../core/error/failures.dart';
 
 abstract class IOrderRepository {
-  Future<List<OrderModel>> getCustomerOrders(int customerId);
-  Future<OrderModel?> getOrderDetails(int orderId);
+  Future<Either<Failure, List<OrderModel>>> getCustomerOrders(int customerId);
+  Future<Either<Failure, OrderModel>> getOrderDetails(int orderId);
 }
 
 class OrderRepository implements IOrderRepository {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+
+  OrderRepository({ApiService? apiService}) : _apiService = apiService ?? ApiService();
 
   @override
-  Future<List<OrderModel>> getCustomerOrders(int customerId) async {
-    try {
-      final response = await _apiService.dio.get('/api/orders', queryParameters: {
-        'display': 'full',
-        'filter[id_customer]': '[$customerId]',
-        'sort': '[id_DESC]',
-      });
-
-      final dynamic rawData = response.data['orders'];
-      if (rawData == null || rawData == '') return [];
-
-      List jsonList = (rawData is List) ? rawData : [rawData];
-      return jsonList.map((e) => OrderModel.fromJson(e)).toList();
-    } catch (e) {
-      debugPrint('Fetch Orders Error: $e');
-      return [];
-    }
+  Future<Either<Failure, List<OrderModel>>> getCustomerOrders(int customerId) async {
+    return _apiService.getSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'order',
+        'action': 'list',
+        'id_customer': customerId,
+      },
+      mapper: (json) {
+        final List ordersJson = json['orders'] ?? [];
+        return ordersJson.map((e) => OrderModel.fromJson(e as Map<String, dynamic>)).toList();
+      },
+    );
   }
 
   @override
-  Future<OrderModel?> getOrderDetails(int orderId) async {
-    try {
-      final response = await _apiService.dio.get('/api/orders/$orderId', queryParameters: {
-        'display': 'full',
-      });
-
-      final dynamic rawData = response.data['orders'];
-      if (rawData == null || rawData == '') return null;
-
-      // PrestaShop zwraca mapę jeśli jest jeden wynik lub listę jeśli wiele
-      final Map<String, dynamic> json = (rawData is List) ? rawData.first : rawData;
-      return OrderModel.fromJson(json);
-    } catch (e) {
-      debugPrint('Fetch Order Details Error: $e');
-      return null;
-    }
+  Future<Either<Failure, OrderModel>> getOrderDetails(int orderId) async {
+    return _apiService.getSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'order',
+        'action': 'details',
+        'id_order': orderId,
+      },
+      mapper: (json) {
+        final orderData = json['order'];
+        if (orderData == null) {
+          throw Exception('Order not found');
+        }
+        return OrderModel.fromJson(orderData as Map<String, dynamic>);
+      },
+    );
   }
 }

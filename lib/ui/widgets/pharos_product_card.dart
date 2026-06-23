@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
+import 'package:pharos/ui/screens/cart_screen.dart';
 
 class PharosProductCard extends StatelessWidget {
   final ProductModel product;
@@ -44,7 +46,14 @@ class PharosProductCard extends StatelessWidget {
                   children: [
                     Hero(
                       tag: '${heroTagPrefix}_${product.id}',
-                      child: CachedNetworkImage(
+                      child: product.imageUrl.isEmpty
+                          ? Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              color: Colors.white.withOpacity(0.05),
+                              child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
+                            )
+                          : CachedNetworkImage(
                         imageUrl: product.imageUrl,
                         width: double.infinity,
                         height: double.infinity,
@@ -59,6 +68,7 @@ class PharosProductCard extends StatelessWidget {
                     if (!product.isAvailable) _buildStatusBadge('BRAK', Colors.red)
                     else if (product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', Colors.blue)
                     else if (product.isLowStock) _buildStatusBadge('OSTATNIE', Colors.orange),
+                    _buildQuickAddButton(context),
                   ],
                 ),
               ),
@@ -66,6 +76,44 @@ class PharosProductCard extends StatelessWidget {
             const SizedBox(height: 12),
             _buildProductInfo(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAddButton(BuildContext context) {
+    if (!product.canBeAddedToCart) return const SizedBox.shrink();
+
+    return Positioned(
+      bottom: 10, right: 10,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.heavyImpact();
+          context.read<CartProvider>().addItem(product);
+          
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Dodano: ${product.name}'),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.orange,
+              action: SnackBarAction(
+                label: 'KOSZYK',
+                textColor: Colors.white,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.orange,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
+          ),
+          child: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.white),
         ),
       ),
     );

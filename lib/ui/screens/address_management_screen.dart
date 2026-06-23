@@ -28,22 +28,47 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       appBar: AppBar(
         title: const Text('MOJE ADRESY', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
       ),
-      body: userProvider.isLoadingAddresses 
-        ? const Center(child: CircularProgressIndicator(color: Colors.orange))
-        : userProvider.addresses.isEmpty 
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: userProvider.addresses.length,
-              itemBuilder: (context, index) {
-                final address = userProvider.addresses[index];
-                return _buildAddressCard(context, address);
-              },
+      body: Stack(
+        children: [
+          userProvider.isLoadingAddresses && userProvider.addresses.isEmpty
+            ? const Center(child: CircularProgressIndicator(color: Colors.orange))
+            : Column(
+                children: [
+                  if (userProvider.isLoadingAddresses)
+                    const LinearProgressIndicator(backgroundColor: Colors.transparent, color: Colors.orange, minHeight: 2),
+                  Expanded(
+                    child: userProvider.addresses.isEmpty 
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                          itemCount: userProvider.addresses.length,
+                          itemBuilder: (context, index) {
+                            final address = userProvider.addresses[index];
+                            return _buildAddressCard(context, address);
+                          },
+                        ),
+                  ),
+                ],
+              ),
+          
+          // Senior Fix: Przycisk zakotwiczony w body zapobiega błędom NEEDS-LAYOUT
+          Positioned(
+            bottom: 24,
+            left: 20,
+            right: 20,
+            child: SizedBox(
+              height: 56,
+              child: FloatingActionButton.extended(
+                heroTag: 'management_add_address_safe',
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressFormScreen())),
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                label: const Text('DODAJ NOWY ADRES', style: TextStyle(fontWeight: FontWeight.bold)),
+                icon: const Icon(Icons.add),
+              ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressFormScreen())),
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.add, color: Colors.white),
+          ),
+        ],
       ),
     );
   }

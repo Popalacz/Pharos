@@ -100,7 +100,18 @@ class SearchProvider extends ChangeNotifier {
 
   Future<void> _performSearch(String query) async {
     final filters = getSelectedFilters();
-    _searchResults = await _repository.searchProducts(query, filters: filters);
+    final result = await _repository.searchProducts(query, filters: filters);
+    
+    result.fold(
+      (failure) {
+        _searchResults = [];
+        // Tutaj można dodać obsługę błędu w UI
+      },
+      (products) {
+        _searchResults = products;
+      },
+    );
+
     _isSearching = false;
     notifyListeners();
   }

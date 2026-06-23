@@ -39,6 +39,7 @@ class AddressModel {
   }
 
   Map<String, dynamic> toJson() => {
+    if (id > 0) 'id': id,
     'alias': alias,
     'firstname': firstname,
     'lastname': lastname,

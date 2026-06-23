@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/data/repositories/cart_repository.dart';
 import 'package:pharos/core/providers/user_provider.dart';
@@ -22,11 +23,13 @@ class CartItem {
 }
 
 class CartProvider extends ChangeNotifier {
-  final ICartRepository _repository = CartRepository();
+  final ICartRepository _repository;
   final Map<String, CartItem> _items = {};
   int? _idCart;
   UserProvider? _userProvider;
   Timer? _syncDebounce;
+
+  CartProvider({ICartRepository? repository}) : _repository = repository ?? CartRepository();
 
   double _serverTotal = 0.0;
   double _serverProductsTotal = 0.0;
@@ -93,7 +96,38 @@ class CartProvider extends ChangeNotifier {
   void clear() {
     _items.clear();
     _idCart = null;
+    _serverTotal = 0.0;
+    _serverProductsTotal = 0.0;
+    _serverShippingTotal = 0.0;
     notifyListeners();
+  }
+
+  Future<String?> applyVoucher(String code) async {
+    if (_idCart == null || code.trim().isEmpty) return 'Brak koszyka lub kodu.';
+    final result = await _repository.applyVoucher(cartId: _idCart!, code: code.trim());
+    return result.fold(
+      (failure) => failure.message,
+      (data) {
+        if (data['success'] == true) {
+          _updateTotalsFromResponse(data);
+          notifyListeners();
+          return null;
+        }
+        return data['message']?.toString() ?? 'Nie udało się zastosować kodu.';
+      },
+    );
+  }
+
+  void _updateTotalsFromResponse(Map<String, dynamic> data) {
+    if (data['total'] != null) {
+      _serverTotal = double.tryParse(data['total'].toString()) ?? _serverTotal;
+    }
+    if (data['total_products'] != null) {
+      _serverProductsTotal = double.tryParse(data['total_products'].toString()) ?? _serverProductsTotal;
+    }
+    if (data['total_shipping'] != null) {
+      _serverShippingTotal = double.tryParse(data['total_shipping'].toString()) ?? _serverShippingTotal;
+    }
   }
 
   void _triggerSync() {
@@ -118,24 +152,19 @@ class CartProvider extends ChangeNotifier {
 
       _isSyncing = false;
 
-      if (result['success'] == true) {
-        if (result['id_cart'] != null) {
-          _idCart = int.tryParse(result['id_cart'].toString());
-        }
-        
-        // Aktualizacja totala prosto z MySQL PrestaShop (Real-time logic)
-        if (result['total'] != null) {
-          _serverTotal = double.tryParse(result['total'].toString()) ?? 0.0;
-        }
-        if (result['total_products'] != null) {
-          _serverProductsTotal = double.tryParse(result['total_products'].toString()) ?? 0.0;
-        }
-        if (result['total_shipping'] != null) {
-          _serverShippingTotal = double.tryParse(result['total_shipping'].toString()) ?? 0.0;
-        }
-        
-        debugPrint('CART REAL-TIME SYNC: Success. ID: $_idCart, Total: $_serverTotal, Shipping: $_serverShippingTotal');
-      }
+      result.fold(
+        (failure) => debugPrint('CART SYNC FAILURE: $failure'),
+        (data) {
+          if (data['success'] == true) {
+            if (data['id_cart'] != null) {
+              _idCart = int.tryParse(data['id_cart'].toString());
+            }
+            _updateTotalsFromResponse(data);
+            
+            debugPrint('CART REAL-TIME SYNC: Success. ID: $_idCart, Total: $_serverTotal, Shipping: $_serverShippingTotal');
+          }
+        },
+      );
       notifyListeners();
     });
   }

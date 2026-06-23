@@ -1,56 +1,118 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:pharos/core/network/api_service.dart';
-import 'package:flutter/foundation.dart';
+import '../../core/error/failures.dart';
+import 'package:pharos/core/api/api_config.dart';
 
 abstract class ICartRepository {
-  Future<Map<String, dynamic>> syncCart({
+  Future<Either<Failure, Map<String, dynamic>>> syncCart({
     int? cartId,
     int? customerId,
     required List<Map<String, dynamic>> items,
   });
-  Future<Map<String, dynamic>?> getCart(int cartId);
+  Future<Either<Failure, Map<String, dynamic>>> getCart(int cartId);
+  Future<Either<Failure, Map<String, dynamic>>> applyVoucher({
+    required int cartId,
+    required String code,
+  });
+  Future<Either<Failure, Map<String, dynamic>>> removeVoucher({
+    required int cartId,
+    required int cartRuleId,
+  });
 }
 
 class CartRepository implements ICartRepository {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+  final bool useMockData;
+
+  CartRepository({ApiService? apiService, bool? useMockData})
+      : _apiService = apiService ?? ApiService(),
+        useMockData = useMockData ?? ApiConfig.forceMockData;
 
   @override
-  Future<Map<String, dynamic>> syncCart({
+  Future<Either<Failure, Map<String, dynamic>>> syncCart({
     int? cartId,
     int? customerId,
     required List<Map<String, dynamic>> items,
   }) async {
-    try {
-      final response = await _apiService.dio.post('/index.php', queryParameters: {
+    if (useMockData) {
+      return Right({
+        'success': true,
+        'id_cart': cartId ?? 999,
+        'total': items.length * 100.0,
+      });
+    }
+
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'cart',
         'action': 'sync',
-      }, data: {
+      },
+      data: {
         'id_cart': cartId,
         'id_customer': customerId,
         'items': items,
-      });
-
-      return response.data;
-    } catch (e) {
-      debugPrint('Cart Sync Error: $e');
-      return {'success': false};
-    }
+      },
+      mapper: (json) => json as Map<String, dynamic>,
+    );
   }
 
   @override
-  Future<Map<String, dynamic>?> getCart(int cartId) async {
-    try {
-      final response = await _apiService.dio.get('/index.php', queryParameters: {
+  Future<Either<Failure, Map<String, dynamic>>> getCart(int cartId) async {
+    return _apiService.getSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'cart',
         'action': 'get',
         'id_cart': cartId,
-      });
-      return response.data;
-    } catch (e) {
-      return null;
-    }
+      },
+      mapper: (json) => json as Map<String, dynamic>,
+    );
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> applyVoucher({
+    required int cartId,
+    required String code,
+  }) async {
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'cart',
+        'action': 'apply_voucher',
+      },
+      data: {
+        'id_cart': cartId,
+        'code': code,
+      },
+      mapper: (json) => json as Map<String, dynamic>,
+    );
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> removeVoucher({
+    required int cartId,
+    required int cartRuleId,
+  }) async {
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'cart',
+        'action': 'remove_voucher',
+      },
+      data: {
+        'id_cart': cartId,
+        'id_cart_rule': cartRuleId,
+      },
+      mapper: (json) => json as Map<String, dynamic>,
+    );
   }
 }

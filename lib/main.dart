@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
+import 'package:pharos/data/repositories/category_repository.dart';
+import 'package:pharos/data/repositories/system_repository.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
@@ -12,15 +14,16 @@ import 'package:pharos/ui/screens/wishlist_screen.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
-
 import 'package:pharos/core/services/notification_service.dart';
-
 import 'package:pharos/core/providers/localization_provider.dart';
-import 'package:pharos/data/repositories/category_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:pharos/core/api/api_config.dart';
+import 'package:pharos/core/network/api_service.dart';
+import 'package:pharos/data/repositories/cart_repository.dart';
+import 'package:pharos/data/repositories/user_repository.dart';
 
-// Klasa do całkowitego ominięcia weryfikacji SSL (Tylko do fazy dev!)
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -32,19 +35,9 @@ class MyHttpOverrides extends HttpOverrides {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // ROZSZERZONA DIAGNOSTYKA (Senior Architect Debug)
-  debugPrint('NETWORK: Starting system-wide DNS check...');
-  for (var host in ['google.com', 'pharos-api.tech']) {
-    try {
-      final result = await InternetAddress.lookup(host);
-      debugPrint('DNS SUCCESS [$host]: Resolved to ${result[0].address}');
-    } catch (e) {
-      debugPrint('DNS FAILURE [$host]: $e');
-    }
+  if (kDebugMode) {
+    HttpOverrides.global = MyHttpOverrides();
   }
-
-  // Włączenie omijania certyfikatów SSL globalnie
-  HttpOverrides.global = MyHttpOverrides();
   
   try {
     await Firebase.initializeApp();
@@ -52,40 +45,55 @@ void main() async {
     debugPrint('Firebase Init Error: $e');
   }
   
-  // Zapobieganie migotaniu przy ładowaniu ustawień
-  final settingsProvider = SettingsProvider();
+  // Singleton / Shared instance
+  final apiService = ApiService();
+  final settingsProvider = SettingsProvider(apiService: apiService);
   
-  // Globalna obsługa błędów (Senior Standard)
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint('GLOBAL ERROR: ${details.exception}');
   };
 
-  // Inicjalizacja Powiadomień Push
-  try {
-    await NotificationService().initialize();
-  } catch (e) {
-    debugPrint('FCM Init Error: $e');
-  }
+  // Uruchamiamy usługi w tle, aby nie blokować startu UI
+  NotificationService().initialize();
   
   runApp(
     MultiProvider(
       providers: [
+        Provider<ApiService>.value(value: apiService),
         ChangeNotifierProvider.value(value: settingsProvider),
+        Provider<ISystemRepository>(
+          create: (_) => SystemRepository(apiService: apiService),
+        ),
         ProxyProvider<SettingsProvider, IProductRepository>(
-          update: (_, settings, __) => ProductRepository(useMockData: settings.settings.useMockData),
+          update: (_, settings, __) => ProductRepository(
+            apiService: apiService,
+            useMockData: ApiConfig.forceMockData || settings.settings.useMockData
+          ),
         ),
         Provider<ICategoryRepository>(
-          create: (_) => CategoryRepository(),
+          create: (_) => CategoryRepository(apiService: apiService),
         ),
         ChangeNotifierProvider(create: (_) => LocalizationProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(
+          create: (_) => UserProvider(
+            apiService: apiService,
+            repository: UserRepository(
+              apiService: apiService,
+              useMockData: ApiConfig.forceMockData
+            )
+          )
+        ),
         ChangeNotifierProxyProvider<UserProvider, CartProvider>(
-          create: (_) => CartProvider(),
+          create: (_) => CartProvider(
+            repository: CartRepository(
+              apiService: apiService,
+              useMockData: ApiConfig.forceMockData
+            )
+          ),
           update: (_, user, cart) => cart!..updateUser(user),
         ),
         ChangeNotifierProxyProvider<UserProvider, WishlistProvider>(
-          create: (_) => WishlistProvider(),
+          create: (_) => WishlistProvider(apiService: apiService),
           update: (_, user, wishlist) => wishlist!..updateUser(user),
         ),
         ChangeNotifierProvider(create: (_) => RecentlyViewedProvider()),
@@ -98,6 +106,7 @@ void main() async {
   );
 }
 
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class PharosApp extends StatelessWidget {
@@ -107,7 +116,6 @@ class PharosApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(
       builder: (context, settingsProvider, child) {
-        // Dynamiczna obsługa błędów na bazie ustawień modułu
         if (settingsProvider.settings.appDebug) {
           ErrorWidget.builder = (details) => Scaffold(
             body: Center(
@@ -162,12 +170,12 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Real-time Refresh on App Resume
     if (state == AppLifecycleState.resumed) {
-      debugPrint('APP RESUMED: Refreshing critical e-commerce data...');
       context.read<IProductRepository>().getProducts();
-      if (context.read<UserProvider>().isLoggedIn) {
+      final userProvider = context.read<UserProvider>();
+      if (userProvider.isLoggedIn) {
         context.read<WishlistProvider>().fetchWishlist();
+        userProvider.fetchAddresses();
       }
     }
   }

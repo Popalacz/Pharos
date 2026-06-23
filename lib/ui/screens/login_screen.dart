@@ -11,6 +11,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _loginFormKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
+  
   final _loginEmailController = TextEditingController();
   final _loginPasswordController = TextEditingController();
   
@@ -30,19 +33,52 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void dispose() {
     _tabController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    _regEmailController.dispose();
+    _regPasswordController.dispose();
+    _regFirstnameController.dispose();
+    _regLastnameController.dispose();
     super.dispose();
+  }
+
+  // PrestaShop common validators
+  String? _emailValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Adres e-mail jest wymagany';
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegex.hasMatch(value.trim())) return 'Wprowadź poprawny adres e-mail';
+    return null;
+  }
+
+  String? _passwordValidator(String? value) {
+    if (value == null || value.isEmpty) return 'Hasło jest wymagane';
+    if (value.length < 5) return 'Hasło musi mieć min. 5 znaków (wymóg PrestaShop)';
+    return null;
+  }
+
+  String? _nameValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'To pole jest wymagane';
+    if (value.trim().length < 2) return 'Minimum 2 znaki';
+    if (!RegExp(r'^[^0-9!<>,;?=+()@#"°*!$^_]+$').hasMatch(value.trim())) {
+      return 'Pole zawiera niedozwolone znaki';
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: const Text('KONTO PHAROS', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('KONTO PHAROS', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.orange,
+          indicatorWeight: 3,
           labelColor: Colors.orange,
-          unselectedLabelColor: Colors.white70,
+          unselectedLabelColor: Colors.white38,
           tabs: const [
             Tab(text: 'LOGOWANIE'),
             Tab(text: 'REJESTRACJA'),
@@ -64,54 +100,57 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          _buildTextField(
-            controller: _loginEmailController,
-            label: 'E-mail',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 16),
-          _buildTextField(
-            controller: _loginPasswordController,
-            label: 'Hasło',
-            icon: Icons.lock_outline,
-            obscureText: _obscurePassword,
-            suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white30),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+      child: Form(
+        key: _loginFormKey,
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _loginEmailController,
+              label: 'E-mail',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: _emailValidator,
             ),
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: (userProvider.isLoading || _loginEmailController.text.isEmpty || _loginPasswordController.text.isEmpty) 
-                ? null 
-                : _handleLogin,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _loginPasswordController,
+              label: 'Hasło',
+              icon: Icons.lock_outline,
+              obscureText: _obscurePassword,
+              validator: _passwordValidator,
+              suffixIcon: IconButton(
+                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white30),
+                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
               ),
-              child: userProvider.isLoading 
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('ZALOGUJ SIĘ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
-          ),
-          const SizedBox(height: 24),
-          const Row(
-            children: [
-              Expanded(child: Divider(color: Colors.white10)),
-              Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('LUB', style: TextStyle(color: Colors.white30))),
-              Expanded(child: Divider(color: Colors.white10)),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildGoogleButton(),
-        ],
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: userProvider.isLoading ? null : _handleLogin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: userProvider.isLoading 
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('ZALOGUJ SIĘ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 32),
+            const Row(
+              children: [
+                Expanded(child: Divider(color: Colors.white10)),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('LUB', style: TextStyle(color: Colors.white30, fontWeight: FontWeight.bold))),
+                Expanded(child: Divider(color: Colors.white10)),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _buildGoogleButton(),
+          ],
+        ),
       ),
     );
   }
@@ -121,41 +160,50 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          _buildTextField(controller: _regFirstnameController, label: 'Imię', icon: Icons.person_outline),
-          const SizedBox(height: 16),
-          _buildTextField(controller: _regLastnameController, label: 'Nazwisko', icon: Icons.person_outline),
-          const SizedBox(height: 16),
-          _buildTextField(
-            controller: _regEmailController, 
-            label: 'E-mail', 
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 16),
-          _buildTextField(
-            controller: _regPasswordController, 
-            label: 'Hasło', 
-            icon: Icons.lock_outline,
-            obscureText: _obscurePassword,
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: userProvider.isLoading ? null : _handleRegister,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: userProvider.isLoading 
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('ZAŁÓŻ KONTO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      child: Form(
+        key: _registerFormKey,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildTextField(controller: _regFirstnameController, label: 'Imię', icon: Icons.person_outline, validator: _nameValidator)),
+                const SizedBox(width: 16),
+                Expanded(child: _buildTextField(controller: _regLastnameController, label: 'Nazwisko', icon: Icons.person_outline, validator: _nameValidator)),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _regEmailController, 
+              label: 'E-mail', 
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: _emailValidator,
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _regPasswordController, 
+              label: 'Hasło', 
+              icon: Icons.lock_outline,
+              obscureText: _obscurePassword,
+              validator: _passwordValidator,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: userProvider.isLoading ? null : _handleRegister,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: userProvider.isLoading 
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('ZAŁÓŻ KONTO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -167,26 +215,36 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     bool obscureText = false,
     Widget? suffixIcon,
     TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      validator: validator,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white30),
+        labelStyle: const TextStyle(color: Colors.white38),
         prefixIcon: Icon(icon, color: Colors.orange),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Colors.white.withOpacity(0.05),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+          borderSide: const BorderSide(color: Colors.white10),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.orange),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.redAccent),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
         ),
       ),
     );
@@ -203,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             Navigator.pop(context);
           }
         },
-        icon: const Icon(Icons.login, color: Colors.white),
+        icon: Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_Color_Icon.svg/1200px-Google_Color_Icon.svg.png', height: 20),
         label: const Text('KONTYNUUJ PRZEZ GOOGLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.white24),
@@ -214,36 +272,48 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   void _handleLogin() async {
-    final userProvider = context.read<UserProvider>();
-    final success = await userProvider.login(
-      _loginEmailController.text,
-      _loginPasswordController.text,
-    );
-    
-    if (success && mounted) {
-      Navigator.pop(context);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userProvider.authError ?? 'Błąd logowania.'), backgroundColor: Colors.red),
+    if (_loginFormKey.currentState!.validate()) {
+      final userProvider = context.read<UserProvider>();
+      final success = await userProvider.login(
+        _loginEmailController.text.trim(),
+        _loginPasswordController.text,
       );
+      
+      if (success && mounted) {
+        Navigator.pop(context);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(userProvider.authError ?? 'Błąd logowania.'), 
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
   void _handleRegister() async {
-    final userProvider = context.read<UserProvider>();
-    final success = await userProvider.register(
-      email: _regEmailController.text,
-      password: _regPasswordController.text,
-      firstname: _regFirstnameController.text,
-      lastname: _regLastnameController.text,
-    );
-    
-    if (success && mounted) {
-      Navigator.pop(context);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userProvider.authError ?? 'Błąd rejestracji.'), backgroundColor: Colors.red),
+    if (_registerFormKey.currentState!.validate()) {
+      final userProvider = context.read<UserProvider>();
+      final success = await userProvider.register(
+        email: _regEmailController.text.trim(),
+        password: _regPasswordController.text,
+        firstname: _regFirstnameController.text.trim(),
+        lastname: _regLastnameController.text.trim(),
       );
+      
+      if (success && mounted) {
+        Navigator.pop(context);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(userProvider.authError ?? 'Błąd rejestracji.'), 
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 }

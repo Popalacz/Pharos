@@ -1,61 +1,60 @@
-import 'package:flutter/foundation.dart';
+import 'package:fpdart/fpdart.dart';
 import '../models/product_model.dart';
 import '../../core/network/api_service.dart';
+import '../../core/error/failures.dart';
 
 abstract class IWishlistRepository {
-  Future<List<ProductModel>> getWishlist(int customerId);
-  Future<bool> toggleWishlist(int customerId, int productId);
+  Future<Either<Failure, List<ProductModel>>> getWishlist(int customerId);
+  Future<Either<Failure, bool>> toggleWishlist(int customerId, int productId);
 }
 
 class WishlistRepository implements IWishlistRepository {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
   final bool useMockData;
 
-  WishlistRepository({this.useMockData = false});
+  WishlistRepository({ApiService? apiService, this.useMockData = false}) 
+    : _apiService = apiService ?? ApiService();
 
   @override
-  Future<List<ProductModel>> getWishlist(int customerId) async {
+  Future<Either<Failure, List<ProductModel>>> getWishlist(int customerId) async {
     if (useMockData) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return []; 
+      return const Right([]); 
     }
     
-    try {
-      final response = await _apiService.dio.get('/index.php', queryParameters: {
+    return _apiService.getSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'wishlist',
         'action': 'get',
         'id_customer': customerId,
-      });
-
-      final dynamic rawData = response.data['products'];
-      if (rawData == null || rawData == '') return [];
-      
-      List productsJson = (rawData is List) ? rawData : [rawData];
-      return productsJson.map((json) => ProductModel.fromJson(json)).toList();
-    } catch (e) {
-      debugPrint('Wishlist API Error: $e');
-      return [];
-    }
+      },
+      mapper: (json) {
+        final dynamic rawData = json['products'];
+        if (rawData == null || rawData == '') return [];
+        List productsJson = (rawData is List) ? rawData : [rawData];
+        return productsJson.map((j) => ProductModel.fromJson(j)).toList();
+      },
+    );
   }
 
   @override
-  Future<bool> toggleWishlist(int customerId, int productId) async {
-    if (useMockData) return true;
-    try {
-      final response = await _apiService.dio.post('/index.php', queryParameters: {
+  Future<Either<Failure, bool>> toggleWishlist(int customerId, int productId) async {
+    if (useMockData) return const Right(true);
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'wishlist',
         'action': 'toggle',
-      }, data: {
+      },
+      data: {
         'id_customer': customerId,
         'id_product': productId,
-      });
-      return response.data['success'] == true;
-    } catch (e) {
-      return false;
-    }
+      },
+      mapper: (json) => json['success'] == true,
+    );
   }
 }

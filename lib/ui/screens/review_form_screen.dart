@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/data/repositories/review_repository.dart';
 
@@ -24,7 +26,13 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
   double _rating = 5;
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
-  final _reviewRepository = ReviewRepository();
+  late final IReviewRepository _reviewRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewRepository = ReviewRepository(apiService: context.read<ApiService>());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,27 +140,29 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
 
     setState(() => _isSubmitting = true);
 
-    bool success = false;
+    bool isSuccess = false;
     if (widget.productId != null) {
-      success = await _reviewRepository.addProductReview(
+      final result = await _reviewRepository.addProductReview(
         productId: widget.productId!,
         customerId: userProvider.user!.id,
         rating: _rating,
         comment: _commentController.text,
       );
+      isSuccess = result.fold((l) => false, (r) => r);
     } else if (widget.orderId != null) {
-      success = await _reviewRepository.addOrderReview(
+      final result = await _reviewRepository.addOrderReview(
         orderId: widget.orderId!,
         customerId: userProvider.user!.id,
         rating: _rating,
         comment: _commentController.text,
       );
+      isSuccess = result.fold((l) => false, (r) => r);
     }
 
     setState(() => _isSubmitting = false);
 
     if (mounted) {
-      if (success) {
+      if (isSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Dziękujemy za Twoją opinię!'), backgroundColor: Colors.green),
         );

@@ -1,8 +1,13 @@
+import 'package:pharos/core/api/api_config.dart';
+import 'package:flutter/foundation.dart';
+
 class ProductModel {
   final int id;
   final String name;
   final String description;
   final double price;
+  final double? priceOld;
+  final int? discountPercentage;
   final List<String> images;
   final String imageUrl;
   final int stockQuantity;
@@ -11,14 +16,16 @@ class ProductModel {
   final int minimalQuantity;
   final String reference;
   final String manufacturerName;
-  final String availableNowLabel; // Tekst "Dostępny" z Presty
-  final String availableLaterLabel; // Tekst "Na zamówienie" z Presty
+  final String availableNowLabel;
+  final String availableLaterLabel;
 
   ProductModel({
     required this.id,
     required this.name,
     required this.description,
     required this.price,
+    this.priceOld,
+    this.discountPercentage,
     required this.images,
     required this.imageUrl,
     required this.stockQuantity,
@@ -31,92 +38,108 @@ class ProductModel {
     this.availableLaterLabel = '',
   });
 
-  // Logika sprzedażowa (Senior Business Logic)
+  bool get hasDiscount => priceOld != null && priceOld! > price;
   bool get canBeAddedToCart => availableForOrder && (stockQuantity >= minimalQuantity || allowOutOfStockOrders);
   bool get shouldShowNotifyMe => availableForOrder && stockQuantity <= 0 && !allowOutOfStockOrders;
   bool get isOnOrder => stockQuantity <= 0 && allowOutOfStockOrders;
-
-  // Kompatybilność z UI (Legacy Getters)
   bool get isAvailable => stockQuantity >= minimalQuantity || allowOutOfStockOrders;
   bool get isLowStock => stockQuantity > 0 && stockQuantity <= 5;
 
+  static String _stabilizeImageUrl(String url, int productId) {
+    if (url.isEmpty) return '';
+    
+    final String apiBase = ApiConfig.baseUrl.split('/api').first;
+    String finalUrl = url;
+    
+    if (!finalUrl.startsWith('http')) {
+      finalUrl = '$apiBase${finalUrl.startsWith('/') ? '' : '/'}$finalUrl';
+    }
+    
+    finalUrl = finalUrl.replaceFirst('://', '@@@').replaceAll('//', '/').replaceFirst('@@@', '://');
+    
+    // Jeśli to link WebService, upewnij się, że ma klucz, ale tylko jeśli to NIE jest bezpośredni link do pliku jpg/png
+    if (finalUrl.contains('/api/images/') && !finalUrl.toLowerCase().contains('.jpg')) {
+      if (!finalUrl.contains('ws_key=')) {
+        finalUrl += '${finalUrl.contains('?') ? '&' : '?'}ws_key=${ApiConfig.apiKey}';
+      }
+    }
+    
+    return finalUrl;
+  }
+
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // Senior Level HTML Cleaner & Localized Parser
-    String parseLocalized(dynamic field) {
+    String parseString(dynamic field) {
       if (field == null) return '';
-      String rawValue = '';
-      
-      if (field is String) {
-        rawValue = field;
-      } else if (field is List && field.isNotEmpty) {
-        rawValue = (field[0] is Map) ? (field[0]['value'] ?? '').toString() : field[0].toString();
-      } else if (field is Map) {
+      if (field is String) return field;
+      if (field is Map) {
         if (field['language'] != null) {
           var lang = field['language'];
-          if (lang is List && lang.isNotEmpty) rawValue = (lang[0]['value'] ?? '').toString();
-          else if (lang is Map) rawValue = (lang['value'] ?? '').toString();
-        } else {
-          rawValue = (field['value'] ?? field['name'] ?? '').toString();
+          if (lang is List && lang.isNotEmpty) return (lang[0]['value'] ?? '').toString();
+          if (lang is Map) return (lang['value'] ?? '').toString();
         }
-      } else {
-        rawValue = field.toString();
+        return (field['value'] ?? '').toString();
       }
-
-      // Usuwanie tagów HTML i encji typu &nbsp;
-      return rawValue.replaceAll(RegExp(r'<[^>]*>|&nbsp;|&amp;|&quot;'), ' ').trim();
+      return field.toString();
     }
 
-    final String productId = json['id'].toString();
-    final String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA';
+    double parsePrice(dynamic p) {
+      if (p == null) return 0.0;
+      if (p is num) return p.toDouble();
+      // Obsługa formatów "123,45" i "123.45"
+      final clean = p.toString().replaceAll(',', '.').replaceAll(RegExp(r'[^0-9.]'), '');
+      return double.tryParse(clean) ?? 0.0;
+    }
+
+    final id = int.tryParse(json['id'].toString()) ?? 0;
     
-    // Budowanie galerii zdjęć
+    // Senior Fix: Priorytetyzacja obrazów publicznych nad WebService (unikamy 400 Bad Request)
     List<String> imagesList = [];
-    if (json['associations']?['images'] != null) {
-      final imgs = json['associations']['images'] as List;
-      for (var img in imgs) {
-        imagesList.add('https://pharos-api.tech/api/images/products/$productId/${img['id']}?ws_key=$apiKey');
-      }
-    }
     
-    final String imageId = json['id_default_image']?.toString() ?? productId;
-    if (imagesList.isEmpty) {
-      imagesList.add('https://pharos-api.tech/api/images/products/$productId/$imageId?ws_key=$apiKey');
+    // 1. Sprawdzamy czy mamy gotowe publiczne linki (z modułu pharosapi)
+    if (json['image'] != null && json['image'].toString().isNotEmpty) {
+      imagesList.add(json['image'].toString());
+    } else if (json['images'] is List && (json['images'] as List).isNotEmpty) {
+      imagesList.addAll((json['images'] as List).map((e) => e.toString()));
+    } 
+    
+    // 2. Jeśli nadal pusto, próbujemy image_ws (WebService)
+    if (imagesList.isEmpty && json['image_ws'] != null) {
+      imagesList.add(json['image_ws'].toString());
     }
 
-    // Senior Level Stock Resolver (v2 - Ultra Aggressive)
-    int resolvedQuantity = int.tryParse(json['quantity']?.toString() ?? '0') ?? 0;
-    
-    // Sprawdzamy wszystkie możliwe warianty flagi dostępności z Presty
-    String avForOrder = json['available_for_order']?.toString() ?? '0';
-    bool isAvailableForOrder = avForOrder == '1' || avForOrder == 'true' || avForOrder == 'active';
-                               
-    String outOfStock = json['out_of_stock']?.toString() ?? '0';
-    bool canOrderAnyway = outOfStock == '1' || outOfStock == '2';
+    // 3. Fallback do struktury PrestaShop (id_default_image)
+    if (imagesList.isEmpty && json['id_default_image'] != null && json['id_default_image'] != '0') {
+      final imgId = json['id_default_image'].toString();
+      final apiBase = ApiConfig.baseUrl.split('/api').first;
+      imagesList.add('$apiBase/api/images/products/$id/$imgId');
+    }
 
-    // LOGIKA NAPRAWCZA: Jeśli produkt NIE jest wyłączony z zamówień, to go pokazujemy jako dostępny.
-    // W PrestaShop jeśli produkt jest w ogóle widoczny w API i ma cenę, zazwyczaj chcemy go sprzedać.
-    if (isAvailableForOrder || resolvedQuantity > 0 || canOrderAnyway) {
-       // Jeśli system mówi że 0, ale flaga pozwala, lub po prostu chcemy wymusić widoczność:
-       if (resolvedQuantity <= 0) {
-         resolvedQuantity = 15; // Wymuszamy stan dodatni dla UI
-       }
+    // Stabilizacja wszystkich URLi
+    imagesList = imagesList.map((url) => _stabilizeImageUrl(url, id)).where((url) => url.isNotEmpty).toList();
+
+    double price = parsePrice(json['price']);
+    // Jeśli cena netto (brak sformatowanej), dodaj podatek
+    if (json['price_formatted'] == null && !json.containsKey('discount_percentage')) {
+      price = price * 1.23;
     }
 
     return ProductModel(
-      id: int.parse(productId),
-      name: parseLocalized(json['name']),
-      description: parseLocalized(json['description']),
-      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      id: id,
+      name: parseString(json['name']),
+      description: parseString(json['description'] ?? json['description_short']),
+      price: price,
+      priceOld: json['price_old'] != null ? parsePrice(json['price_old']) : null,
+      discountPercentage: int.tryParse(json['discount_percentage']?.toString() ?? ''),
       images: imagesList,
-      imageUrl: imagesList.first,
-      stockQuantity: resolvedQuantity,
-      allowOutOfStockOrders: canOrderAnyway,
-      availableForOrder: isAvailableForOrder,
+      imageUrl: imagesList.isNotEmpty ? imagesList.first : '',
+      stockQuantity: int.tryParse((json['stock'] ?? json['quantity'] ?? '0').toString()) ?? 0,
+      allowOutOfStockOrders: json['out_of_stock'] == '1' || json['out_of_stock'] == '2' || (int.tryParse(json['stock'].toString() ?? '0') ?? 0) > 0,
+      availableForOrder: json['available_for_order'] == true || json['available_for_order'] == '1' || json['available_for_order'] == 'active',
       minimalQuantity: int.tryParse(json['minimal_quantity']?.toString() ?? '1') ?? 1,
-      reference: json['reference']?.toString() ?? '',
-      manufacturerName: json['manufacturer_name']?.toString() ?? '',
-      availableNowLabel: parseLocalized(json['available_now']),
-      availableLaterLabel: parseLocalized(json['available_later']),
+      reference: json['reference'] ?? '',
+      manufacturerName: json['manufacturer_name'] ?? '',
+      availableNowLabel: parseString(json['available_now']),
+      availableLaterLabel: parseString(json['available_later']),
     );
   }
 
@@ -125,11 +148,13 @@ class ProductModel {
     'name': name,
     'description': description,
     'price': price,
+    'price_old': priceOld,
+    'discount_percentage': discountPercentage,
     'images': images,
     'imageUrl': imageUrl,
     'quantity': stockQuantity,
-    'available_for_order': availableForOrder ? '1' : '0',
     'out_of_stock': allowOutOfStockOrders ? '1' : '0',
+    'available_for_order': availableForOrder,
     'minimal_quantity': minimalQuantity,
     'reference': reference,
     'manufacturer_name': manufacturerName,

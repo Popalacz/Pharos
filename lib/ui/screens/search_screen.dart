@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
-import 'package:pharos/ui/screens/product_details_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/ui/widgets/pharos_product_card.dart';
 import 'package:pharos/ui/widgets/search_filter_drawer.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
-import 'package:pharos/core/providers/localization_provider.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -85,7 +82,7 @@ class _SearchScreenState extends State<SearchScreen> {
             itemCount: searchProvider.searchResults.length,
             itemBuilder: (context, index) {
               final product = searchProvider.searchResults[index];
-              return _SearchProductCard(product: product);
+              return PharosProductCard(product: product, heroTagPrefix: 'search');
             },
           );
         },
@@ -109,70 +106,6 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SearchProductCard extends StatelessWidget {
-  final dynamic product;
-  const _SearchProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProductDetailsScreen(product: product)),
-        );
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: product.imageUrl,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
-                  ),
-                  Positioned(
-                    top: 8, right: 8,
-                    child: Consumer<WishlistProvider>(
-                      builder: (context, wishlist, child) {
-                        final isFav = wishlist.isFavorite(product.id);
-                        return CircleAvatar(
-                          backgroundColor: Colors.black.withOpacity(0.5),
-                          radius: 16,
-                          child: Icon(
-                            isFav ? Icons.favorite : Icons.favorite_border,
-                            size: 18,
-                            color: isFav ? Colors.red : Colors.white,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
-          const SizedBox(height: 4),
-          Consumer<LocalizationProvider>(
-            builder: (context, loc, child) => Text(
-              loc.formatPrice(product.price), 
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange)
-            ),
-          ),
-        ],
       ),
     );
   }

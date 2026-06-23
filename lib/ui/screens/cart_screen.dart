@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/ui/screens/checkout_screen.dart';
+import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lottie/lottie.dart';
 
@@ -108,10 +110,13 @@ class CartScreen extends StatelessWidget {
   Widget _buildSummary(BuildContext context, CartProvider cart) {
     final settings = context.watch<SettingsProvider>().settings;
     final loc = context.watch<LocalizationProvider>();
-    final double threshold = settings.freeShippingThreshold;
-    final double current = cart.totalAmount;
-    final double progress = (current / threshold).clamp(0.0, 1.0);
-    final double remaining = threshold - current;
+    final userProvider = context.watch<UserProvider>();
+
+    final double? threshold = settings.freeShippingThreshold;
+    final double current = cart.subtotalAmount;
+    final double progress = threshold != null && threshold > 0 ? (current / threshold).clamp(0.0, 1.0) : 0.0;
+    final double remaining = threshold != null ? threshold - current : 0.0;
+    final bool showFreeShipping = settings.hasFreeShippingProgress;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -124,42 +129,45 @@ class CartScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.local_shipping_outlined, 
-                      color: progress >= 1.0 ? Colors.green : Colors.orange, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        progress >= 1.0 
-                          ? 'Darmowa dostawa odblokowana!' 
-                          : 'Brakuje Ci ${loc.formatPrice(remaining)} do darmowej dostawy',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: progress >= 1.0 ? Colors.green : Colors.white,
-                          fontSize: 13,
+            if (settings.vouchersEnabled) const _VoucherInput(),
+            if (showFreeShipping) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.local_shipping_outlined,
+                          color: progress >= 1.0 ? Colors.green : Colors.orange, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          progress >= 1.0
+                              ? 'Darmowa dostawa odblokowana!'
+                              : 'Brakuje Ci ${loc.formatPrice(remaining)} do darmowej dostawy',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: progress >= 1.0 ? Colors.green : Colors.white,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.white.withOpacity(0.05),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      progress >= 1.0 ? Colors.green : Colors.orange),
-                    minHeight: 8,
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.white.withOpacity(0.05),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          progress >= 1.0 ? Colors.green : Colors.orange),
+                      minHeight: 8,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -172,8 +180,17 @@ class CartScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Dostawa', style: TextStyle(color: Colors.grey)),
-                Text(cart.shippingAmount == 0 ? 'GRATIS' : loc.formatPrice(cart.shippingAmount), 
-                  style: TextStyle(color: cart.shippingAmount == 0 ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
+                Text(
+                  (showFreeShipping && cart.subtotalAmount >= threshold!) || cart.shippingAmount == 0
+                      ? 'GRATIS'
+                      : loc.formatPrice(cart.shippingAmount),
+                  style: TextStyle(
+                    color: (showFreeShipping && cart.subtotalAmount >= threshold!) || cart.shippingAmount == 0
+                        ? Colors.green
+                        : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             const Divider(height: 32),
@@ -191,16 +208,33 @@ class CartScreen extends StatelessWidget {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CheckoutScreen()),
-                  );
+                  if (userProvider.isLoggedIn) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Zaloguj się, aby złożyć zamówienie.'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange, 
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                 ),
-                child: const Text('PRZEJDŹ DO KASY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(
+                  userProvider.isLoggedIn ? 'PRZEJDŹ DO KASY' : 'ZALOGUJ SIĘ, ABY KUPIĆ', 
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                ),
               ),
             )
           ],
@@ -228,7 +262,9 @@ class _CartItemTile extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: CachedNetworkImage(
+            child: item.product.imageUrl.isEmpty
+                ? Container(width: 80, height: 80, color: Colors.white.withOpacity(0.05))
+                : CachedNetworkImage(
               imageUrl: item.product.imageUrl,
               width: 80, height: 80, fit: BoxFit.cover,
             ),
@@ -296,6 +332,69 @@ class _QtyBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Icon(icon, size: 16, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _VoucherInput extends StatefulWidget {
+  const _VoucherInput();
+
+  @override
+  State<_VoucherInput> createState() => _VoucherInputState();
+}
+
+class _VoucherInputState extends State<_VoucherInput> {
+  final _controller = TextEditingController();
+  bool _isApplying = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _apply() async {
+    if (_isApplying) return;
+    setState(() => _isApplying = true);
+    final error = await context.read<CartProvider>().applyVoucher(_controller.text);
+    if (!mounted) return;
+    setState(() => _isApplying = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'Kod rabatowy zastosowany'),
+        backgroundColor: error == null ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    if (error == null) _controller.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Kod rabatowy',
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _isApplying
+              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+              : IconButton(
+                  onPressed: _apply,
+                  icon: const Icon(Icons.check_circle_outline, color: Colors.orange),
+                ),
+        ],
       ),
     );
   }

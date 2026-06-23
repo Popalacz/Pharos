@@ -1,152 +1,167 @@
+import 'package:dio/dio.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/data/models/user_model.dart';
-import 'package:flutter/foundation.dart';
-import 'package:dio/dio.dart';
+import '../../core/error/failures.dart';
+import 'package:pharos/core/api/api_config.dart';
 
 abstract class IUserRepository {
-  Future<Map<String, dynamic>> login(String email, String password);
-  Future<Map<String, dynamic>> register({
+  Future<Either<Failure, Map<String, dynamic>>> login(String email, String password);
+  Future<Either<Failure, Map<String, dynamic>>> register({
     required String email, 
     required String password, 
     required String firstname, 
     required String lastname
   });
-  Future<UserModel?> loginWithGoogle(String token, String email, String name);
-  Future<bool> updateProfile(int customerId, Map<String, dynamic> data);
-  Future<bool> changePassword(int customerId, String oldPassword, String newPassword);
+  Future<Either<Failure, UserModel>> loginWithGoogle(String token, String email, String name);
+  Future<Either<Failure, bool>> updateProfile(int customerId, Map<String, dynamic> data);
+  Future<Either<Failure, bool>> changePassword(int customerId, String oldPassword, String newPassword);
 }
 
 class UserRepository implements IUserRepository {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+  final bool useMockData;
+
+  UserRepository({ApiService? apiService, bool? useMockData}) 
+    : _apiService = apiService ?? ApiService(),
+      useMockData = useMockData ?? ApiConfig.forceMockData;
 
   @override
-  Future<bool> updateProfile(int customerId, Map<String, dynamic> data) async {
-    try {
-      final response = await _apiService.dio.post('/index.php', queryParameters: {
+  Future<Either<Failure, bool>> updateProfile(int customerId, Map<String, dynamic> data) async {
+    if (useMockData) return const Right(true);
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'auth',
         'action': 'update_profile',
-      }, data: {
+      },
+      data: {
         'id_customer': customerId,
         ...data,
-      });
-      return response.data['success'] == true;
-    } catch (e) {
-      return false;
-    }
+      },
+      mapper: (json) => json['success'] == true,
+    );
   }
 
   @override
-  Future<bool> changePassword(int customerId, String oldPassword, String newPassword) async {
-    try {
-      final response = await _apiService.dio.post('/index.php', queryParameters: {
+  Future<Either<Failure, bool>> changePassword(int customerId, String oldPassword, String newPassword) async {
+    if (useMockData) return const Right(true);
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'auth',
         'action': 'change_password',
-      }, data: {
+      },
+      data: {
         'id_customer': customerId,
         'old_password': oldPassword,
         'new_password': newPassword,
-      });
-      return response.data['success'] == true;
-    } catch (e) {
-      return false;
-    }
+      },
+      mapper: (json) => json['success'] == true,
+    );
   }
 
   @override
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    if (email.isEmpty || password.isEmpty) {
-      return {'success': false, 'message': 'Proszę podać e-mail i hasło.'};
-    }
-
-    try {
-      // Używamy x-www-form-urlencoded dla maksymalnej kompatybilności z PHP
-      final response = await _apiService.dio.post('/index.php', 
-        queryParameters: {
-          'fc': 'module',
-          'module': 'pharosapi',
-          'controller': 'auth', // Próbujemy auth, jeśli nie zadziała spróbuj authentication
-        }, 
-        data: {
-          'action': 'login',
+  Future<Either<Failure, Map<String, dynamic>>> login(String email, String password) async {
+    if (useMockData) {
+      await Future.delayed(const Duration(milliseconds: 800));
+      return Right({
+        'success': true,
+        'customer': {
+          'id': 1,
           'email': email,
-          'password': password,
-        },
-        options: Options(contentType: Headers.formUrlEncodedContentType),
-      );
-
-      return response.data is Map ? response.data : {'success': false, 'message': 'Nieprawidłowy format odpowiedzi.'};
-    } catch (e) {
-      return _handleAuthError(e);
+          'firstname': 'Google',
+          'lastname': 'User (Mock)',
+        }
+      });
     }
+
+    if (email.isEmpty || password.isEmpty) {
+      return const Left(ServerFailure('Proszę podać e-mail i hasło.'));
+    }
+
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'auth',
+      },
+      data: {
+        'action': 'login',
+        'email': email,
+        'password': password,
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+      mapper: (json) => json as Map<String, dynamic>,
+    );
   }
 
   @override
-  Future<Map<String, dynamic>> register({
+  Future<Either<Failure, Map<String, dynamic>>> register({
     required String email, 
     required String password, 
     required String firstname, 
     required String lastname
   }) async {
-    try {
-      final response = await _apiService.dio.post('/index.php', 
-        queryParameters: {
-          'fc': 'module',
-          'module': 'pharosapi',
-          'controller': 'auth',
-        }, 
-        data: {
-          'action': 'register',
+    if (useMockData) {
+      return Right({
+        'success': true,
+        'customer': {
+          'id': 1,
           'email': email,
-          'password': password,
           'firstname': firstname,
           'lastname': lastname,
-        },
-        options: Options(contentType: Headers.formUrlEncodedContentType),
-      );
-
-      return response.data is Map ? response.data : {'success': false, 'message': 'Nieprawidłowy format odpowiedzi.'};
-    } catch (e) {
-      return _handleAuthError(e);
+        }
+      });
     }
-  }
-
-  Map<String, dynamic> _handleAuthError(dynamic e) {
-    if (e is DioException) {
-      if (e.response?.statusCode == 404) {
-        return {'success': false, 'message': 'Kontroler [auth] nie został znaleziony (404). Sprawdź czy plik controllers/front/auth.php istnieje w module.'};
-      }
-      if (e.response?.statusCode == 500) {
-        return {'success': false, 'message': 'Błąd serwera (500). Sprawdź logi PHP w PrestaShop.'};
-      }
-    }
-    return {'success': false, 'message': 'Błąd połączenia: ${e.toString()}'};
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'auth',
+      },
+      data: {
+        'action': 'register',
+        'email': email,
+        'password': password,
+        'firstname': firstname,
+        'lastname': lastname,
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+      mapper: (json) => json as Map<String, dynamic>,
+    );
   }
 
   @override
-  Future<UserModel?> loginWithGoogle(String token, String email, String name) async {
-    try {
-      final response = await _apiService.dio.post('/index.php', queryParameters: {
+  Future<Either<Failure, UserModel>> loginWithGoogle(String token, String email, String name) async {
+    if (useMockData) {
+       return Right(UserModel(id: 1, email: email, firstname: name, lastname: '(Google Mock)'));
+    }
+    return _apiService.postSafe(
+      '/index.php',
+      queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'auth',
         'action': 'google_login',
-      }, data: {
+      },
+      data: {
         'token': token,
         'email': email,
         'name': name,
-      });
-
-      if (response.data['success'] == true) {
-        return UserModel.fromJson(response.data['customer']);
-      }
-      return null;
-    } catch (e) {
-      debugPrint('Google Login API Error: $e');
-      return null;
-    }
+      },
+      mapper: (json) {
+        if (json['success'] == true) {
+          return UserModel.fromJson(json['customer']);
+        }
+        throw Exception('Błąd logowania Google');
+      },
+    );
   }
 }

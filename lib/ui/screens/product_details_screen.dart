@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:pharos/data/models/product_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/ui/screens/review_form_screen.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
+import 'package:pharos/core/error/failures.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
@@ -22,7 +24,7 @@ class ProductDetailsScreen extends StatefulWidget {
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  late Future<List<ReviewModel>> _reviewsFuture;
+  late Future<Either<Failure, List<ReviewModel>>> _reviewsFuture;
   int _currentImageIndex = 0;
 
   @override
@@ -216,33 +218,42 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildReviewsList() {
-    return FutureBuilder<List<ReviewModel>>(
+    return FutureBuilder<Either<Failure, List<ReviewModel>>>(
       future: _reviewsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) return const LinearProgressIndicator(color: Colors.orange);
-        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-           return Text('Brak opinii o tym produkcie.', style: TextStyle(color: Colors.white.withOpacity(0.3)));
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Text('Błąd podczas ładowania opinii.', style: TextStyle(color: Colors.white.withOpacity(0.3)));
         }
-        return Column(
-          children: snapshot.data!.map((review) => Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        
+        return snapshot.data!.fold(
+          (failure) => Text('Nie udało się pobrać opinii.', style: TextStyle(color: Colors.white.withOpacity(0.3))),
+          (reviews) {
+            if (reviews.isEmpty) {
+              return Text('Brak opinii o tym produkcie.', style: TextStyle(color: Colors.white.withOpacity(0.3)));
+            }
+            return Column(
+              children: reviews.map((review) => Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(review.customerName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    Row(children: List.generate(5, (i) => Icon(Icons.star, size: 14, color: i < review.rating ? Colors.amber : Colors.white10))),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(review.customerName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                        Row(children: List.generate(5, (i) => Icon(Icons.star, size: 14, color: i < review.rating ? Colors.amber : Colors.white10))),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(review.comment, style: const TextStyle(fontSize: 14, color: Colors.white70)),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(review.comment, style: const TextStyle(fontSize: 14, color: Colors.white70)),
-              ],
-            ),
-          )).toList(),
+              )).toList(),
+            );
+          },
         );
       },
     );
@@ -288,7 +299,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               label: 'KOSZYK',
                               textColor: Colors.white,
                               onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => CartScreen()));
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
                               },
                             ),
                           ),

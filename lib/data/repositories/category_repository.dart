@@ -1,40 +1,33 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:pharos/core/network/api_service.dart';
+import '../../core/error/failures.dart';
 import '../models/category_model.dart';
-import 'package:flutter/foundation.dart';
 
 abstract class ICategoryRepository {
-  Future<List<CategoryModel>> getCategories();
+  Future<Either<Failure, List<CategoryModel>>> getCategories();
 }
 
 class CategoryRepository implements ICategoryRepository {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+
+  CategoryRepository({ApiService? apiService}) : _apiService = apiService ?? ApiService();
 
   @override
-  Future<List<CategoryModel>> getCategories() async {
-    try {
-      final response = await _apiService.dio.get('/api/categories', queryParameters: {
-        'display': 'full',
-        'filter[active]': '1',
-      });
-      
-      final dynamic rawData = response.data['categories'];
-      
-      if (rawData == null || rawData == '') return [];
-      
-      List categoriesJson = [];
-      if (rawData is List) {
-        categoriesJson = rawData;
-      } else if (rawData is Map) {
-        categoriesJson = [rawData];
-      }
-
-      return categoriesJson
-          .map((json) => CategoryModel.fromJson(json))
-          .where((cat) => cat.id > 2)
-          .toList();
-    } catch (e) {
-      debugPrint('Category Fetch Error: $e');
-      return [];
-    }
+  Future<Either<Failure, List<CategoryModel>>> getCategories() async {
+    return _apiService.getSafe(
+      '/index.php',
+      queryParameters: {
+        'fc': 'module',
+        'module': 'pharosapi',
+        'controller': 'categories',
+        'action': 'list',
+      },
+      mapper: (json) {
+        final List categoriesJson = json['categories'] ?? [];
+        return categoriesJson
+            .map((j) => CategoryModel.fromJson(j as Map<String, dynamic>))
+            .toList();
+      },
+    );
   }
 }

@@ -1,25 +1,17 @@
 import 'dart:convert';
 
 class ApiConfig {
-  static const bool useMockProductsJson = false;
+  /// KLUCZOWY PRZEŁĄCZNIK: 
+  /// true  -> Aplikacja używa danych mockupowych (Google/Mock) - działa bez internetu/backendu.
+  /// false -> Aplikacja łączy się z Twoim PrestaShop (Live).
+  static const bool forceMockData = false;
 
   static const String mockProductsJsonAssetPath =
       'assets/mock/products_api_response.json';
 
-  // static const String baseUrl = 'http://localhost:8111/api';
-  // static const String apiKey = 'NVDCB76VU3UTJFY5GMXPFE7RGIFZ8LNS';
-
-  /// PrestaShop Web Services base (path must end with `/api`).
+  /// Konfiguracja połączenia z PrestaShop
   static const String baseUrl = 'https://pharos-api.tech/api';
-
-  /// Use for local development
-  // static const String baseUrl = 'http://localhost:8112/api';
-
-  /// Use when the emulator/device cannot reach `localhost` (e.g. Docker on host).
-  // static const String baseUrl = 'http://172.30.123.47:8112/api';
-
-  // static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA'; // Presta base
-  static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA'; // HMP
+  static const String apiKey = 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA';
 
 
   static Map<String, String> get headers {

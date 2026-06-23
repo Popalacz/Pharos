@@ -14,6 +14,12 @@ class LocalizationSelector extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
+        final showLang = loc.showLanguageSelector;
+        final showCurr = loc.showCurrencySelector;
+        if (!showLang && !showCurr) {
+          return const SizedBox.shrink();
+        }
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
@@ -23,9 +29,10 @@ class LocalizationSelector extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildLanguagePicker(context, loc),
-              Container(width: 1, height: 20, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 12)),
-              _buildCurrencyPicker(context, loc),
+              if (showLang) _buildLanguagePicker(context, loc),
+              if (showLang && showCurr)
+                Container(width: 1, height: 20, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 12)),
+              if (showCurr) _buildCurrencyPicker(context, loc),
             ],
           ),
         );

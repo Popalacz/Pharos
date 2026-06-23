@@ -21,35 +21,8 @@ class OrderModel {
       reference: json['reference'] ?? 'BRAK',
       date: json['date_add'] ?? '',
       totalPaid: double.parse(json['total_paid'].toString()),
-      status: _mapStatus(json['current_state'].toString()),
+      status: json['status_name']?.toString() ?? json['status']?.toString() ?? 'Oczekiwanie',
       paymentMethod: json['payment'] ?? 'Nieokreślona',
     );
-  }
-
-  static String _mapStatus(String stateId) {
-    // Rozszerzone mapowanie statusów PrestaShop dla Senior Architecta
-    switch (stateId) {
-      case '1':
-      case '10':
-        return 'Oczekiwanie';
-      case '2':
-      case '11':
-      case '12':
-        return 'Płatność zaakceptowana';
-      case '3':
-        return 'W trakcie przygotowania';
-      case '4':
-        return 'Wysłano';
-      case '5':
-        return 'Dostarczono';
-      case '6':
-        return 'Anulowano';
-      case '7':
-        return 'Zwrócono';
-      case '8':
-        return 'Błąd płatności';
-      default:
-        return 'Oczekiwanie';
-    }
   }
 }

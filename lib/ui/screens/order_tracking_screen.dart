@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/data/models/order_model.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
@@ -20,22 +21,30 @@ class OrderTrackingScreen extends StatefulWidget {
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   late OrderModel _currentOrder;
   bool _isRefreshing = false;
-  final _orderRepository = OrderRepository();
+  late final IOrderRepository _orderRepository;
 
   @override
   void initState() {
     super.initState();
     _currentOrder = widget.order;
+    _orderRepository = OrderRepository(apiService: context.read<ApiService>());
   }
 
   Future<void> _refreshOrder() async {
     setState(() => _isRefreshing = true);
-    final updatedOrder = await _orderRepository.getOrderDetails(_currentOrder.id);
-    if (updatedOrder != null && mounted) {
-      setState(() {
-        _currentOrder = updatedOrder;
-      });
-    }
+    final result = await _orderRepository.getOrderDetails(_currentOrder.id);
+    
+    result.fold(
+      (failure) => debugPrint('Refresh Order Error: $failure'),
+      (updatedOrder) {
+        if (mounted) {
+          setState(() {
+            _currentOrder = updatedOrder;
+          });
+        }
+      },
+    );
+
     setState(() => _isRefreshing = false);
   }
 

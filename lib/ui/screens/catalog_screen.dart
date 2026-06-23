@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:provider/provider.dart';
 import 'package:pharos/ui/widgets/search_filter_drawer.dart';
 import 'package:pharos/core/providers/search_provider.dart';
@@ -6,6 +7,9 @@ import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
+import 'package:pharos/core/error/failures.dart';
+import 'package:pharos/ui/widgets/network_error_state.dart';
+import 'package:pharos/ui/widgets/catalog_empty_state.dart';
 
 class CatalogScreen extends StatefulWidget {
   final String title;
@@ -23,7 +27,7 @@ class CatalogScreen extends StatefulWidget {
 
 class _CatalogScreenState extends State<CatalogScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late Future<List<ProductModel>> _productsFuture;
+  late Future<Either<Failure, List<ProductModel>>> _productsFuture;
 
   @override
   void initState() {
@@ -56,7 +60,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       body: Consumer<SearchProvider>(
         builder: (context, search, child) {
-          return FutureBuilder<List<ProductModel>>(
+          return FutureBuilder<Either<Failure, List<ProductModel>>>(
             future: context.read<IProductRepository>().getProducts(
               categoryId: widget.categoryId,
               filters: search.getSelectedFilters(),
@@ -66,35 +70,38 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 return const ProductShimmer();
               }
 
-              if (snapshot.hasError) {
+              if (snapshot.hasError || !snapshot.hasData) {
                 return _buildErrorState();
               }
 
-              final products = snapshot.data ?? [];
+              return snapshot.data!.fold(
+                (failure) => _buildErrorState(message: failure.message),
+                (products) {
+                  if (products.isEmpty) {
+                    return _buildEmptyState();
+                  }
 
-              if (products.isEmpty) {
-                return _buildEmptyState();
-              }
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  setState(() {
-                    _loadProducts();
-                  });
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      setState(() {
+                        _loadProducts();
+                      });
+                    },
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.65,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        return PharosProductCard(product: products[index], heroTagPrefix: 'catalog');
+                      },
+                    ),
+                  );
                 },
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.65,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    return PharosProductCard(product: products[index], heroTagPrefix: 'catalog');
-                  },
-                ),
               );
             },
           );
@@ -104,29 +111,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.inventory_2_outlined, size: 80, color: Colors.white.withOpacity(0.1)),
-          const SizedBox(height: 16),
-          const Text('Brak produktów w tej kategorii', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
+    return const CatalogEmptyState();
   }
 
-  Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 60, color: Colors.red),
-          const SizedBox(height: 16),
-          const Text('Nie udało się pobrać produktów'),
-          TextButton(onPressed: () => setState(() => _loadProducts()), child: const Text('SPRÓBUJ PONOWNIE')),
-        ],
-      ),
+  Widget _buildErrorState({String? message}) {
+    return NetworkErrorState(
+      message: message ?? 'Nie udało się pobrać produktów.',
+      onRetry: () => setState(() => _loadProducts()),
     );
   }
 }

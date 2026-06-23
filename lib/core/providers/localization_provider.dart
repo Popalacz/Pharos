@@ -6,50 +6,71 @@ class LocalizationProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   List<LanguageModel> _languages = [];
   List<CurrencyModel> _currencies = [];
-  
+
   LanguageModel? _currentLanguage;
   CurrencyModel? _currentCurrency;
+  bool _isLoading = true;
 
   List<LanguageModel> get languages => _languages;
   List<CurrencyModel> get currencies => _currencies;
   LanguageModel? get currentLanguage => _currentLanguage;
   CurrencyModel? get currentCurrency => _currentCurrency;
+  bool get isLoading => _isLoading;
+  bool get showLanguageSelector => _languages.length > 1;
+  bool get showCurrencySelector => _currencies.length > 1;
 
   LocalizationProvider() {
     _loadFromPrestaShop();
   }
 
+  Future<void> reload() => _loadFromPrestaShop();
+
   Future<void> _loadFromPrestaShop() async {
+    _isLoading = true;
+    notifyListeners();
+
     try {
       final response = await _apiService.dio.get('/index.php', queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'config',
       });
-      
+
       if (response.data['localization'] != null) {
         final locData = response.data['localization'];
-        
+
         _languages = (locData['languages'] as List)
             .map((e) => LanguageModel.fromJson(e))
             .toList();
-            
+
         _currencies = (locData['currencies'] as List)
             .map((e) => CurrencyModel.fromJson(e))
             .toList();
 
-        // Ustawienie domyślnych wartości (np. pierwszy z listy lub polski)
-        _currentLanguage = _languages.firstWhere((l) => l.isoCode == 'pl', orElse: () => _languages.first);
-        _currentCurrency = _currencies.firstWhere((c) => c.isoCode == 'PLN', orElse: () => _currencies.first);
+        if (_languages.isNotEmpty) {
+          _currentLanguage = _languages.firstWhere(
+            (l) => l.isoCode == (locData['language_code'] ?? locData['locale'] ?? ''),
+            orElse: () => _languages.first,
+          );
+        } else {
+          _currentLanguage = null;
+        }
+
+        if (_currencies.isNotEmpty) {
+          _currentCurrency = _currencies.first;
+        } else {
+          _currentCurrency = null;
+        }
       }
     } catch (e) {
       debugPrint('Localization Load Error: $e');
-      // Backup/Default values
-      _languages = [LanguageModel(id: 1, name: 'Polski', isoCode: 'pl', languageCode: 'pl')];
-      _currencies = [CurrencyModel(id: 1, name: 'Złoty', isoCode: 'PLN', symbol: 'zł', conversionRate: 1.0)];
-      _currentLanguage = _languages.first;
-      _currentCurrency = _currencies.first;
+      _languages = [];
+      _currencies = [];
+      _currentLanguage = null;
+      _currentCurrency = null;
     }
+
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -63,13 +84,9 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Formatowanie ceny z uwzględnieniem wybranej waluty i jej kursu
   String formatPrice(double price) {
-    if (_currentCurrency == null) return '${price.toStringAsFixed(2)} PLN';
-    
-    // PrestaShop przesyła ceny w walucie domyślnej (zazwyczaj PLN lub EUR)
-    // Jeśli użytkownik wybrał inną walutę, przeliczamy ją wg kursu z Presty
-    double converted = price * _currentCurrency!.conversionRate;
+    if (_currentCurrency == null) return price.toStringAsFixed(2);
+    final double converted = price * _currentCurrency!.conversionRate;
     return '${converted.toStringAsFixed(2)} ${_currentCurrency!.symbol}';
   }
 }

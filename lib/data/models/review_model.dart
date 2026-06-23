@@ -16,7 +16,7 @@ class ReviewModel {
   factory ReviewModel.fromJson(Map<String, dynamic> json) {
     return ReviewModel(
       id: int.parse(json['id'].toString()),
-      customerName: json['customer_name'] ?? 'Klient Pharos',
+      customerName: json['customer_name'] ?? json['author'] ?? 'Klient',
       rating: double.parse(json['grade'].toString()),
       comment: json['content'] ?? '',
       date: json['date_add'] ?? '',

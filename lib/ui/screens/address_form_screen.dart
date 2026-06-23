@@ -14,7 +14,9 @@ class AddressFormScreen extends StatefulWidget {
 
 class _AddressFormScreenState extends State<AddressFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
   late TextEditingController _aliasController;
+  // ... reszta controllerów
   late TextEditingController _firstnameController;
   late TextEditingController _lastnameController;
   late TextEditingController _address1Controller;
@@ -47,7 +49,8 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   }
 
   void _saveForm() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && !_isSaving) {
+      setState(() => _isSaving = true);
       final userProvider = context.read<UserProvider>();
       
       final address = AddressModel(
@@ -70,13 +73,20 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
       }
 
       if (mounted) {
+        setState(() => _isSaving = false);
         if (success) {
+          // ... reszta logiki sukcesu
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Adres został zapisany pomyślnie'), backgroundColor: Colors.green),
           );
-          // Odświeżamy adresy u dostawcy danych, aby lista w SelectionScreen była aktualna
-          userProvider.fetchAddresses();
-          Navigator.pop(context);
+          // Odświeżamy adresy u dostawcy danych
+          await userProvider.fetchAddresses();
+          // Zwracamy nowo utworzony adres (bierzemy ostatni z listy)
+          if (mounted && userProvider.addresses.isNotEmpty) {
+            Navigator.pop(context, userProvider.addresses.last);
+          } else {
+            Navigator.pop(context);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -110,20 +120,26 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildField(_firstnameController, 'Imię', Icons.person_outline)),
+                  Expanded(child: _buildField(_firstnameController, 'Imię', Icons.person_outline, validator: _nameValidator)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildField(_lastnameController, 'Nazwisko', Icons.person_outline)),
+                  Expanded(child: _buildField(_lastnameController, 'Nazwisko', Icons.person_outline, validator: _nameValidator)),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildField(_address1Controller, 'Ulica i numer domu', Icons.home_outlined),
+              _buildField(_address1Controller, 'Ulica i numer domu', Icons.home_outlined, 
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Pole jest wymagane';
+                  if (v.length < 3) return 'Adres jest za krótki';
+                  return null;
+                }
+              ),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(child: _buildField(_postcodeController, 'Kod pocztowy (np. 00-000)', Icons.markunread_mailbox_outlined, 
                     validator: (v) {
                       if (v == null || v.isEmpty) return 'Pole wymagane';
-                      if (!RegExp(r'^\d{2}-\d{3}$').hasMatch(v)) return 'Błędny format (00-000)';
+                      if (!RegExp(r'^\d{2}-\d{3}$').hasMatch(v)) return 'Format: 00-000';
                       return null;
                     }
                   )),
@@ -135,8 +151,10 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
               _buildField(_phoneController, 'Numer telefonu', Icons.phone_android_outlined, 
                 keyboardType: TextInputType.phone,
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Pole wymagane';
-                  if (v.length < 9) return 'Za krótki numer';
+                  if (v == null || v.trim().isEmpty) return 'Pole wymagane';
+                  // PrestaShop isPhoneNumber
+                  if (!RegExp(r'^[+0-9. ()-]*$').hasMatch(v)) return 'Błędny format numeru';
+                  if (v.replaceAll(RegExp(r'[^0-9]'), '').length < 9) return 'Minimum 9 cyfr';
                   return null;
                 }
               ),
@@ -145,12 +163,14 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _saveForm,
+                  onPressed: _isSaving ? null : _saveForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('ZAPISZ ADRES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: _isSaving 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('ZAPISZ ADRES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
@@ -178,8 +198,25 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.orange, width: 2),
         ),
+        errorStyle: const TextStyle(color: Colors.redAccent),
       ),
-      validator: validator ?? (value) => value == null || value.isEmpty ? 'Pole wymagane' : null,
+      validator: validator ?? (value) {
+        if (value == null || value.trim().isEmpty) return 'Pole jest wymagane';
+        // PrestaShop isName validation for generic fields
+        if (RegExp(r'[<>{}=;]').hasMatch(value)) return 'Pole zawiera niedozwolone znaki';
+        return null;
+      },
     );
+  }
+
+  // PrestaShop-aligned name validator
+  String? _nameValidator(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Pole jest wymagane';
+    if (value.length < 2) return 'Minimum 2 znaki';
+    // PrestaShop isName pattern (approximate)
+    if (!RegExp(r'^[^0-9!<>,;?=+()@#"°*!$^_]+$').hasMatch(value)) {
+      return 'Imię/Nazwisko zawiera niedozwolone znaki';
+    }
+    return null;
   }
 }

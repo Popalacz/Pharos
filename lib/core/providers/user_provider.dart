@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pharos/services/google_calendar_service.dart';
 import 'package:pharos/data/models/address_model.dart';
@@ -7,11 +8,12 @@ import 'package:pharos/data/repositories/address_repository.dart';
 import 'package:pharos/data/models/user_model.dart';
 import 'package:pharos/data/repositories/user_repository.dart';
 import 'package:pharos/core/network/api_service.dart';
+import '../error/failures.dart';
 
 class UserProvider extends ChangeNotifier {
   final GoogleCalendarService _googleService = GoogleCalendarService();
-  final IAddressRepository _addressRepository = AddressRepository(useMockData: false);
-  final IUserRepository _userRepository = UserRepository();
+  final IAddressRepository _addressRepository;
+  final IUserRepository _userRepository;
   
   UserModel? _user;
   List<AddressModel> _addresses = [];
@@ -28,9 +30,9 @@ class UserProvider extends ChangeNotifier {
   String? get authError => _authError;
   String? get addressError => _addressError;
 
-  UserProvider() {
-    // Tutaj można dodać ładowanie usera z secure storage
-  }
+  UserProvider({ApiService? apiService, IUserRepository? repository}) 
+    : _userRepository = repository ?? UserRepository(apiService: apiService),
+      _addressRepository = AddressRepository(apiService: apiService);
 
   Future<bool> login(String email, String password) async {
     _isLoading = true;
@@ -38,18 +40,28 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
     
     final result = await _userRepository.login(email, password);
-    if (result['success'] == true) {
-      _user = UserModel.fromJson(result['customer']);
-      await fetchAddresses();
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    }
     
-    _authError = result['message'] ?? 'Błąd logowania.';
-    _isLoading = false;
-    notifyListeners();
-    return false;
+    return result.fold(
+      (failure) {
+        _authError = failure.message;
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (data) async {
+        if (data['success'] == true) {
+          _user = UserModel.fromJson(data['customer']);
+          await fetchAddresses();
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+        _authError = data['message'] ?? 'Błąd logowania.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      },
+    );
   }
 
   Future<bool> register({
@@ -69,18 +81,27 @@ class UserProvider extends ChangeNotifier {
       lastname: lastname
     );
     
-    if (result['success'] == true) {
-      _user = UserModel.fromJson(result['customer']);
-      await fetchAddresses();
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    }
-    
-    _authError = result['message'] ?? 'Błąd rejestracji.';
-    _isLoading = false;
-    notifyListeners();
-    return false;
+    return result.fold(
+      (failure) {
+        _authError = failure.message;
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (data) async {
+        if (data['success'] == true) {
+          _user = UserModel.fromJson(data['customer']);
+          await fetchAddresses();
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+        _authError = data['message'] ?? 'Błąd rejestracji.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      },
+    );
   }
 
   Future<void> signInWithGoogle() async {
@@ -89,25 +110,27 @@ class UserProvider extends ChangeNotifier {
     
     final googleUser = await _googleService.signIn();
     if (googleUser != null) {
-      // Synchronizacja z PrestaShop po zalogowaniu przez Google
       final result = await _userRepository.loginWithGoogle(
-        'mock_token', // Docelowo token z googleUser.authentication
+        'mock_token',
         googleUser.email,
         googleUser.displayName ?? '',
       );
       
-      if (result != null) {
-        _user = result;
-      } else {
-        // Fallback jeśli API Presty zawiedzie, ale Google przeszło
-        _user = UserModel(
-          id: 0, 
-          email: googleUser.email, 
-          firstname: googleUser.displayName?.split(' ').first ?? 'User', 
-          lastname: googleUser.displayName?.split(' ').last ?? '',
-          photoUrl: googleUser.photoUrl,
-        );
-      }
+      result.fold(
+        (failure) {
+          // Fallback jeśli API Presty zawiedzie, ale Google przeszło
+          _user = UserModel(
+            id: 0, 
+            email: googleUser.email, 
+            firstname: googleUser.displayName?.split(' ').first ?? 'User', 
+            lastname: googleUser.displayName?.split(' ').last ?? '',
+            photoUrl: googleUser.photoUrl,
+          );
+        },
+        (userModel) {
+          _user = userModel;
+        },
+      );
       await fetchAddresses();
     }
     _isLoading = false;
@@ -126,43 +149,71 @@ class UserProvider extends ChangeNotifier {
     if (_user == null) return;
     _isLoadingAddresses = true;
     notifyListeners();
-    try {
-      _addresses = await _addressRepository.getAddresses(_user!.id);
-    } catch (e) {
-      debugPrint('Error fetching addresses: $e');
-    } finally {
-      _isLoadingAddresses = false;
-      notifyListeners();
-    }
+    
+    final result = await _addressRepository.getAddresses(_user!.id);
+    
+    result.fold(
+      (failure) => debugPrint('Error fetching addresses: $failure'),
+      (addresses) {
+        _addresses = addresses;
+      },
+    );
+
+    _isLoadingAddresses = false;
+    notifyListeners();
   }
 
   Future<bool> addAddress(AddressModel address) async {
     if (_user == null) return false;
     _addressError = null;
     final result = await _addressRepository.addAddress(_user!.id, address);
-    if (result['success'] == true) {
-      await fetchAddresses();
-      return true;
-    }
-    _addressError = result['message'] ?? 'Nie udało się zapisać adresu.';
-    return false;
+    
+    return result.fold(
+      (failure) {
+        _addressError = failure.message;
+        return false;
+      },
+      (data) async {
+        if (data['success'] == true) {
+          await fetchAddresses();
+          return true;
+        }
+        _addressError = data['message'] ?? 'Nie udało się zapisać adresu.';
+        return false;
+      },
+    );
   }
 
   Future<bool> updateAddress(AddressModel address) async {
     _addressError = null;
     final result = await _addressRepository.updateAddress(address);
-    if (result['success'] == true) {
-      await fetchAddresses();
-      return true;
-    }
-    _addressError = result['message'] ?? 'Nie udało się zaktualizować adresu.';
-    return false;
+    
+    return result.fold(
+      (failure) {
+        _addressError = failure.message;
+        return false;
+      },
+      (data) async {
+        if (data['success'] == true) {
+          await fetchAddresses();
+          return true;
+        }
+        _addressError = data['message'] ?? 'Nie udało się zaktualizować adresu.';
+        return false;
+      },
+    );
   }
 
   Future<bool> deleteAddress(int addressId) async {
-    final success = await _addressRepository.deleteAddress(addressId);
-    if (success) await fetchAddresses();
-    return success;
+    final result = await _addressRepository.deleteAddress(addressId);
+    
+    return result.fold(
+      (failure) => false,
+      (success) async {
+        if (success) await fetchAddresses();
+        return success;
+      },
+    );
   }
 
   Future<bool> updateProfile({String? firstname, String? lastname, String? email}) async {
@@ -173,25 +224,32 @@ class UserProvider extends ChangeNotifier {
     if (lastname != null) data['lastname'] = lastname;
     if (email != null) data['email'] = email;
 
-    final success = await _userRepository.updateProfile(_user!.id, data);
-    if (success) {
-      _user = UserModel(
-        id: _user!.id,
-        email: email ?? _user!.email,
-        firstname: firstname ?? _user!.firstname,
-        lastname: lastname ?? _user!.lastname,
-        photoUrl: _user!.photoUrl,
-        birthday: _user!.birthday,
-        newsletter: _user!.newsletter,
-      );
-      notifyListeners();
-    }
-    return success;
+    final result = await _userRepository.updateProfile(_user!.id, data);
+    
+    return result.fold(
+      (failure) => false,
+      (success) {
+        if (success) {
+          _user = UserModel(
+            id: _user!.id,
+            email: email ?? _user!.email,
+            firstname: firstname ?? _user!.firstname,
+            lastname: lastname ?? _user!.lastname,
+            photoUrl: _user!.photoUrl,
+            birthday: _user!.birthday,
+            newsletter: _user!.newsletter,
+          );
+          notifyListeners();
+        }
+        return success;
+      },
+    );
   }
 
   Future<bool> changePassword(String oldPass, String newPass) async {
     if (_user == null) return false;
-    return await _userRepository.changePassword(_user!.id, oldPass, newPass);
+    final result = await _userRepository.changePassword(_user!.id, oldPass, newPass);
+    return result.fold((failure) => false, (success) => success);
   }
 
   Future<void> logisticsAutomation({required String orderId, required double amount}) async {
