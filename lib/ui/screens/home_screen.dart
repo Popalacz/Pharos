@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/data/models/product_model.dart';
-import 'package:pharos/data/models/home_config_model.dart';
+import 'package:pharos/ui/sdui/sdui_mapper.dart';
+import 'package:pharos/ui/sdui/sdui_sections.dart';
+import 'package:pharos/ui/widgets/banner_shimmer.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
@@ -35,11 +37,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Map<String, dynamic>> _homeDataFuture;
   int? _selectedCategoryId;
+  final SduiMapper _sduiMapper = const SduiMapper();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _checkPromoPopup();
   }
 
   void _loadData() {
@@ -80,6 +84,60 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _checkPromoPopup() {
+    final settings = context.read<SettingsProvider>().settings;
+    if (settings.promoPopupImageUrl != null && settings.promoPopupImageUrl!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showPromoDialog(settings.promoPopupImageUrl!);
+      });
+    }
+  }
+
+  void _showPromoDialog(String imageUrl) {
+    final settings = context.read<SettingsProvider>().settings;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+            if (settings.appOnlyDiscountCode != null)
+              Container(
+                margin: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    const Text('TWÓJ KOD RABATOWY:', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(settings.appOnlyDiscountCode!, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,7 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _homeDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ProductShimmer();
+            return CustomScrollView(
+              slivers: [
+                _buildAppBar(context),
+                const SliverToBoxAdapter(child: BannerShimmer()),
+                const SliverToBoxAdapter(child: ProductShimmer()),
+              ],
+            );
           }
 
           if (snapshot.hasError) {
@@ -104,9 +168,12 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           final List sectionsData = data['sections'] ?? [];
-
+          
           return RefreshIndicator(
-            onRefresh: () async => setState(() => _loadData()),
+            onRefresh: () async {
+              await context.read<LocalizationProvider>().reload();
+              setState(() => _loadData());
+            },
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
@@ -121,7 +188,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 
                 if (sectionsData.isNotEmpty)
                   for (final sectionMap in sectionsData)
-                    _buildUnifiedSection(sectionMap as Map<String, dynamic>),
+                    _sduiMapper.mapSectionAsSliver(
+                      context,
+                      sectionMap as Map<String, dynamic>,
+                      selectedCategoryId: _selectedCategoryId,
+                      onCategorySelected: _onCategorySelected,
+                    ),
 
                 _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
@@ -131,63 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
-  }
-
-  List<HomeSection> _getLegacySections(List<ProductModel> products, List<CategoryModel> categories) {
-    // Prosty mapper dla starego formatu danych
-    return [
-      HomeSection(type: HomeSectionType.BANNER_SLIDER, data: []),
-      HomeSection(type: HomeSectionType.CATEGORY_CHIPS, data: null),
-      HomeSection(type: HomeSectionType.SECTION_HEADER, data: {'title': 'Produkty'}),
-      HomeSection(type: HomeSectionType.PRODUCT_GRID, data: null),
-    ];
-  }
-
-  Widget _buildUnifiedSection(Map<String, dynamic> sectionMap) {
-    final typeStr = sectionMap['type'] as String;
-    final HomeSectionType type = HomeSectionType.values.firstWhere(
-      (e) => e.name == typeStr,
-      orElse: () => HomeSectionType.SECTION_HEADER,
-    );
-
-    final items = sectionMap['items'] ?? [];
-    if (items is List && items.isEmpty && type != HomeSectionType.SECTION_HEADER) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-
-    switch (type) {
-      case HomeSectionType.BANNER_SLIDER:
-        return SliverToBoxAdapter(child: _BannerSlider(data: items));
-      case HomeSectionType.CATEGORY_CHIPS:
-        final categories = (items as List).map((i) => CategoryModel(id: i['id'], name: i['name'])).toList();
-        return SliverToBoxAdapter(
-          child: _CategoryList(
-            categories: categories,
-            selectedId: _selectedCategoryId,
-            onSelected: _onCategorySelected,
-          ),
-        );
-      case HomeSectionType.SECTION_HEADER:
-        return SliverToBoxAdapter(child: _SectionHeader(title: sectionMap['title'] ?? 'Sekcja'));
-      case HomeSectionType.PRODUCT_GRID:
-        final products = (items as List).map((i) => ProductModel.fromJson(i)).toList();
-        
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => PharosProductCard(product: products[index], heroTagPrefix: 'home'),
-              childCount: products.length,
-            ),
-          ),
-        );
-    }
   }
 
   Widget _buildAppBar(BuildContext context) {
@@ -286,61 +301,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSliverSection(HomeSection section, List<ProductModel> products, List<CategoryModel> categories) {
-    if (section.data == null && section.type != HomeSectionType.PRODUCT_GRID && section.type != HomeSectionType.CATEGORY_CHIPS) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-
-    switch (section.type) {
-      case HomeSectionType.BANNER_SLIDER:
-        return SliverToBoxAdapter(
-          child: _BannerSlider(data: section.data ?? []),
-        );
-      case HomeSectionType.CATEGORY_CHIPS:
-        return SliverToBoxAdapter(
-          child: _CategoryList(
-            categories: categories, 
-            selectedId: _selectedCategoryId,
-            onSelected: _onCategorySelected,
-          ),
-        );
-      case HomeSectionType.SECTION_HEADER:
-        final String title = (section.data is Map) ? (section.data['title'] ?? '') : 'Sekcja';
-        return SliverToBoxAdapter(
-          child: _SectionHeader(
-            title: title,
-            onSeeAll: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CatalogScreen(
-                    title: title,
-                    categoryId: _selectedCategoryId,
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      case HomeSectionType.PRODUCT_GRID:
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => PharosProductCard(product: products[index], heroTagPrefix: 'home'),
-              childCount: products.length,
-            ),
-          ),
-        );
-    }
-  }
-
   Widget _buildCartRecoveryBanner(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final settings = context.watch<SettingsProvider>().settings;
@@ -399,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionHeader(title: 'Ostatnio oglądane'),
+              const SectionHeaderWidget(data: {'title': 'Ostatnio oglądane'}),
               SizedBox(
                 height: 250,
                 child: ListView.builder(
@@ -453,116 +413,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-class _BannerSlider extends StatelessWidget {
-  final dynamic data;
-  const _BannerSlider({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    if ((data as List).isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      height: 200,
-      child: PageView.builder(
-        itemCount: (data as List).length,
-        itemBuilder: (context, index) {
-          final item = data[index];
-          return Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: DecorationImage(image: NetworkImage(item['image']), fit: BoxFit.cover),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                ),
-              ),
-              padding: const EdgeInsets.all(20),
-              alignment: Alignment.bottomLeft,
-              child: Text(item['title'], style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _CategoryList extends StatelessWidget {
-  final List<CategoryModel> categories;
-  final int? selectedId;
-  final Function(int?) onSelected;
-
-  const _CategoryList({
-    required this.categories, 
-    this.selectedId, 
-    required this.onSelected
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        itemCount: categories.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildChip('Wszystko', null);
-          }
-          final category = categories[index - 1];
-          return _buildChip(category.name, category.id);
-        },
-      ),
-    );
-  }
-
-  Widget _buildChip(String label, int? id) {
-    final isSelected = selectedId == id;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) => onSelected(id),
-        selectedColor: Colors.orange,
-        backgroundColor: Colors.white.withOpacity(0.05),
-        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
-        showCheckmark: false,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final VoidCallback? onSeeAll;
-  const _SectionHeader({required this.title, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-          InkWell(
-            onTap: onSeeAll,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text('Zobacz wszystko', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-

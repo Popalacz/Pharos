@@ -8,12 +8,15 @@ import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/data/models/review_model.dart';
 import 'package:pharos/data/repositories/review_repository.dart';
+import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/ui/widgets/pharos_product_card.dart';
 
 import 'package:pharos/ui/screens/review_form_screen.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
 import 'package:pharos/core/error/failures.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
@@ -25,12 +28,14 @@ class ProductDetailsScreen extends StatefulWidget {
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   late Future<Either<Failure, List<ReviewModel>>> _reviewsFuture;
+  late Future<Either<Failure, List<ProductModel>>> _relatedFuture;
   int _currentImageIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _reviewsFuture = ReviewRepository(useMockData: false).getProductReviews(widget.product.id);
+    _relatedFuture = context.read<IProductRepository>().getRelatedProducts(widget.product.id);
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<RecentlyViewedProvider>().addProduct(widget.product);
@@ -65,6 +70,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ),
                       const SizedBox(height: 32),
                       _buildTechnicalDetails(),
+                      const SizedBox(height: 48),
+                      _buildSectionTitle('PODOBNE PRODUKTY'),
+                      const SizedBox(height: 16),
+                      _buildRelatedProducts(),
                       const Divider(height: 64, color: Colors.white10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,6 +118,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildImageGallery() {
+    final sizedImages = widget.product.getSizedImages('large_default');
+    
     return SliverAppBar(
       expandedHeight: 450,
       automaticallyImplyLeading: false,
@@ -116,21 +127,26 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         background: Stack(
           children: [
             PageView.builder(
-              itemCount: widget.product.images.length,
+              itemCount: sizedImages.length,
               onPageChanged: (index) => setState(() => _currentImageIndex = index),
               itemBuilder: (context, index) => CachedNetworkImage(
-                imageUrl: widget.product.images[index],
+                imageUrl: sizedImages[index],
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.white.withOpacity(0.05),
+                  highlightColor: Colors.white.withOpacity(0.1),
+                  child: Container(color: Colors.black),
+                ),
+                errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image, color: Colors.white10, size: 40)),
               ),
             ),
-            if (widget.product.images.length > 1)
+            if (sizedImages.length > 1)
               Positioned(
                 bottom: 20,
                 left: 0, right: 0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: widget.product.images.asMap().entries.map((entry) {
+                  children: sizedImages.asMap().entries.map((entry) {
                     return Container(
                       width: 8, height: 8,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -215,6 +231,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2, color: Colors.white30));
+  }
+
+  Widget _buildRelatedProducts() {
+    return FutureBuilder<Either<Failure, List<ProductModel>>>(
+      future: _relatedFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox(height: 100);
+        
+        return snapshot.data!.fold(
+          (_) => const SizedBox.shrink(),
+          (products) {
+            if (products.isEmpty) return const SizedBox.shrink();
+            return SizedBox(
+              height: 260,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: products.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    width: 160,
+                    margin: const EdgeInsets.only(right: 16),
+                    child: PharosProductCard(product: products[index], heroTagPrefix: 'related'),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildReviewsList() {

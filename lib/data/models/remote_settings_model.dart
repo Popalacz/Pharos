@@ -5,11 +5,18 @@ class RemoteSettings {
   final bool maintenanceMode;
   final String forceUpdateVersion;
   final String? appOnlyDiscountCode;
-  final String? whatsappNumber;
+  final String? instagramUrl;
+  final String? facebookUrl;
+  final String? tiktokUrl;
+  final String? promoPopupImageUrl;
   final Map<String, String>? eventTheme;
   final double? freeShippingThreshold;
   final bool vouchersEnabled;
   final int? giftCategoryId;
+
+  final String? storeEmail;
+  final String? storePhone;
+  final String? storeAddress;
 
   final bool recentlyViewedEnabled;
   final bool cartRecoveryEnabled;
@@ -29,11 +36,17 @@ class RemoteSettings {
     required this.maintenanceMode,
     required this.forceUpdateVersion,
     this.appOnlyDiscountCode,
-    this.whatsappNumber,
+    this.instagramUrl,
+    this.facebookUrl,
+    this.tiktokUrl,
+    this.promoPopupImageUrl,
     this.eventTheme,
     this.freeShippingThreshold,
     this.vouchersEnabled = false,
     this.giftCategoryId,
+    this.storeEmail,
+    this.storePhone,
+    this.storeAddress,
     this.recentlyViewedEnabled = true,
     this.cartRecoveryEnabled = true,
     this.lowStockBadgeEnabled = true,
@@ -53,11 +66,17 @@ class RemoteSettings {
     bool? maintenanceMode,
     String? forceUpdateVersion,
     String? appOnlyDiscountCode,
-    String? whatsappNumber,
+    String? instagramUrl,
+    String? facebookUrl,
+    String? tiktokUrl,
+    String? promoPopupImageUrl,
     Map<String, String>? eventTheme,
     double? freeShippingThreshold,
     bool? vouchersEnabled,
     int? giftCategoryId,
+    String? storeEmail,
+    String? storePhone,
+    String? storeAddress,
     bool? recentlyViewedEnabled,
     bool? cartRecoveryEnabled,
     bool? lowStockBadgeEnabled,
@@ -74,11 +93,17 @@ class RemoteSettings {
       maintenanceMode: maintenanceMode ?? this.maintenanceMode,
       forceUpdateVersion: forceUpdateVersion ?? this.forceUpdateVersion,
       appOnlyDiscountCode: appOnlyDiscountCode ?? this.appOnlyDiscountCode,
-      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
+      instagramUrl: instagramUrl ?? this.instagramUrl,
+      facebookUrl: facebookUrl ?? this.facebookUrl,
+      tiktokUrl: tiktokUrl ?? this.tiktokUrl,
+      promoPopupImageUrl: promoPopupImageUrl ?? this.promoPopupImageUrl,
       eventTheme: eventTheme ?? this.eventTheme,
       freeShippingThreshold: freeShippingThreshold ?? this.freeShippingThreshold,
       vouchersEnabled: vouchersEnabled ?? this.vouchersEnabled,
       giftCategoryId: giftCategoryId ?? this.giftCategoryId,
+      storeEmail: storeEmail ?? this.storeEmail,
+      storePhone: storePhone ?? this.storePhone,
+      storeAddress: storeAddress ?? this.storeAddress,
       recentlyViewedEnabled: recentlyViewedEnabled ?? this.recentlyViewedEnabled,
       cartRecoveryEnabled: cartRecoveryEnabled ?? this.cartRecoveryEnabled,
       lowStockBadgeEnabled: lowStockBadgeEnabled ?? this.lowStockBadgeEnabled,
@@ -105,10 +130,18 @@ class RemoteSettings {
       maintenanceMode: maintenance['maintenance_mode']?['enabled'] ?? false,
       forceUpdateVersion: maintenance['force_update']?['min_version'] ?? '1.0.0',
       appOnlyDiscountCode: marketing['app_only_discount']?['code'],
-      whatsappNumber: appConfig['social_media']?['instagram']?['url'],
+      instagramUrl: appConfig['social_media']?['instagram']?['url'],
+      facebookUrl: appConfig['social_media']?['facebook']?['url'],
+      tiktokUrl: appConfig['social_media']?['tiktok']?['url'],
+      promoPopupImageUrl: (marketing['promo_popup'] != null && marketing['promo_popup']['enabled'] == true) 
+          ? marketing['promo_popup']['image_url'] 
+          : null,
       freeShippingThreshold: (json['free_shipping_threshold'] as num?)?.toDouble(),
       vouchersEnabled: json['vouchers_enabled'] == true,
       giftCategoryId: int.tryParse(json['gift_category_id']?.toString() ?? ''),
+      storeEmail: storeInfo['email'],
+      storePhone: storeInfo['phone'],
+      storeAddress: storeInfo['address'],
       recentlyViewedEnabled: growth['recently_viewed']?['enabled'] ?? true,
       cartRecoveryEnabled: growth['cart_recovery_banner']?['enabled'] ?? true,
       lowStockBadgeEnabled: growth['low_stock_badge']?['enabled'] ?? true,

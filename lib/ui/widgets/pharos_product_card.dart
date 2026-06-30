@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/providers/ui_feedback_provider.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
 
-class PharosProductCard extends StatelessWidget {
+class PharosProductCard extends StatefulWidget {
   final ProductModel product;
   final String heroTagPrefix;
 
@@ -20,8 +22,14 @@ class PharosProductCard extends StatelessWidget {
   });
 
   @override
+  State<PharosProductCard> createState() => _PharosProductCardState();
+}
+
+class _PharosProductCardState extends State<PharosProductCard> {
+  final GlobalKey _imageKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
-    // Senior Performance: RepaintBoundary izoluje renderowanie karty
     return RepaintBoundary(
       child: InkWell(
         onTap: () {
@@ -29,7 +37,7 @@ class PharosProductCard extends StatelessWidget {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => ProductDetailsScreen(product: product),
+              pageBuilder: (context, animation, secondaryAnimation) => ProductDetailsScreen(product: widget.product),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return FadeTransition(opacity: animation, child: child);
               },
@@ -45,29 +53,38 @@ class PharosProductCard extends StatelessWidget {
                 child: Stack(
                   children: [
                     Hero(
-                      tag: '${heroTagPrefix}_${product.id}',
-                      child: product.imageUrl.isEmpty
-                          ? Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              color: Colors.white.withOpacity(0.05),
-                              child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
-                            )
-                          : CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        // RAM Optimization: Nie dekoduj obrazu większego niż potrzebujemy
-                        memCacheWidth: 500, 
-                        placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.03)),
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
+                      tag: '${widget.heroTagPrefix}_${widget.product.id}',
+                      child: Container(
+                        key: _imageKey,
+                        child: widget.product.imageUrl.isEmpty
+                            ? Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                color: Colors.white.withOpacity(0.05),
+                                child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
+                              )
+                            : CachedNetworkImage(
+                          imageUrl: widget.product.getSizedImageUrl('home_default'),
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 400, 
+                          placeholder: (context, url) => Container(
+                            color: Colors.white.withOpacity(0.03),
+                            child: Shimmer.fromColors(
+                              baseColor: Colors.white.withOpacity(0.05),
+                              highlightColor: Colors.white.withOpacity(0.1),
+                              child: Container(color: Colors.white),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
+                        ),
                       ),
                     ),
                     _buildWishlistButton(),
-                    if (!product.isAvailable) _buildStatusBadge('BRAK', Colors.red)
-                    else if (product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', Colors.blue)
-                    else if (product.isLowStock) _buildStatusBadge('OSTATNIE', Colors.orange),
+                    if (!widget.product.isAvailable) _buildStatusBadge('BRAK', Colors.red)
+                    else if (widget.product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', Colors.blue)
+                    else if (widget.product.isLowStock) _buildStatusBadge('OSTATNIE', Colors.orange),
                     _buildQuickAddButton(context),
                   ],
                 ),
@@ -82,19 +99,22 @@ class PharosProductCard extends StatelessWidget {
   }
 
   Widget _buildQuickAddButton(BuildContext context) {
-    if (!product.canBeAddedToCart) return const SizedBox.shrink();
+    if (!widget.product.canBeAddedToCart) return const SizedBox.shrink();
 
     return Positioned(
       bottom: 10, right: 10,
       child: GestureDetector(
         onTap: () {
           HapticFeedback.heavyImpact();
-          context.read<CartProvider>().addItem(product);
+          context.read<CartProvider>().addItem(widget.product);
+          
+          // Trigger Fly Animation (Engineering Thesis Point 3)
+          context.read<UiFeedbackProvider>().triggerFlyToCart(_imageKey);
           
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Dodano: ${product.name}'),
+              content: Text('Dodano: ${widget.product.name}'),
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
               backgroundColor: Colors.orange,
@@ -124,12 +144,12 @@ class PharosProductCard extends StatelessWidget {
       top: 10, right: 10,
       child: Consumer<WishlistProvider>(
         builder: (context, wishlist, child) {
-          final isFav = wishlist.isFavorite(product.id);
+          final isFav = wishlist.isFavorite(widget.product.id);
           return GestureDetector(
             onTap: () {
               HapticFeedback.mediumImpact();
-              final bool willBeFavorite = !wishlist.isFavorite(product.id);
-              wishlist.toggleWishlist(product);
+              final bool willBeFavorite = !wishlist.isFavorite(widget.product.id);
+              wishlist.toggleWishlist(widget.product);
               
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -180,7 +200,7 @@ class PharosProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            product.name,
+            widget.product.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.white),
@@ -188,7 +208,7 @@ class PharosProductCard extends StatelessWidget {
           const SizedBox(height: 4),
           Consumer<LocalizationProvider>(
             builder: (context, loc, child) => Text(
-              loc.formatPrice(product.price),
+              loc.formatPrice(widget.product.price),
               style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange),
             ),
           ),

@@ -1,15 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../models/product_model.dart';
-import '../../navigation/catalog_navigation.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/core/theme/app_colors.dart';
+import 'package:pharos/data/models/product_model.dart';
+import 'package:pharos/navigation/catalog_navigation.dart';
 
 class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product, this.onTap});
 
-  final Product product;
+  final ProductModel product;
   final VoidCallback? onTap;
 
   @override
@@ -49,7 +51,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${product.price} PLN',
+                    context.read<LocalizationProvider>().formatPrice(product.price),
                     style: const TextStyle(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w900,
@@ -66,7 +68,7 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (!product.hasImageUrl) {
+    if (product.imageUrl.isEmpty) {
       return ColoredBox(
         color: AppColors.background,
         child: Center(

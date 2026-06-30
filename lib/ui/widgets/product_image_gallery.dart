@@ -2,11 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../core/constants/pharos_layout.dart';
-import '../../core/theme/app_colors.dart';
-import '../../models/product_model.dart';
+import 'package:pharos/core/constants/pharos_layout.dart';
+import 'package:pharos/core/theme/app_colors.dart';
+import 'package:pharos/data/models/product_model.dart';
 
-/// Swipeable product images with optional thumbnail strip (PrestaShop `associations.images`).
 class ProductImageGallery extends StatefulWidget {
   const ProductImageGallery({
     super.key,
@@ -14,7 +13,7 @@ class ProductImageGallery extends StatefulWidget {
     this.heroTag,
   });
 
-  final Product product;
+  final ProductModel product;
   final Object? heroTag;
 
   @override
@@ -25,9 +24,10 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
   late final PageController _pageController;
   int _currentIndex = 0;
 
-  Product get _product => widget.product;
+  ProductModel get _product => widget.product;
 
-  List<String> get _imageIds => _product.resolvedGalleryImageIds;
+  List<String> get _imageUrls =>
+      _product.images.isNotEmpty ? _product.images : (_product.imageUrl.isNotEmpty ? [_product.imageUrl] : []);
 
   @override
   void initState() {
@@ -56,7 +56,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
 
   @override
   Widget build(BuildContext context) {
-    if (_imageIds.isEmpty) {
+    if (_imageUrls.isEmpty) {
       return ColoredBox(
         color: AppColors.surface,
         child: Icon(
@@ -67,19 +67,19 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
       );
     }
 
-    final bool showThumbnails = _product.hasMultipleGalleryImages;
+    final bool showThumbnails = _imageUrls.length > 1;
 
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
         PageView.builder(
           controller: _pageController,
-          itemCount: _imageIds.length,
+          itemCount: _imageUrls.length,
           onPageChanged: (int index) {
             setState(() => _currentIndex = index);
           },
           itemBuilder: (BuildContext context, int index) {
-            final String imageUrl = _product.imageUrlForImageId(_imageIds[index]);
+            final String imageUrl = _imageUrls[index];
             final Widget image = CachedNetworkImage(
               imageUrl: imageUrl,
               width: double.infinity,
@@ -127,17 +127,17 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       shrinkWrap: true,
-                      itemCount: _imageIds.length,
+                      itemCount: _imageUrls.length,
                       separatorBuilder: (BuildContext context, int index) {
                         return const SizedBox(width: PharosLayout.spaceXs);
                       },
                       itemBuilder: (BuildContext context, int index) {
                         final bool isSelected = index == _currentIndex;
-                        final String thumbUrl = _product.imageUrlForImageId(_imageIds[index]);
+                        final String thumbUrl = _imageUrls[index];
 
                         return Semantics(
                           button: true,
-                          label: 'Zdjęcie ${index + 1} z ${_imageIds.length}',
+                          label: 'Zdjęcie ${index + 1} z ${_imageUrls.length}',
                           selected: isSelected,
                           child: GestureDetector(
                             onTap: () => _goToPage(index),
@@ -158,16 +158,6 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                               child: CachedNetworkImage(
                                 imageUrl: thumbUrl,
                                 fit: BoxFit.cover,
-                                placeholder: (BuildContext context, String url) => ColoredBox(
-                                  color: AppColors.surface,
-                                  child: Icon(
-                                    Icons.image_rounded,
-                                    size: 22,
-                                    color: AppColors.text.withValues(alpha: 0.25),
-                                  ),
-                                ),
-                                errorWidget: (BuildContext context, String url, Object error) =>
-                                    Icon(Icons.broken_image_outlined, color: AppColors.accent),
                               ),
                             ),
                           ),

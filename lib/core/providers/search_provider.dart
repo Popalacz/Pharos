@@ -5,23 +5,67 @@ import 'package:pharos/data/repositories/product_repository.dart';
 
 import 'package:pharos/data/models/filter_model.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class SearchProvider extends ChangeNotifier {
   final IProductRepository _repository;
   
   String _query = '';
   List<ProductModel> _searchResults = [];
+  List<ProductModel> _suggestions = [];
+  List<String> _recentSearches = [];
   List<FilterGroup> _availableFilters = [];
   bool _isSearching = false;
+  bool _isSuggesting = false;
   Timer? _debounce;
 
   SearchProvider(this._repository) {
     _loadAvailableFilters();
+    _loadRecentSearches();
   }
 
   String get query => _query;
   List<ProductModel> get searchResults => _searchResults;
+  List<ProductModel> get suggestions => _suggestions;
+  List<String> get recentSearches => _recentSearches;
   List<FilterGroup> get availableFilters => _availableFilters;
   bool get isSearching => _isSearching;
+  bool get isSuggesting => _isSuggesting;
+
+  Future<void> _loadRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    _recentSearches = prefs.getStringList('recent_searches') ?? [];
+    notifyListeners();
+  }
+
+  Future<void> _saveRecentSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    
+    _recentSearches.remove(query); // Remove if already exists to move to top
+    _recentSearches.insert(0, query);
+    
+    if (_recentSearches.length > 10) {
+      _recentSearches = _recentSearches.sublist(0, 10);
+    }
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('recent_searches', _recentSearches);
+    notifyListeners();
+  }
+
+  Future<void> removeRecentSearch(String query) async {
+    _recentSearches.remove(query);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('recent_searches', _recentSearches);
+    notifyListeners();
+  }
+
+  Future<void> clearRecentSearches() async {
+    _recentSearches.clear();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('recent_searches');
+    notifyListeners();
+  }
 
   void _loadAvailableFilters() async {
     // Symulacja pobrania dostępnych filtrów z PrestaShop Faceted Search
@@ -73,15 +117,41 @@ class SearchProvider extends ChangeNotifier {
     
     if (newQuery.isEmpty) {
       _searchResults = [];
+      _suggestions = [];
       _isSearching = false;
+      _isSuggesting = false;
       notifyListeners();
       return;
     }
 
-    _isSearching = true;
+    if (newQuery.length < 3) {
+      _suggestions = [];
+      _isSuggesting = false;
+      notifyListeners();
+      return;
+    }
+
+    _isSuggesting = true;
     notifyListeners();
 
-    _debounce = Timer(const Duration(milliseconds: 500), () => _performSearch(newQuery));
+    // Fast debounce for autocomplete suggestions
+    _debounce = Timer(const Duration(milliseconds: 300), () => _loadSuggestions(newQuery));
+  }
+
+  Future<void> _loadSuggestions(String query) async {
+    final result = await _repository.searchProducts(query);
+    
+    result.fold(
+      (failure) {
+        _suggestions = [];
+      },
+      (products) {
+        _suggestions = products.take(5).toList(); // Show top 5 suggestions
+      },
+    );
+
+    _isSuggesting = false;
+    notifyListeners();
   }
 
   Map<String, List<String>> getSelectedFilters() {
@@ -98,6 +168,19 @@ class SearchProvider extends ChangeNotifier {
     return selected;
   }
 
+  void performFullSearch() {
+    if (_query.isEmpty) return;
+    
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    
+    _isSearching = true;
+    _suggestions = [];
+    _saveRecentSearch(_query);
+    notifyListeners();
+    
+    _performSearch(_query);
+  }
+
   Future<void> _performSearch(String query) async {
     final filters = getSelectedFilters();
     final result = await _repository.searchProducts(query, filters: filters);
@@ -105,7 +188,6 @@ class SearchProvider extends ChangeNotifier {
     result.fold(
       (failure) {
         _searchResults = [];
-        // Tutaj można dodać obsługę błędu w UI
       },
       (products) {
         _searchResults = products;
@@ -113,13 +195,16 @@ class SearchProvider extends ChangeNotifier {
     );
 
     _isSearching = false;
+    _isSuggesting = false;
     notifyListeners();
   }
 
   void clearSearch() {
     _query = '';
     _searchResults = [];
+    _suggestions = [];
     _isSearching = false;
+    _isSuggesting = false;
     notifyListeners();
   }
 

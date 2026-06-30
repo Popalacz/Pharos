@@ -47,27 +47,28 @@ class LocalizationProvider extends ChangeNotifier {
             .map((e) => CurrencyModel.fromJson(e))
             .toList();
 
+        final int serverLangId = int.tryParse(locData['current_language_id']?.toString() ?? '') ?? 0;
+        final int serverCurrId = int.tryParse(locData['current_currency_id']?.toString() ?? '') ?? 0;
+
         if (_languages.isNotEmpty) {
           _currentLanguage = _languages.firstWhere(
-            (l) => l.isoCode == (locData['language_code'] ?? locData['locale'] ?? ''),
+            (l) => l.id == serverLangId,
             orElse: () => _languages.first,
           );
-        } else {
-          _currentLanguage = null;
+          if (_currentLanguage != null) {
+            ApiService.defaultLanguageId = _currentLanguage!.id;
+          }
         }
 
         if (_currencies.isNotEmpty) {
-          _currentCurrency = _currencies.first;
-        } else {
-          _currentCurrency = null;
+          _currentCurrency = _currencies.firstWhere(
+            (c) => c.id == serverCurrId,
+            orElse: () => _currencies.first,
+          );
         }
       }
     } catch (e) {
       debugPrint('Localization Load Error: $e');
-      _languages = [];
-      _currencies = [];
-      _currentLanguage = null;
-      _currentCurrency = null;
     }
 
     _isLoading = false;
@@ -76,6 +77,7 @@ class LocalizationProvider extends ChangeNotifier {
 
   void setLanguage(LanguageModel lang) {
     _currentLanguage = lang;
+    ApiService.defaultLanguageId = lang.id;
     notifyListeners();
   }
 
@@ -84,9 +86,49 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  String translate(String key) {
+    final iso = _currentLanguage?.isoCode?.toLowerCase() ?? 'pl';
+    return _translations[iso]?[key] ?? _translations['pl']?[key] ?? key;
+  }
+
   String formatPrice(double price) {
     if (_currentCurrency == null) return price.toStringAsFixed(2);
     final double converted = price * _currentCurrency!.conversionRate;
     return '${converted.toStringAsFixed(2)} ${_currentCurrency!.symbol}';
   }
+
+  static const Map<String, Map<String, String>> _translations = {
+    'pl': {
+      'cart': 'Koszyk',
+      'search': 'Szukaj',
+      'home': 'Główna',
+      'account': 'Konto',
+      'checkout': 'Kasa',
+      'delivery': 'Dostawa',
+      'payment': 'Płatność',
+      'total': 'Łącznie',
+      'add_to_cart': 'Dodaj do koszyka',
+      'out_of_stock': 'Brak w magazynie',
+      'order_success': 'Sukces!',
+      'tracking': 'Śledzenie',
+      'wishlist': 'Ulubione',
+      'contact': 'Kontakt',
+    },
+    'en': {
+      'cart': 'Cart',
+      'search': 'Search',
+      'home': 'Home',
+      'account': 'Account',
+      'checkout': 'Checkout',
+      'delivery': 'Delivery',
+      'payment': 'Payment',
+      'total': 'Total',
+      'add_to_cart': 'Add to cart',
+      'out_of_stock': 'Out of stock',
+      'order_success': 'Success!',
+      'tracking': 'Tracking',
+      'wishlist': 'Wishlist',
+      'contact': 'Contact',
+    }
+  };
 }

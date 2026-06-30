@@ -56,7 +56,6 @@ class LocalizationSettingsScreen extends StatelessWidget {
   Widget _buildLanguageList(BuildContext context, LocalizationProvider provider) {
     return Material(
       color: Theme.of(context).cardTheme.color,
-      borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -78,7 +77,6 @@ class LocalizationSettingsScreen extends StatelessWidget {
   Widget _buildCurrencyList(BuildContext context, LocalizationProvider provider) {
     return Material(
       color: Theme.of(context).cardTheme.color,
-      borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),

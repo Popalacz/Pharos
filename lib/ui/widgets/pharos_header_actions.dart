@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../providers/cart_stub_provider.dart';
-import '../feedback/placeholder_feedback.dart';
-import '../sheets/cart_preview_sheet.dart';
+import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/theme/app_colors.dart';
+import 'package:pharos/ui/sheets/cart_preview_sheet.dart';
 
-/// Right-side [AppBar] actions: cart + account (e‑commerce convention).
 class PharosHeaderActions extends StatelessWidget {
   const PharosHeaderActions({
     super.key,
@@ -24,8 +22,8 @@ class PharosHeaderActions extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Consumer<CartStubProvider>(
-            builder: (BuildContext context, CartStubProvider cart, Widget? _) {
+          Consumer<CartProvider>(
+            builder: (BuildContext context, CartProvider cart, Widget? _) {
               final VoidCallback openCart = onCartPressed ?? () => showCartPreviewSheet(context);
 
               final Widget cartButton = IconButton(
@@ -34,22 +32,20 @@ class PharosHeaderActions extends StatelessWidget {
                 icon: const Icon(Icons.shopping_cart_outlined),
               );
 
-              if (cart.lineCount <= 0) {
+              if (cart.itemCount <= 0) {
                 return cartButton;
               }
 
               return Badge(
-                label: Text('${cart.lineCount}'),
-                textColor: AppColors.text,
-                backgroundColor: AppColors.accent,
+                label: Text('${cart.itemCount}'),
                 child: cartButton,
               );
             },
           ),
           IconButton(
             tooltip: 'Konto',
-            onPressed: onAccountPressed ?? () => showComingSoonSnackBar(context),
-            icon: const Icon(Icons.person_outline_rounded),
+            onPressed: onAccountPressed,
+            icon: const Icon(Icons.person_outline),
           ),
         ],
       ),

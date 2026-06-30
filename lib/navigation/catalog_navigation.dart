@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/product_model.dart';
-import '../ui/screens/product_detail_screen.dart';
+import 'package:pharos/data/models/product_model.dart';
+import 'package:pharos/ui/screens/product_details_screen.dart';
 
-/// Central place for catalog-related routes (keeps screens free of route boilerplate).
 abstract final class CatalogNavigation {
-  static Future<void> openProductDetail(BuildContext context, Product product) {
+  static Future<void> openProductDetail(BuildContext context, ProductModel product) {
     return Navigator.of(context).push<void>(
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 260),
@@ -15,7 +14,7 @@ abstract final class CatalogNavigation {
           Animation<double> animation,
           Animation<double> secondaryAnimation,
         ) {
-          return ProductDetailScreen(product: product);
+          return ProductDetailsScreen(product: product);
         },
         transitionsBuilder: (
           BuildContext context,

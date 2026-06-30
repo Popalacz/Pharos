@@ -1,44 +1,24 @@
-class CategoryModel {
-  final int id;
-  final String name;
-  final String? description;
-  final int? idParent;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pharos/core/api/api_config.dart';
+import 'converters/defensive_json_converters.dart';
 
-  CategoryModel({
-    required this.id,
-    required this.name,
-    this.description,
-    this.idParent,
-  });
+part 'category_model.freezed.dart';
+part 'category_model.g.dart';
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    String parseLocalized(dynamic field) {
-      if (field == null) return '';
-      String rawValue = '';
-      
-      if (field is String) {
-        rawValue = field;
-      } else if (field is List && field.isNotEmpty) {
-        rawValue = (field[0] is Map) ? (field[0]['value'] ?? '').toString() : field[0].toString();
-      } else if (field is Map) {
-        if (field['language'] != null) {
-          var lang = field['language'];
-          if (lang is List && lang.isNotEmpty) rawValue = (lang[0]['value'] ?? '').toString();
-          else if (lang is Map) rawValue = (lang['value'] ?? '').toString();
-        } else {
-          rawValue = (field['value'] ?? field['name'] ?? '').toString();
-        }
-      } else {
-        rawValue = field.toString();
-      }
-      return rawValue.replaceAll(RegExp(r'<[^>]*>|&nbsp;|&amp;|&quot;'), ' ').trim();
-    }
+@freezed
+class CategoryModel with _$CategoryModel {
+  const factory CategoryModel({
+    @DefensiveIntConverter() @JsonKey(name: 'id') required int id,
+    @DefensiveStringConverter() @JsonKey(name: 'name') required String name,
+    @DefensiveStringConverter() @JsonKey(name: 'description') @Default('') String description,
+    @DefensiveNullableIntConverter() @JsonKey(name: 'id_parent') int? idParent,
+  }) = _CategoryModel;
 
-    return CategoryModel(
-      id: int.parse(json['id'].toString()),
-      name: parseLocalized(json['name']),
-      description: parseLocalized(json['description']),
-      idParent: json['id_parent'] != null ? int.tryParse(json['id_parent'].toString()) : null,
-    );
+  factory CategoryModel.fromJson(Map<String, dynamic> json) => _$CategoryModelFromJson(json);
+}
+
+extension CategoryModelParsing on CategoryModel {
+  static String parseLocalizedName(Map<String, dynamic> json) {
+    return const DefensiveStringConverter().fromJson(json['name']);
   }
 }

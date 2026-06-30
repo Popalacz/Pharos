@@ -8,12 +8,16 @@ import 'package:pharos/data/repositories/address_repository.dart';
 import 'package:pharos/data/models/user_model.dart';
 import 'package:pharos/data/repositories/user_repository.dart';
 import 'package:pharos/core/network/api_service.dart';
+import 'package:pharos/core/services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:local_auth/local_auth.dart';
 import '../error/failures.dart';
 
 class UserProvider extends ChangeNotifier {
   final GoogleCalendarService _googleService = GoogleCalendarService();
   final IAddressRepository _addressRepository;
   final IUserRepository _userRepository;
+  final LocalAuthentication _localAuth = LocalAuthentication();
   
   UserModel? _user;
   List<AddressModel> _addresses = [];
@@ -51,6 +55,7 @@ class UserProvider extends ChangeNotifier {
       (data) async {
         if (data['success'] == true) {
           _user = UserModel.fromJson(data['customer']);
+          await _syncFcmToken();
           await fetchAddresses();
           _isLoading = false;
           notifyListeners();
@@ -91,6 +96,7 @@ class UserProvider extends ChangeNotifier {
       (data) async {
         if (data['success'] == true) {
           _user = UserModel.fromJson(data['customer']);
+          await _syncFcmToken();
           await fetchAddresses();
           _isLoading = false;
           notifyListeners();
@@ -131,6 +137,7 @@ class UserProvider extends ChangeNotifier {
           _user = userModel;
         },
       );
+      await _syncFcmToken();
       await fetchAddresses();
     }
     _isLoading = false;
@@ -256,14 +263,49 @@ class UserProvider extends ChangeNotifier {
     try {
       // Pobieramy dane o zamówieniu (w prawdziwej apce z PrestaShop)
       // Tutaj używamy naszego serwisu Google Calendar (Twój Cel nr 5)
-      await _googleService.addOrderEvent(
+      await _googleService.createLogisticsEvent(
         orderId: orderId,
         customerName: _user?.displayName ?? 'Klient Pharos',
         totalAmount: amount,
-        items: ['Zamówienie z aplikacji mobilnej'], // Docelowo lista z koszyka
+        items: ['Zamówienie z aplikacji mobilnej'],
       );
     } catch (e) {
       debugPrint('Logistics Automation Error: $e');
+    }
+  }
+
+  Future<bool> authenticateBiometrically() async {
+    try {
+      final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
+      final bool canAuthenticate = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
+
+      if (!canAuthenticate) return false;
+
+      return await _localAuth.authenticate(
+        localizedReason: 'Potwierdź swoją tożsamość, aby kontynuować',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Biometric Error: $e');
+      return false;
+    }
+  }
+
+  Future<void> _syncFcmToken() async {
+    if (_user == null) return;
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await NotificationService().syncTokenWithServer(
+          token: token,
+          customerId: _user!.id,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error syncing FCM token: $e');
     }
   }
 }

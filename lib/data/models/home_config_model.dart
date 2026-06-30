@@ -2,7 +2,8 @@ enum HomeSectionType {
   BANNER_SLIDER,
   CATEGORY_CHIPS,
   SECTION_HEADER,
-  PRODUCT_GRID
+  PRODUCT_GRID,
+  RECOMMENDATIONS
 }
 
 class HomeSection {

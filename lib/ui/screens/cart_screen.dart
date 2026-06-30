@@ -4,6 +4,7 @@ import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/data/models/cart_model.dart';
 import 'package:pharos/ui/screens/checkout_screen.dart';
 import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -129,7 +130,8 @@ class CartScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (settings.vouchersEnabled) const _VoucherInput(),
+            const _VoucherInput(),
+            const SizedBox(height: 16),
             if (showFreeShipping) ...[
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,32 +210,18 @@ class CartScreen extends StatelessWidget {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  if (userProvider.isLoggedIn) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const CheckoutScreen()),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Zaloguj się, aby złożyć zamówienie.'),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    );
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange, 
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                 ),
-                child: Text(
-                  userProvider.isLoggedIn ? 'PRZEJDŹ DO KASY' : 'ZALOGUJ SIĘ, ABY KUPIĆ', 
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                child: const Text(
+                  'PRZEJDŹ DO KASY', 
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
                 ),
               ),
             )
@@ -245,7 +233,7 @@ class CartScreen extends StatelessWidget {
 }
 
 class _CartItemTile extends StatelessWidget {
-  final CartItem item;
+  final CartItemModel item;
   const _CartItemTile({required this.item});
 
   @override

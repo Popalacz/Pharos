@@ -22,7 +22,7 @@ class NotificationService {
         String? token = await _fcm.getToken();
         if (token != null) {
           debugPrint('FCM TOKEN: $token');
-          _syncTokenWithServer(token);
+          syncTokenWithServer(token: token);
         }
       }
 
@@ -66,17 +66,18 @@ class NotificationService {
     }
   }
 
-  Future<void> _syncTokenWithServer(String token) async {
+  Future<void> syncTokenWithServer({required String token, int? customerId}) async {
     try {
-      final dio = Dio(); // Proste wywołanie bez Basic Auth dla tokenów FCM
+      final dio = Dio();
       await dio.post('https://pharos-api.tech/index.php', queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'fcmtoken',
       }, data: {
         'token': token,
-      }, options: Options(contentType: Headers.formUrlEncodedContentType));
-      debugPrint('FCM: Token synchronized with PrestaShop');
+        'id_customer': customerId,
+      });
+      debugPrint('FCM: Token synchronized for customer $customerId');
     } catch (e) {
       debugPrint('FCM: Failed to sync token: $e');
     }

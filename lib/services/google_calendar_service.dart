@@ -32,6 +32,19 @@ class GoogleCalendarService {
     }
   }
 
+  Future<void> createLogisticsEvent({
+    required String orderId,
+    required String customerName,
+    required double totalAmount,
+    required List<String> items,
+  }) =>
+      addOrderEvent(
+        orderId: orderId,
+        customerName: customerName,
+        totalAmount: totalAmount,
+        items: items,
+      );
+
   Future<void> addOrderEvent({
     required String orderId,
     required String customerName,

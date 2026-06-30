@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/pharos_layout.dart';
-import '../../core/theme/app_colors.dart';
-import '../../models/cart_stub_line.dart';
-import '../../providers/cart_stub_provider.dart';
+import 'package:pharos/core/constants/pharos_layout.dart';
+import 'package:pharos/core/providers/cart_provider.dart';
+import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/core/theme/app_colors.dart';
+import 'package:pharos/data/models/cart_model.dart';
 
 Future<void> showCartPreviewSheet(BuildContext context) {
   HapticFeedback.lightImpact();
 
-  // showDragHandle: Material 3 grab rail (no "px" label). A "px" readout usually comes
-  // from Flutter Inspector / IDE layout overlays while debugging, not from this sheet.
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -29,13 +28,14 @@ Future<void> showCartPreviewSheet(BuildContext context) {
               PharosLayout.spaceMd,
               PharosLayout.spaceMd,
             ),
-            child: Consumer<CartStubProvider>(
-              builder: (BuildContext context, CartStubProvider cart, Widget? _) {
-                if (cart.lineCount == 0) {
+            child: Consumer<CartProvider>(
+              builder: (BuildContext context, CartProvider cart, Widget? _) {
+                final items = cart.items.values.toList();
+
+                if (items.isEmpty) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(height: PharosLayout.spaceSm),
                       Icon(
                         Icons.shopping_bag_outlined,
                         size: 56,
@@ -49,28 +49,19 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                               fontWeight: FontWeight.w800,
                             ),
                       ),
-                      const SizedBox(height: PharosLayout.spaceXs),
-                      Text(
-                        'Nie posiadasz produktów w koszyku.',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.text.withValues(alpha: 0.72),
-                              height: 1.35,
-                            ),
-                      ),
-                      const SizedBox(height: PharosLayout.spaceMd),
                     ],
                   );
                 }
 
-                final double maxListHeight = (MediaQuery.sizeOf(context).height * 0.45).clamp(160.0, 420.0);
+                final loc = context.watch<LocalizationProvider>();
+                final maxListHeight = (MediaQuery.sizeOf(context).height * 0.45).clamp(160.0, 420.0);
 
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Koszyk (demo)',
+                      'Koszyk',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: AppColors.text,
                             fontWeight: FontWeight.w900,
@@ -81,16 +72,16 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                       constraints: BoxConstraints(maxHeight: maxListHeight),
                       child: ListView.separated(
                         shrinkWrap: true,
-                        itemCount: cart.lineCount,
+                        itemCount: items.length,
                         separatorBuilder: (_, _) => const Divider(height: 1),
                         itemBuilder: (BuildContext context, int index) {
-                          final CartStubLine line = cart.lines[index];
+                          final CartItemModel line = items[index];
 
                           return ListTile(
                             contentPadding: EdgeInsets.zero,
-                            leading: _CartLineThumbnail(line: line),
+                            leading: _CartLineThumbnail(imageUrl: line.product.imageUrl),
                             title: Text(
-                              line.productName,
+                              line.product.name,
                               style: const TextStyle(
                                 color: AppColors.text,
                                 fontWeight: FontWeight.w700,
@@ -99,7 +90,7 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                               overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Text(
-                              '${line.unitPrice} PLN',
+                              loc.formatPrice(line.product.price),
                               style: TextStyle(
                                 color: AppColors.accent.withValues(alpha: 0.95),
                                 fontWeight: FontWeight.w800,
@@ -109,21 +100,13 @@ Future<void> showCartPreviewSheet(BuildContext context) {
                               tooltip: 'Usuń',
                               onPressed: () {
                                 HapticFeedback.selectionClick();
-                                cart.removeAt(index);
+                                cart.removeItem(line.key);
                               },
                               icon: const Icon(Icons.delete_outline, color: AppColors.text),
                             ),
                           );
                         },
                       ),
-                    ),
-                    const SizedBox(height: PharosLayout.spaceSm),
-                    TextButton(
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        cart.clear();
-                      },
-                      child: const Text('Wyczyść koszyk'),
                     ),
                   ],
                 );
@@ -137,9 +120,9 @@ Future<void> showCartPreviewSheet(BuildContext context) {
 }
 
 class _CartLineThumbnail extends StatelessWidget {
-  const _CartLineThumbnail({required this.line});
+  const _CartLineThumbnail({required this.imageUrl});
 
-  final CartStubLine line;
+  final String imageUrl;
 
   static const double _size = 56;
 
@@ -150,30 +133,10 @@ class _CartLineThumbnail extends StatelessWidget {
       child: SizedBox(
         width: _size,
         height: _size,
-        child: line.hasThumbnail
+        child: imageUrl.isNotEmpty
             ? CachedNetworkImage(
-                imageUrl: line.imageUrl,
+                imageUrl: imageUrl,
                 fit: BoxFit.cover,
-                memCacheWidth: (_size * MediaQuery.devicePixelRatioOf(context)).round(),
-                placeholder: (BuildContext context, String url) => ColoredBox(
-                  color: AppColors.background,
-                  child: const Center(
-                    child: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                ),
-                errorWidget: (BuildContext context, String url, Object error) {
-                  return ColoredBox(
-                    color: AppColors.background,
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      color: AppColors.text.withValues(alpha: 0.45),
-                    ),
-                  );
-                },
               )
             : ColoredBox(
                 color: AppColors.background,
