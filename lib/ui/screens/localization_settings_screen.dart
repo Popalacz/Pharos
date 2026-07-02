@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/core/providers/settings_provider.dart';
+import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/services/notification_service.dart';
+import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
 
@@ -68,7 +72,17 @@ class LocalizationSettingsScreen extends StatelessWidget {
           title: Text(lang.name, style: const TextStyle(color: Colors.white)),
           secondary: Text(lang.isoCode.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
           activeColor: Colors.orange,
-          onChanged: (val) => provider.setLanguage(lang),
+          onChanged: (val) async {
+            await provider.setLanguage(lang);
+            if (!context.mounted) return;
+            await context.read<SettingsProvider>().reload();
+            await context.read<IProductRepository>().getProducts();
+            final userProvider = context.read<UserProvider>();
+            await NotificationService().resyncCurrentToken(
+              customerId: userProvider.isLoggedIn ? userProvider.user?.id : null,
+              languageId: lang.id,
+            );
+          },
         )).toList(),
       ),
     );

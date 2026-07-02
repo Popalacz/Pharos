@@ -8,6 +8,7 @@ import 'package:pharos/data/models/cart_model.dart';
 import 'package:pharos/ui/screens/checkout_screen.dart';
 import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 import 'package:lottie/lottie.dart';
 
 class CartScreen extends StatelessWidget {
@@ -15,12 +16,13 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final cart = context.watch<CartProvider>();
     final items = cart.items.values.toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Twój Koszyk', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.yourCart, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           if (cart.isSyncing)
             const Padding(

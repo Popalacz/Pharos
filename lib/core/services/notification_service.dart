@@ -4,37 +4,40 @@ import 'package:dio/dio.dart';
 import 'package:pharos/main.dart';
 import 'package:pharos/ui/screens/order_tracking_screen.dart';
 import 'package:pharos/data/models/order_model.dart';
+import 'package:pharos/core/api/api_config.dart';
+import 'package:pharos/core/network/api_service.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  String? _cachedToken;
 
   Future<void> initialize() async {
     try {
-      NotificationSettings settings = await _fcm.requestPermission(
+      final NotificationSettings settings = await _fcm.requestPermission(
         alert: true,
         badge: true,
         sound: true,
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        debugPrint('Użytkownik zezwolił na powiadomienia');
-        
-        String? token = await _fcm.getToken();
+        final String? token = await _fcm.getToken();
         if (token != null) {
-          debugPrint('FCM TOKEN: $token');
-          syncTokenWithServer(token: token);
+          _cachedToken = token;
+          await syncTokenWithServer(
+            token: token,
+            languageId: ApiService.defaultLanguageId,
+          );
         }
       }
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('Otrzymano powiadomienie w aplikacji: ${message.notification?.title}');
-        // Można pokazać lokalny toast/snackbar
+        debugPrint('Foreground notification: ${message.notification?.title}');
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-      
-      // Sprawdź czy aplikacja została uruchomiona z powiadomienia (gdy była zamknięta)
-      RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+
+      final RemoteMessage? initialMessage = await _fcm.getInitialMessage();
       if (initialMessage != null) {
         _handleMessage(initialMessage);
       }
@@ -47,8 +50,11 @@ class NotificationService {
     if (message.data['type'] == 'order_update' && message.data['order_id'] != null) {
       final orderId = int.tryParse(message.data['order_id'].toString()) ?? 0;
       final orderRef = message.data['order_reference'] ?? '---';
+      final context = navigatorKey.currentContext;
+      final statusLabel = context != null
+          ? AppLocalizations.of(context)!.orderStatusUpdating
+          : message.data['status']?.toString() ?? 'Updating...';
 
-      // Nawigacja do szczegółów zamówienia
       navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (context) => OrderTrackingScreen(
@@ -57,7 +63,7 @@ class NotificationService {
               reference: orderRef,
               date: DateTime.now().toString(),
               totalPaid: 0.0,
-              status: 'Aktualizacja...',
+              status: statusLabel,
               paymentMethod: '',
             ),
           ),
@@ -66,20 +72,42 @@ class NotificationService {
     }
   }
 
-  Future<void> syncTokenWithServer({required String token, int? customerId}) async {
+  Future<void> syncTokenWithServer({
+    required String token,
+    int? customerId,
+    int? languageId,
+  }) async {
     try {
-      final dio = Dio();
-      await dio.post('https://pharos-api.tech/index.php', queryParameters: {
+      _cachedToken = token;
+      final dio = Dio(BaseOptions(
+        baseUrl: ApiConfig.baseUrl.split('/api').first,
+      ));
+
+      await dio.post('/index.php', queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'fcmtoken',
       }, data: {
         'token': token,
         'id_customer': customerId,
+        'id_lang': languageId,
       });
-      debugPrint('FCM: Token synchronized for customer $customerId');
+      debugPrint('FCM: Token synchronized for customer $customerId (lang: $languageId)');
     } catch (e) {
       debugPrint('FCM: Failed to sync token: $e');
     }
+  }
+
+  Future<void> resyncCurrentToken({int? customerId, int? languageId}) async {
+    final token = _cachedToken ?? await _fcm.getToken();
+    if (token == null) {
+      return;
+    }
+
+    await syncTokenWithServer(
+      token: token,
+      customerId: customerId,
+      languageId: languageId,
+    );
   }
 }

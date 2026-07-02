@@ -18,6 +18,10 @@ class SettingsProvider extends ChangeNotifier {
     _loadSettings();
   }
 
+  Future<void> reload() async {
+    await _loadSettings();
+  }
+
   Future<void> _loadSettings() async {
     try {
       // 1. Próba pobrania zaawansowanej konfiguracji z dedykowanego modułu Pharos

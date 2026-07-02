@@ -217,21 +217,18 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
-          flexibleSpace: FlexibleSpaceBar(
-            titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (settings.logoUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CachedNetworkImage(
-                      imageUrl: settings.logoUrl!,
-                      height: 24,
-                      errorWidget: (context, url, error) => const SizedBox.shrink(),
-                    ),
-                  ),
-                Text(
+          flexibleSpace: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCollapsed = constraints.biggest.height <= kToolbarHeight + 30;
+              final showLogo = settings.brandingEnabled && settings.logoUrl != null && !isCollapsed;
+
+              return FlexibleSpaceBar(
+                titlePadding: EdgeInsets.only(
+                  left: isCollapsed ? 56 : 16,
+                  right: 16,
+                  bottom: 12,
+                ),
+                title: Text(
                   settings.storeName.toUpperCase(),
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
@@ -239,9 +236,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontSize: 18,
                   ),
                 ),
-              ],
-            ),
-            centerTitle: false,
+                centerTitle: false,
+                background: showLogo
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: CachedNetworkImage(
+                            imageUrl: settings.logoUrl!,
+                            height: 48,
+                            errorWidget: (context, url, error) => const SizedBox.shrink(),
+                          ),
+                        ),
+                      )
+                    : null,
+              );
+            },
           ),
           actions: [
             IconButton(

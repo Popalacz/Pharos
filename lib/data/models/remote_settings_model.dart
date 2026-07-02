@@ -1,6 +1,7 @@
 class RemoteSettings {
   final String storeName;
   final String? logoUrl;
+  final bool brandingEnabled;
   final String fontFamily;
   final bool maintenanceMode;
   final String forceUpdateVersion;
@@ -8,6 +9,10 @@ class RemoteSettings {
   final String? instagramUrl;
   final String? facebookUrl;
   final String? tiktokUrl;
+  final bool socialMediaEnabled;
+  final bool instagramEnabled;
+  final bool facebookEnabled;
+  final bool tiktokEnabled;
   final String? promoPopupImageUrl;
   final Map<String, String>? eventTheme;
   final double? freeShippingThreshold;
@@ -17,6 +22,21 @@ class RemoteSettings {
   final String? storeEmail;
   final String? storePhone;
   final String? storeAddress;
+
+  final bool contactMapEnabled;
+  final double? latitude;
+  final double? longitude;
+  final Map<String, List<OpeningHoursEntry>> openingHours;
+
+  final bool publicCalendarEnabled;
+  final String? publicCalendarEmbedUrl;
+  final Map<String, String> publicCalendarTitle;
+
+  final bool googleMapsEnabled;
+  final String? googleMapsApiKey;
+
+  final bool quickContactEnabled;
+  final String? quickContactLink;
 
   final bool recentlyViewedEnabled;
   final bool cartRecoveryEnabled;
@@ -32,6 +52,7 @@ class RemoteSettings {
   RemoteSettings({
     required this.storeName,
     this.logoUrl,
+    this.brandingEnabled = true,
     required this.fontFamily,
     required this.maintenanceMode,
     required this.forceUpdateVersion,
@@ -39,6 +60,10 @@ class RemoteSettings {
     this.instagramUrl,
     this.facebookUrl,
     this.tiktokUrl,
+    this.socialMediaEnabled = false,
+    this.instagramEnabled = false,
+    this.facebookEnabled = false,
+    this.tiktokEnabled = false,
     this.promoPopupImageUrl,
     this.eventTheme,
     this.freeShippingThreshold,
@@ -47,6 +72,17 @@ class RemoteSettings {
     this.storeEmail,
     this.storePhone,
     this.storeAddress,
+    this.contactMapEnabled = false,
+    this.latitude,
+    this.longitude,
+    this.openingHours = const {},
+    this.publicCalendarEnabled = false,
+    this.publicCalendarEmbedUrl,
+    this.publicCalendarTitle = const {},
+    this.googleMapsEnabled = false,
+    this.googleMapsApiKey,
+    this.quickContactEnabled = false,
+    this.quickContactLink,
     this.recentlyViewedEnabled = true,
     this.cartRecoveryEnabled = true,
     this.lowStockBadgeEnabled = true,
@@ -59,9 +95,52 @@ class RemoteSettings {
 
   bool get hasFreeShippingProgress => freeShippingThreshold != null && freeShippingThreshold! > 0;
 
+  bool get hasVisibleInstagram =>
+      socialMediaEnabled && instagramEnabled && _hasUrl(instagramUrl);
+
+  bool get hasVisibleFacebook =>
+      socialMediaEnabled && facebookEnabled && _hasUrl(facebookUrl);
+
+  bool get hasVisibleTiktok =>
+      socialMediaEnabled && tiktokEnabled && _hasUrl(tiktokUrl);
+
+  bool get hasVisibleSocialMedia =>
+      hasVisibleInstagram || hasVisibleFacebook || hasVisibleTiktok;
+
+  bool get hasContactMap =>
+      contactMapEnabled &&
+      googleMapsEnabled &&
+      _hasUrl(googleMapsApiKey) &&
+      latitude != null &&
+      longitude != null &&
+      latitude != 0 &&
+      longitude != 0;
+
+  bool get hasPublicCalendar =>
+      publicCalendarEnabled && _hasUrl(publicCalendarEmbedUrl);
+
+  String publicCalendarTitleFor(String languageCode) {
+    final normalizedLanguage = languageCode.toLowerCase().split('-').first;
+    return publicCalendarTitle[normalizedLanguage] ??
+        publicCalendarTitle['pl'] ??
+        publicCalendarTitle['en'] ??
+        'Calendar';
+  }
+
+  List<OpeningHoursEntry> openingHoursFor(String languageCode) {
+    final normalizedLanguage = languageCode.toLowerCase().split('-').first;
+    return openingHours[normalizedLanguage] ??
+        openingHours['pl'] ??
+        openingHours['en'] ??
+        const [];
+  }
+
+  bool _hasUrl(String? value) => value != null && value.trim().isNotEmpty;
+
   RemoteSettings copyWith({
     String? storeName,
     String? logoUrl,
+    bool? brandingEnabled,
     String? fontFamily,
     bool? maintenanceMode,
     String? forceUpdateVersion,
@@ -69,6 +148,10 @@ class RemoteSettings {
     String? instagramUrl,
     String? facebookUrl,
     String? tiktokUrl,
+    bool? socialMediaEnabled,
+    bool? instagramEnabled,
+    bool? facebookEnabled,
+    bool? tiktokEnabled,
     String? promoPopupImageUrl,
     Map<String, String>? eventTheme,
     double? freeShippingThreshold,
@@ -77,6 +160,17 @@ class RemoteSettings {
     String? storeEmail,
     String? storePhone,
     String? storeAddress,
+    bool? contactMapEnabled,
+    double? latitude,
+    double? longitude,
+    Map<String, List<OpeningHoursEntry>>? openingHours,
+    bool? publicCalendarEnabled,
+    String? publicCalendarEmbedUrl,
+    Map<String, String>? publicCalendarTitle,
+    bool? googleMapsEnabled,
+    String? googleMapsApiKey,
+    bool? quickContactEnabled,
+    String? quickContactLink,
     bool? recentlyViewedEnabled,
     bool? cartRecoveryEnabled,
     bool? lowStockBadgeEnabled,
@@ -89,6 +183,7 @@ class RemoteSettings {
     return RemoteSettings(
       storeName: storeName ?? this.storeName,
       logoUrl: logoUrl ?? this.logoUrl,
+      brandingEnabled: brandingEnabled ?? this.brandingEnabled,
       fontFamily: fontFamily ?? this.fontFamily,
       maintenanceMode: maintenanceMode ?? this.maintenanceMode,
       forceUpdateVersion: forceUpdateVersion ?? this.forceUpdateVersion,
@@ -96,6 +191,10 @@ class RemoteSettings {
       instagramUrl: instagramUrl ?? this.instagramUrl,
       facebookUrl: facebookUrl ?? this.facebookUrl,
       tiktokUrl: tiktokUrl ?? this.tiktokUrl,
+      socialMediaEnabled: socialMediaEnabled ?? this.socialMediaEnabled,
+      instagramEnabled: instagramEnabled ?? this.instagramEnabled,
+      facebookEnabled: facebookEnabled ?? this.facebookEnabled,
+      tiktokEnabled: tiktokEnabled ?? this.tiktokEnabled,
       promoPopupImageUrl: promoPopupImageUrl ?? this.promoPopupImageUrl,
       eventTheme: eventTheme ?? this.eventTheme,
       freeShippingThreshold: freeShippingThreshold ?? this.freeShippingThreshold,
@@ -104,6 +203,17 @@ class RemoteSettings {
       storeEmail: storeEmail ?? this.storeEmail,
       storePhone: storePhone ?? this.storePhone,
       storeAddress: storeAddress ?? this.storeAddress,
+      contactMapEnabled: contactMapEnabled ?? this.contactMapEnabled,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      openingHours: openingHours ?? this.openingHours,
+      publicCalendarEnabled: publicCalendarEnabled ?? this.publicCalendarEnabled,
+      publicCalendarEmbedUrl: publicCalendarEmbedUrl ?? this.publicCalendarEmbedUrl,
+      publicCalendarTitle: publicCalendarTitle ?? this.publicCalendarTitle,
+      googleMapsEnabled: googleMapsEnabled ?? this.googleMapsEnabled,
+      googleMapsApiKey: googleMapsApiKey ?? this.googleMapsApiKey,
+      quickContactEnabled: quickContactEnabled ?? this.quickContactEnabled,
+      quickContactLink: quickContactLink ?? this.quickContactLink,
       recentlyViewedEnabled: recentlyViewedEnabled ?? this.recentlyViewedEnabled,
       cartRecoveryEnabled: cartRecoveryEnabled ?? this.cartRecoveryEnabled,
       lowStockBadgeEnabled: lowStockBadgeEnabled ?? this.lowStockBadgeEnabled,
@@ -122,19 +232,29 @@ class RemoteSettings {
     final marketing = appConfig['marketing_onboarding'] ?? {};
     final growth = appConfig['growth_experience'] ?? {};
     final maintenance = appConfig['maintenance'] ?? {};
+    final socialMedia = appConfig['social_media'] ?? {};
+    final engagement = appConfig['engagement_loyalty'] ?? {};
+    final contactConfig = json['contact_config'] ?? {};
+    final publicCalendar = json['public_calendar'] ?? {};
+    final maps = json['maps'] ?? {};
 
     return RemoteSettings(
       storeName: storeInfo['name'] ?? 'Pharos Store',
       logoUrl: storeInfo['mobile_logo_url'],
+      brandingEnabled: storeInfo['enabled'] ?? true,
       fontFamily: design['mobile_typography']?['value'] ?? 'Montserrat',
       maintenanceMode: maintenance['maintenance_mode']?['enabled'] ?? false,
       forceUpdateVersion: maintenance['force_update']?['min_version'] ?? '1.0.0',
       appOnlyDiscountCode: marketing['app_only_discount']?['code'],
-      instagramUrl: appConfig['social_media']?['instagram']?['url'],
-      facebookUrl: appConfig['social_media']?['facebook']?['url'],
-      tiktokUrl: appConfig['social_media']?['tiktok']?['url'],
-      promoPopupImageUrl: (marketing['promo_popup'] != null && marketing['promo_popup']['enabled'] == true) 
-          ? marketing['promo_popup']['image_url'] 
+      socialMediaEnabled: socialMedia['enabled'] ?? false,
+      instagramEnabled: socialMedia['instagram']?['enabled'] ?? false,
+      facebookEnabled: socialMedia['facebook']?['enabled'] ?? false,
+      tiktokEnabled: socialMedia['tiktok']?['enabled'] ?? false,
+      instagramUrl: socialMedia['instagram']?['url'],
+      facebookUrl: socialMedia['facebook']?['url'],
+      tiktokUrl: socialMedia['tiktok']?['url'],
+      promoPopupImageUrl: (marketing['promo_popup'] != null && marketing['promo_popup']['enabled'] == true)
+          ? marketing['promo_popup']['image_url']
           : null,
       freeShippingThreshold: (json['free_shipping_threshold'] as num?)?.toDouble(),
       vouchersEnabled: json['vouchers_enabled'] == true,
@@ -142,6 +262,17 @@ class RemoteSettings {
       storeEmail: storeInfo['email'],
       storePhone: storeInfo['phone'],
       storeAddress: storeInfo['address'],
+      contactMapEnabled: contactConfig['map_enabled'] ?? false,
+      latitude: (contactConfig['latitude'] as num?)?.toDouble(),
+      longitude: (contactConfig['longitude'] as num?)?.toDouble(),
+      openingHours: _parseOpeningHours(contactConfig['opening_hours']),
+      publicCalendarEnabled: publicCalendar['enabled'] ?? false,
+      publicCalendarEmbedUrl: publicCalendar['embed_url'],
+      publicCalendarTitle: _parseLocalizedStrings(publicCalendar['title']),
+      googleMapsEnabled: maps['enabled'] ?? false,
+      googleMapsApiKey: maps['api_key'],
+      quickContactEnabled: engagement['quick_contact']?['enabled'] ?? false,
+      quickContactLink: engagement['quick_contact']?['link'],
       recentlyViewedEnabled: growth['recently_viewed']?['enabled'] ?? true,
       cartRecoveryEnabled: growth['cart_recovery_banner']?['enabled'] ?? true,
       lowStockBadgeEnabled: growth['low_stock_badge']?['enabled'] ?? true,
@@ -160,6 +291,34 @@ class RemoteSettings {
     );
   }
 
+  static Map<String, List<OpeningHoursEntry>> _parseOpeningHours(dynamic rawValue) {
+    if (rawValue is! Map) {
+      return const {};
+    }
+
+    final parsedHours = <String, List<OpeningHoursEntry>>{};
+    rawValue.forEach((languageCode, entries) {
+      if (entries is! List) {
+        return;
+      }
+
+      parsedHours[languageCode.toString()] = entries
+          .whereType<Map>()
+          .map((entry) => OpeningHoursEntry.fromJson(Map<String, dynamic>.from(entry)))
+          .toList();
+    });
+
+    return parsedHours;
+  }
+
+  static Map<String, String> _parseLocalizedStrings(dynamic rawValue) {
+    if (rawValue is! Map) {
+      return const {};
+    }
+
+    return rawValue.map((key, value) => MapEntry(key.toString(), value.toString()));
+  }
+
   static RemoteSettings defaultSettings() {
     return RemoteSettings(
       storeName: 'PHAROS',
@@ -171,6 +330,20 @@ class RemoteSettings {
       theme: {'primary_color': '#FF9800'},
       onboarding: [],
       enabledPaymentMethods: [],
+    );
+  }
+}
+
+class OpeningHoursEntry {
+  final String day;
+  final String time;
+
+  const OpeningHoursEntry({required this.day, required this.time});
+
+  factory OpeningHoursEntry.fromJson(Map<String, dynamic> json) {
+    return OpeningHoursEntry(
+      day: json['day']?.toString() ?? '',
+      time: json['time']?.toString() ?? '',
     );
   }
 }

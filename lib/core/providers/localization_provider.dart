@@ -19,6 +19,13 @@ class LocalizationProvider extends ChangeNotifier {
   bool get showLanguageSelector => _languages.length > 1;
   bool get showCurrencySelector => _currencies.length > 1;
 
+  Locale get locale {
+    final languageCode = _currentLanguage?.languageCode ?? 'pl';
+    return Locale(languageCode.split('-').first);
+  }
+
+  String get currentLanguageCode => _currentLanguage?.languageCode ?? 'pl';
+
   LocalizationProvider() {
     _loadFromPrestaShop();
   }
@@ -75,7 +82,7 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setLanguage(LanguageModel lang) {
+  Future<void> setLanguage(LanguageModel lang) async {
     _currentLanguage = lang;
     ApiService.defaultLanguageId = lang.id;
     notifyListeners();
@@ -86,49 +93,9 @@ class LocalizationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  String translate(String key) {
-    final iso = _currentLanguage?.isoCode?.toLowerCase() ?? 'pl';
-    return _translations[iso]?[key] ?? _translations['pl']?[key] ?? key;
-  }
-
   String formatPrice(double price) {
     if (_currentCurrency == null) return price.toStringAsFixed(2);
     final double converted = price * _currentCurrency!.conversionRate;
     return '${converted.toStringAsFixed(2)} ${_currentCurrency!.symbol}';
   }
-
-  static const Map<String, Map<String, String>> _translations = {
-    'pl': {
-      'cart': 'Koszyk',
-      'search': 'Szukaj',
-      'home': 'Główna',
-      'account': 'Konto',
-      'checkout': 'Kasa',
-      'delivery': 'Dostawa',
-      'payment': 'Płatność',
-      'total': 'Łącznie',
-      'add_to_cart': 'Dodaj do koszyka',
-      'out_of_stock': 'Brak w magazynie',
-      'order_success': 'Sukces!',
-      'tracking': 'Śledzenie',
-      'wishlist': 'Ulubione',
-      'contact': 'Kontakt',
-    },
-    'en': {
-      'cart': 'Cart',
-      'search': 'Search',
-      'home': 'Home',
-      'account': 'Account',
-      'checkout': 'Checkout',
-      'delivery': 'Delivery',
-      'payment': 'Payment',
-      'total': 'Total',
-      'add_to_cart': 'Add to cart',
-      'out_of_stock': 'Out of stock',
-      'order_success': 'Success!',
-      'tracking': 'Tracking',
-      'wishlist': 'Wishlist',
-      'contact': 'Contact',
-    }
-  };
 }

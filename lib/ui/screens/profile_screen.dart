@@ -11,6 +11,7 @@ import 'package:pharos/ui/screens/edit_profile_screen.dart';
 import 'package:pharos/ui/screens/address_management_screen.dart';
 import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 import 'package:pharos/core/error/failures.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
 
@@ -33,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('MÓJ PROFIL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
+        title: Text(l10n.myProfile, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
         actions: [
           if (userProvider.isLoggedIn)
             IconButton(

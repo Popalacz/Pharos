@@ -302,6 +302,7 @@ class UserProvider extends ChangeNotifier {
         await NotificationService().syncTokenWithServer(
           token: token,
           customerId: _user!.id,
+          languageId: ApiService.defaultLanguageId,
         );
       }
     } catch (e) {

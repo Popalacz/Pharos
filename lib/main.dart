@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/data/repositories/category_repository.dart';
@@ -31,6 +32,7 @@ import 'package:pharos/data/repositories/user_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:version/version.dart' as v;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -122,8 +124,10 @@ class PharosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settingsProvider, child) {
+    return Consumer2<SettingsProvider, LocalizationProvider>(
+      builder: (context, settingsProvider, localizationProvider, child) {
+        final l10n = AppLocalizations.of(context);
+
         if (settingsProvider.settings.appDebug) {
           ErrorWidget.builder = (details) => Scaffold(
             body: Center(
@@ -137,8 +141,8 @@ class PharosApp extends StatelessWidget {
             ),
           );
         } else {
-          ErrorWidget.builder = (details) => const Scaffold(
-            body: Center(child: Text('Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.')),
+          ErrorWidget.builder = (details) => Scaffold(
+            body: Center(child: Text(l10n?.unexpectedError ?? 'Unexpected error')),
           );
         }
 
@@ -147,6 +151,14 @@ class PharosApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: settingsProvider.settings.storeName,
           theme: AppTheme.dark,
+          locale: localizationProvider.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: const UpdateCheckWrapper(child: MainNavigation()),
         );
       },
@@ -223,6 +235,8 @@ class _UpdateCheckWrapperState extends State<UpdateCheckWrapper> {
   }
 
   Widget _buildMaintenanceScreen() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -233,18 +247,21 @@ class _UpdateCheckWrapperState extends State<UpdateCheckWrapper> {
             children: [
               const Icon(Icons.settings_suggest_rounded, size: 80, color: Colors.orange),
               const SizedBox(height: 24),
-              const Text('PRZERWA TECHNICZNA', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 2)),
+              Text(
+                l10n.maintenanceTitle,
+                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 2),
+              ),
               const SizedBox(height: 16),
-              const Text(
-                'Właśnie ulepszamy nasz sklep, aby zakupy były jeszcze przyjemniejsze. Wróć do nas za chwilę!',
+              Text(
+                l10n.maintenanceMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white60, height: 1.5),
+                style: const TextStyle(color: Colors.white60, height: 1.5),
               ),
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: _performChecks,
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                child: const Text('SPRAWDŹ PONOWNIE', style: TextStyle(color: Colors.white)),
+                child: Text(l10n.checkAgain, style: const TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -254,6 +271,8 @@ class _UpdateCheckWrapperState extends State<UpdateCheckWrapper> {
   }
 
   Widget _buildUpdateScreen() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -264,12 +283,15 @@ class _UpdateCheckWrapperState extends State<UpdateCheckWrapper> {
             children: [
               const Icon(Icons.system_update_rounded, size: 80, color: Colors.blue),
               const SizedBox(height: 24),
-              const Text('WYMAGANA AKTUALIZACJA', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+              Text(
+                l10n.updateRequiredTitle,
+                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+              ),
               const SizedBox(height: 16),
-              const Text(
-                'Twoja wersja aplikacji jest nieaktualna. Aby kontynuować zakupy, pobierz najnowszą wersję z oficjalnego sklepu.',
+              Text(
+                l10n.updateRequiredMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white60, height: 1.5),
+                style: const TextStyle(color: Colors.white60, height: 1.5),
               ),
               const SizedBox(height: 40),
               SizedBox(
@@ -278,7 +300,7 @@ class _UpdateCheckWrapperState extends State<UpdateCheckWrapper> {
                 child: ElevatedButton(
                   onPressed: () => launchUrl(Uri.parse('https://pharos.pl/app')),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: const Text('POBIERZ AKTUALIZACJĘ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(l10n.downloadUpdate, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -306,6 +328,17 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     DeepLinkService().initialize(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncNotificationLanguage());
+  }
+
+  Future<void> _syncNotificationLanguage() async {
+    if (!mounted) return;
+    final localizationProvider = context.read<LocalizationProvider>();
+    final userProvider = context.read<UserProvider>();
+    await NotificationService().resyncCurrentToken(
+      customerId: userProvider.isLoggedIn ? userProvider.user?.id : null,
+      languageId: localizationProvider.currentLanguage?.id,
+    );
   }
 
   @override
@@ -336,7 +369,7 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
 
   @override
   Widget build(BuildContext context) {
-    final loc = context.watch<LocalizationProvider>();
+    final l10n = AppLocalizations.of(context)!;
     
     return AddToCartAnimation(
       cartKey: cartKey,
@@ -370,8 +403,8 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
             backgroundColor: Colors.white,
             elevation: 0,
             items: [
-              BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), activeIcon: const Icon(Icons.home), label: loc.translate('home')),
-              BottomNavigationBarItem(icon: const Icon(Icons.favorite_outline), activeIcon: const Icon(Icons.favorite), label: loc.translate('wishlist')),
+              BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), activeIcon: const Icon(Icons.home), label: l10n.home),
+              BottomNavigationBarItem(icon: const Icon(Icons.favorite_outline), activeIcon: const Icon(Icons.favorite), label: l10n.wishlist),
               BottomNavigationBarItem(
                 icon: AddToCartIcon(
                   key: cartKey,
@@ -379,10 +412,10 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
                   badgeOptions: const BadgeOptions(active: false),
                 ),
                 activeIcon: const Icon(Icons.shopping_bag),
-                label: loc.translate('cart')
+                label: l10n.cart
               ),
-              BottomNavigationBarItem(icon: const Icon(Icons.contact_support_outlined), activeIcon: const Icon(Icons.contact_support), label: loc.translate('contact')),
-              BottomNavigationBarItem(icon: const Icon(Icons.person_outline), activeIcon: const Icon(Icons.person), label: loc.translate('account')),
+              BottomNavigationBarItem(icon: const Icon(Icons.contact_support_outlined), activeIcon: const Icon(Icons.contact_support), label: l10n.contact),
+              BottomNavigationBarItem(icon: const Icon(Icons.person_outline), activeIcon: const Icon(Icons.person), label: l10n.account),
             ],
           ),
         ),
