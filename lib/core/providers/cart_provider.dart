@@ -141,6 +141,55 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
+  List<Map<String, dynamic>> _buildSyncItemsPayload() {
+    return _items.values
+        .map((item) => {
+              'id_product': item.product.id,
+              'id_product_attribute': item.attributeId,
+              'id_customization': item.customizationId,
+              'quantity': item.quantity,
+            })
+        .toList();
+  }
+
+  Future<bool> syncCartImmediately({int? customerId}) async {
+    if (_syncDebounce?.isActive ?? false) {
+      _syncDebounce!.cancel();
+    }
+
+    _isSyncing = true;
+    notifyListeners();
+
+    final result = await _repository.syncCart(
+      cartId: _idCart,
+      customerId: customerId ?? _userProvider?.user?.id,
+      items: _buildSyncItemsPayload(),
+    );
+
+    _isSyncing = false;
+
+    final isSuccessful = result.fold(
+      (failure) {
+        debugPrint('CART SYNC FAILURE: $failure');
+        return false;
+      },
+      (data) {
+        if (data['success'] == true) {
+          if (data['id_cart'] != null) {
+            _idCart = int.tryParse(data['id_cart'].toString());
+            _apiService?.updateCartId(_idCart);
+          }
+          _updateTotalsFromResponse(data);
+          return true;
+        }
+        return false;
+      },
+    );
+
+    notifyListeners();
+    return isSuccessful;
+  }
+
   void _triggerSync() {
     if (_syncDebounce?.isActive ?? false) _syncDebounce!.cancel();
 
@@ -148,36 +197,7 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
 
     _syncDebounce = Timer(const Duration(milliseconds: 800), () async {
-      final List<Map<String, dynamic>> itemsJson = _items.values
-          .map((item) => {
-                'id_product': item.product.id,
-                'id_product_attribute': item.attributeId,
-                'id_customization': item.customizationId,
-                'quantity': item.quantity,
-              })
-          .toList();
-
-      final result = await _repository.syncCart(
-        cartId: _idCart,
-        customerId: _userProvider?.user?.id,
-        items: itemsJson,
-      );
-
-      _isSyncing = false;
-
-      result.fold(
-        (failure) => debugPrint('CART SYNC FAILURE: $failure'),
-        (data) {
-          if (data['success'] == true) {
-            if (data['id_cart'] != null) {
-              _idCart = int.tryParse(data['id_cart'].toString());
-              _apiService?.updateCartId(_idCart);
-            }
-            _updateTotalsFromResponse(data);
-          }
-        },
-      );
-      notifyListeners();
+      await syncCartImmediately();
     });
   }
 }

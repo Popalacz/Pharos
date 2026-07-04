@@ -6,15 +6,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/core/api/api_config.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/core/providers/checkout_notifier.dart';
-import 'package:pharos/core/services/analytics_service.dart';
-import 'package:pharos/data/repositories/cart_repository.dart';
-import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/data/repositories/checkout_repository.dart';
 import 'package:pharos/data/models/checkout_models.dart';
 import 'package:pharos/data/models/address_model.dart';
-import 'package:pharos/core/services/payment_service.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
@@ -71,7 +67,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     _checkoutNotifier = CheckoutNotifier(
       checkoutRepository: _checkoutRepository,
-      cartRepository: CartRepository(apiService: context.read<ApiService>()),
     );
     _placesService = GooglePlacesService(ApiConfig.apiKey);
     _refreshCheckoutData();
@@ -825,10 +820,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         cart: cart,
         guestAddressValid: guestAddressValid,
         currencyIso: loc.currentCurrency?.isoCode ?? 'PLN',
+        customerId: user?.id,
       );
 
       if (prepared == null) {
         throw Exception(_checkoutNotifier.errorMessage ?? 'Nie udało się zweryfikować koszyka.');
+      }
+
+      if (cart.idCart == null) {
+        throw Exception('Koszyk nie został zsynchronizowany z serwerem.');
       }
 
       final orderPayload = <String, dynamic>{

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
+import 'package:pharos/core/providers/orders_provider.dart';
 import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:pharos/ui/screens/review_form_screen.dart';
 import 'dart:async';
@@ -41,6 +42,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     _currentOrder = widget.order;
     _orderRepository = OrderRepository(apiService: context.read<ApiService>());
     _initMapData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshOrder());
   }
 
   void _initMapData() {
@@ -89,6 +91,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             _currentOrder = updatedOrder;
             _initMapData();
           });
+          context.read<OrdersProvider>().fetchOrders();
         }
       },
     );

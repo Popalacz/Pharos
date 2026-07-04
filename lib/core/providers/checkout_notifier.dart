@@ -3,7 +3,6 @@ import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/data/models/address_model.dart';
 import 'package:pharos/data/models/checkout_models.dart';
-import 'package:pharos/data/repositories/cart_repository.dart';
 import 'package:pharos/data/repositories/checkout_repository.dart';
 
 enum CheckoutStep { address, shipping, payment, review, placingOrder, success }
@@ -11,14 +10,11 @@ enum CheckoutStep { address, shipping, payment, review, placingOrder, success }
 class CheckoutNotifier extends ChangeNotifier {
   CheckoutNotifier({
     required CheckoutRepository checkoutRepository,
-    required ICartRepository cartRepository,
     AnalyticsService? analyticsService,
   })  : _checkoutRepository = checkoutRepository,
-        _cartRepository = cartRepository,
         _analytics = analyticsService ?? AnalyticsService();
 
   final CheckoutRepository _checkoutRepository;
-  final ICartRepository _cartRepository;
   final AnalyticsService _analytics;
 
   CheckoutStep step = CheckoutStep.address;
@@ -179,40 +175,16 @@ class CheckoutNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> verifyPricesAndStock(CartProvider cart) async {
-    if (cart.idCart == null) return false;
-
-    final cartResult = await _cartRepository.syncCart(
-      cartId: cart.idCart,
-      customerId: null,
-      items: cart.items.values
-          .map((item) => {
-                'id_product': item.product.id,
-                'id_product_attribute': item.attributeId,
-                'id_customization': item.customizationId,
-                'quantity': item.quantity,
-              })
-          .toList(),
-    );
-
-    return cartResult.fold(
-      (_) => false,
-      (data) {
-        if (data['success'] != true) return false;
-        cart.updateServerTotals(
-          total: (data['total'] as num?)?.toDouble(),
-          subtotal: (data['total_products'] as num?)?.toDouble(),
-          shipping: (data['total_shipping'] as num?)?.toDouble(),
-        );
-        return true;
-      },
-    );
+  Future<bool> verifyPricesAndStock(CartProvider cart, {int? customerId}) async {
+    if (cart.items.isEmpty) return false;
+    return cart.syncCartImmediately(customerId: customerId);
   }
 
   Future<Map<String, dynamic>?> prepareOrder({
     required CartProvider cart,
     required bool guestAddressValid,
     required String currencyIso,
+    int? customerId,
   }) async {
     if (!validateCurrentStep(guestAddressValid: guestAddressValid)) {
       errorMessage = 'Uzupełnij wszystkie kroki checkoutu.';
@@ -226,7 +198,7 @@ class CheckoutNotifier extends ChangeNotifier {
 
     await _analytics.logBeginCheckout(cart.totalAmount, currency: currencyIso);
 
-    final isValid = await verifyPricesAndStock(cart);
+    final isValid = await verifyPricesAndStock(cart, customerId: customerId);
     if (!isValid) {
       errorMessage = 'Ceny lub dostępność produktów uległy zmianie. Sprawdź koszyk.';
       step = CheckoutStep.address;

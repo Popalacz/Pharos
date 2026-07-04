@@ -4,7 +4,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:provider/provider.dart';
 import 'package:pharos/main.dart';
+import 'package:pharos/core/providers/orders_provider.dart';
 import 'package:pharos/ui/screens/order_tracking_screen.dart';
 import 'package:pharos/data/models/order_model.dart';
 import 'package:pharos/core/api/api_config.dart';
@@ -36,6 +38,7 @@ class NotificationService {
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('Foreground notification: ${message.notification?.title}');
+        _handleOrderUpdateNotification(message, openTrackingScreen: false);
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
@@ -50,29 +53,59 @@ class NotificationService {
   }
 
   void _handleMessage(RemoteMessage message) {
-    if (message.data['type'] == 'order_update' && message.data['order_id'] != null) {
-      final orderId = int.tryParse(message.data['order_id'].toString()) ?? 0;
-      final orderRef = message.data['order_reference'] ?? '---';
-      final context = navigatorKey.currentContext;
-      final statusLabel = context != null
-          ? AppLocalizations.of(context)!.orderStatusUpdating
-          : message.data['status']?.toString() ?? 'Updating...';
+    _handleOrderUpdateNotification(message, openTrackingScreen: true);
+  }
 
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => OrderTrackingScreen(
-            order: OrderModel(
-              id: orderId,
-              reference: orderRef,
-              date: DateTime.now().toString(),
-              totalPaid: 0.0,
-              status: statusLabel,
-              paymentMethod: '',
-            ),
+  void _handleOrderUpdateNotification(
+    RemoteMessage message, {
+    required bool openTrackingScreen,
+  }) {
+    if (message.data['type'] != 'order_update' || message.data['order_id'] == null) {
+      return;
+    }
+
+    final orderId = int.tryParse(message.data['order_id'].toString()) ?? 0;
+    if (orderId <= 0) {
+      return;
+    }
+
+    final context = navigatorKey.currentContext;
+    context?.read<OrdersProvider>().fetchOrders();
+
+    if (!openTrackingScreen) {
+      final statusLabel = message.notification?.body ??
+          message.data['status']?.toString() ??
+          'Status zamówienia został zaktualizowany.';
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(statusLabel),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    final orderRef = message.data['order_reference'] ?? '---';
+    final statusLabel = context != null
+        ? AppLocalizations.of(context)!.orderStatusUpdating
+        : message.data['status']?.toString() ?? 'Updating...';
+
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (context) => OrderTrackingScreen(
+          order: OrderModel(
+            id: orderId,
+            reference: orderRef,
+            date: DateTime.now().toString(),
+            totalPaid: 0.0,
+            status: statusLabel,
+            paymentMethod: '',
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 
   Future<void> syncTokenWithServer({

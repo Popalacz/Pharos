@@ -24,18 +24,17 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     try {
-      // 1. Próba pobrania zaawansowanej konfiguracji z dedykowanego modułu Pharos
       final response = await apiService.dio.get('/index.php', queryParameters: {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'config',
       });
-      
+
       if (response.statusCode == 200) {
         dynamic data = response.data;
         if (data is String) data = jsonDecode(data);
         if (data is Map<String, dynamic>) {
-           _settings = RemoteSettings.fromJson(data);
+          _settings = RemoteSettings.fromJson(data);
         }
       }
     } catch (e) {
@@ -49,7 +48,60 @@ class SettingsProvider extends ChangeNotifier {
         },
       );
     }
+
+    await _applyContactFallback();
     notifyListeners();
+  }
+
+  Future<void> _applyContactFallback() async {
+    final bool needsEmail = !_hasText(_settings.storeEmail);
+    final bool needsPhone = !_hasText(_settings.storePhone);
+    final bool needsAddress = !_hasText(_settings.storeAddress);
+
+    if (!needsEmail && !needsPhone && !needsAddress) {
+      return;
+    }
+
+    final result = await _systemRepository.getMultipleConfigurations([
+      'PS_SHOP_EMAIL',
+      'PS_SHOP_PHONE',
+      'PS_SHOP_ADDR1',
+      'PS_SHOP_ADDR2',
+      'PS_SHOP_CODE',
+      'PS_SHOP_CITY',
+    ]);
+
+    result.fold(
+      (failure) => debugPrint('Contact fallback failure: $failure'),
+      (configs) {
+        final addressParts = <String>[
+          if (_hasText(configs['PS_SHOP_ADDR1'])) configs['PS_SHOP_ADDR1']!,
+          if (_hasText(configs['PS_SHOP_ADDR2'])) configs['PS_SHOP_ADDR2']!,
+        ];
+
+        final postcode = configs['PS_SHOP_CODE']?.trim() ?? '';
+        final city = configs['PS_SHOP_CITY']?.trim() ?? '';
+        if (postcode.isNotEmpty || city.isNotEmpty) {
+          addressParts.add('$postcode $city'.trim());
+        }
+
+        _settings = _settings.copyWith(
+          storeEmail: needsEmail ? _readOptionalConfig(configs['PS_SHOP_EMAIL']) : _settings.storeEmail,
+          storePhone: needsPhone ? _readOptionalConfig(configs['PS_SHOP_PHONE']) : _settings.storePhone,
+          storeAddress: needsAddress && addressParts.isNotEmpty
+              ? addressParts.join(', ')
+              : _settings.storeAddress,
+        );
+      },
+    );
+  }
+
+  bool _hasText(String? value) => value != null && value.trim().isNotEmpty;
+
+  String? _readOptionalConfig(String? value) {
+    if (value == null) return null;
+    final normalized = value.trim();
+    return normalized.isEmpty ? null : normalized;
   }
 }
 

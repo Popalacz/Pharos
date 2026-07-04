@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fpdart/fpdart.dart' hide State;
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/providers/orders_provider.dart';
 import 'package:pharos/data/models/order_model.dart';
 import 'package:pharos/ui/screens/order_tracking_screen.dart';
 import 'package:pharos/ui/screens/localization_settings_screen.dart';
@@ -9,21 +9,12 @@ import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:pharos/data/models/user_model.dart';
 import 'package:pharos/ui/screens/edit_profile_screen.dart';
 import 'package:pharos/ui/screens/address_management_screen.dart';
-import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/l10n/app_localizations.dart';
-import 'package:pharos/core/error/failures.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  final IOrderRepository _orderRepository = OrderRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -45,69 +36,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             )
         ],
       ),
-      body: userProvider.isLoggedIn 
-        ? _buildLoggedInProfile(context, user!)
-        : _buildLoggedOutProfile(context),
-    );
-  }
-
-  Widget _buildLoggedInProfile(BuildContext context, UserModel user) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 35,
-                  backgroundColor: Colors.orange.withOpacity(0.1),
-                  backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
-                  child: user.photoUrl == null ? const Icon(Icons.person, color: Colors.orange, size: 35) : null,
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(user.displayName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text(user.email, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
-          
-          const Text('HISTORIA ZAMÓWIEŃ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
-          const SizedBox(height: 16),
-          _buildOrderHistory(context, user.id),
-          
-          const SizedBox(height: 40),
-          const Text('USTAWIENIA KONTA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
-          const SizedBox(height: 16),
-          
-          _buildMenuTile(context, Icons.language_outlined, 'Język i Waluta', 'Zmień ustawienia regionalne', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen()));
-          }),
-          _buildMenuTile(context, Icons.person_outline, 'Moje dane', 'Edytuj informacje o profilu', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
-          }),
-          _buildMenuTile(context, Icons.location_on_outlined, 'Moje adresy', 'Zarządzaj adresami dostaw', () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressManagementScreen()));
-          }),
-        ],
-      ),
+      body: userProvider.isLoggedIn
+          ? RefreshIndicator(
+              onRefresh: () => context.read<OrdersProvider>().fetchOrders(),
+              color: Colors.orange,
+              backgroundColor: const Color(0xFF1A1A1A),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                padding: const EdgeInsets.all(20),
+                child: _LoggedInProfileContent(user: user!),
+              ),
+            )
+          : _buildLoggedOutProfile(context),
     );
   }
 
@@ -120,11 +60,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Icon(Icons.account_circle_outlined, size: 100, color: Colors.white.withOpacity(0.05)),
             const SizedBox(height: 24),
-            const Text('TWÓJ PROFIL PHAROS', 
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+            const Text(
+              'TWÓJ PROFIL PHAROS',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1),
+            ),
             const SizedBox(height: 12),
-            Text('Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.', 
-              textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5)),
+            Text(
+              'Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5),
+            ),
             const SizedBox(height: 40),
             PharosButton(
               label: 'ZALOGUJ SIĘ LUB ZAŁÓŻ KONTO',
@@ -135,47 +80,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
 
-  Widget _buildOrderHistory(BuildContext context, int customerId) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        setState(() {});
-      },
-      color: Colors.orange,
-      backgroundColor: const Color(0xFF1A1A1A),
-      child: FutureBuilder<Either<Failure, List<OrderModel>>>(
-        future: _orderRepository.getCustomerOrders(customerId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ListShimmer(itemCount: 2);
-          }
+class _LoggedInProfileContent extends StatelessWidget {
+  const _LoggedInProfileContent({required this.user});
 
-          if (snapshot.hasError || !snapshot.hasData) {
-             return _buildStatusCard(Icons.error_outline, 'Nie udało się pobrać historii', isError: true);
-          }
+  final UserModel user;
 
-          return snapshot.data!.fold(
-            (failure) => _buildStatusCard(Icons.error_outline, failure.message, isError: true),
-            (orders) {
-              if (orders.isEmpty) {
-                // Aby RefreshIndicator działał na pustej liście, potrzebujemy SingleChildScrollView
-                return SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: _buildStatusCard(Icons.receipt_long, 'Brak historii zamówień'),
-                );
-              }
-
-              return Column(
-                children: orders.map((order) => _buildOrderTile(context, order)).toList(),
-              );
-            },
-          );
-        },
-      ),
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 35,
+                backgroundColor: Colors.orange.withOpacity(0.1),
+                backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+                child: user.photoUrl == null ? const Icon(Icons.person, color: Colors.orange, size: 35) : null,
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.displayName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    const SizedBox(height: 2),
+                    Text(user.email, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+        const SizedBox(height: 40),
+        const Text('HISTORIA ZAMÓWIEŃ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
+        const SizedBox(height: 16),
+        const _OrderHistorySection(),
+        const SizedBox(height: 40),
+        const Text('USTAWIENIA KONTA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
+        const SizedBox(height: 16),
+        _ProfileMenuTile(
+          icon: Icons.language_outlined,
+          title: 'Język i Waluta',
+          subtitle: 'Zmień ustawienia regionalne',
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen())),
+        ),
+        _ProfileMenuTile(
+          icon: Icons.person_outline,
+          title: 'Moje dane',
+          subtitle: 'Edytuj informacje o profilu',
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
+        ),
+        _ProfileMenuTile(
+          icon: Icons.location_on_outlined,
+          title: 'Moje adresy',
+          subtitle: 'Zarządzaj adresami dostaw',
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressManagementScreen())),
+        ),
+      ],
     );
   }
+}
 
-  Widget _buildOrderTile(BuildContext context, OrderModel order) {
+class _OrderHistorySection extends StatelessWidget {
+  const _OrderHistorySection();
+
+  @override
+  Widget build(BuildContext context) {
+    final ordersProvider = context.watch<OrdersProvider>();
+
+    if (ordersProvider.isLoading && ordersProvider.orders.isEmpty) {
+      return const ListShimmer(itemCount: 2);
+    }
+
+    if (ordersProvider.errorMessage != null && ordersProvider.orders.isEmpty) {
+      return _StatusCard(
+        icon: Icons.error_outline,
+        message: ordersProvider.errorMessage!,
+        isError: true,
+      );
+    }
+
+    if (ordersProvider.orders.isEmpty) {
+      return const _StatusCard(icon: Icons.receipt_long, message: 'Brak historii zamówień');
+    }
+
+    return Column(
+      children: ordersProvider.orders.map((order) => _OrderTile(order: order)).toList(),
+    );
+  }
+}
+
+class _OrderTile extends StatelessWidget {
+  const _OrderTile({required this.order});
+
+  final OrderModel order;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -183,7 +194,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrderTrackingScreen(order: order))),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => OrderTrackingScreen(order: order)),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -217,8 +231,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
 
-  Widget _buildStatusCard(IconData icon, String message, {bool isError = false}) {
+class _StatusCard extends StatelessWidget {
+  const _StatusCard({
+    required this.icon,
+    required this.message,
+    this.isError = false,
+  });
+
+  final IconData icon;
+  final String message;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       width: double.infinity,
@@ -236,8 +263,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
 
-  Widget _buildMenuTile(BuildContext context, IconData icon, String title, String subtitle, VoidCallback onTap) {
+class _ProfileMenuTile extends StatelessWidget {
+  const _ProfileMenuTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(

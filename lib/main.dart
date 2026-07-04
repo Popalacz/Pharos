@@ -14,6 +14,7 @@ import 'package:pharos/ui/screens/cart_screen.dart';
 import 'package:pharos/ui/screens/wishlist_screen.dart';
 import 'package:pharos/ui/screens/contact_screen.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
+import 'package:pharos/core/providers/orders_provider.dart';
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
@@ -29,6 +30,7 @@ import 'package:pharos/core/api/api_config.dart';
 import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/data/repositories/cart_repository.dart';
 import 'package:pharos/data/repositories/user_repository.dart';
+import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:version/version.dart' as v;
 import 'package:url_launcher/url_launcher.dart';
@@ -118,6 +120,12 @@ void main() async {
         ChangeNotifierProxyProvider<UserProvider, WishlistProvider>(
           create: (_) => WishlistProvider(apiService: apiService),
           update: (_, user, wishlist) => wishlist!..updateUser(user),
+        ),
+        ChangeNotifierProxyProvider<UserProvider, OrdersProvider>(
+          create: (_) => OrdersProvider(
+            repository: OrderRepository(apiService: apiService),
+          ),
+          update: (_, user, orders) => orders!..updateUser(user),
         ),
         ChangeNotifierProvider(create: (_) => RecentlyViewedProvider()),
         ChangeNotifierProvider(create: (_) => UiFeedbackProvider()),
@@ -360,6 +368,16 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
     super.dispose();
   }
 
+  static const int profileTabIndex = 4;
+
+  void _refreshOrdersIfLoggedIn() {
+    if (!mounted) return;
+    final userProvider = context.read<UserProvider>();
+    if (userProvider.isLoggedIn) {
+      context.read<OrdersProvider>().fetchOrders();
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -368,6 +386,7 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
       if (userProvider.isLoggedIn) {
         context.read<WishlistProvider>().fetchWishlist();
         userProvider.fetchAddresses();
+        context.read<OrdersProvider>().fetchOrders();
       }
     }
   }
@@ -407,7 +426,12 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
           ),
           child: BottomNavigationBar(
             currentIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
+            onTap: (index) {
+              setState(() => _selectedIndex = index);
+              if (index == profileTabIndex) {
+                _refreshOrdersIfLoggedIn();
+              }
+            },
             selectedItemColor: Colors.orange,
             unselectedItemColor: Colors.grey,
             showSelectedLabels: true,

@@ -290,13 +290,13 @@ class UserProvider extends ChangeNotifier {
       final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
       final bool canAuthenticate = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
 
-      if (!canAuthenticate) return false;
+      if (!canAuthenticate) return true;
 
       return await _localAuth.authenticate(
-        localizedReason: 'Potwierdź swoją tożsamość, aby kontynuować',
+        localizedReason: 'Potwierdź tożsamość odciskiem, Face ID lub PIN urządzenia',
         options: const AuthenticationOptions(
           stickyAuth: true,
-          biometricOnly: true,
+          biometricOnly: false,
         ),
       );
     } catch (e) {

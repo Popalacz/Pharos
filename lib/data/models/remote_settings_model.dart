@@ -235,6 +235,7 @@ class RemoteSettings {
     final socialMedia = appConfig['social_media'] ?? {};
     final engagement = appConfig['engagement_loyalty'] ?? {};
     final contactConfig = json['contact_config'] ?? {};
+    final contactDetails = contactConfig['details'] ?? contactConfig['shop_details'] ?? {};
     final publicCalendar = json['public_calendar'] ?? {};
     final maps = json['maps'] ?? {};
 
@@ -259,9 +260,16 @@ class RemoteSettings {
       freeShippingThreshold: (json['free_shipping_threshold'] as num?)?.toDouble(),
       vouchersEnabled: json['vouchers_enabled'] == true,
       giftCategoryId: int.tryParse(json['gift_category_id']?.toString() ?? ''),
-      storeEmail: storeInfo['email'],
-      storePhone: storeInfo['phone'],
-      storeAddress: storeInfo['address'],
+      storeEmail: _readOptionalString(storeInfo['email']) ??
+          _readOptionalString(contactConfig['email']) ??
+          _readOptionalString(contactDetails['email']),
+      storePhone: _readOptionalString(storeInfo['phone']) ??
+          _readOptionalString(contactConfig['phone']) ??
+          _readOptionalString(contactDetails['phone']),
+      storeAddress: _readOptionalString(storeInfo['address']) ??
+          _readOptionalString(contactConfig['address']) ??
+          _readOptionalString(contactDetails['address']) ??
+          _buildAddressFromParts(contactConfig),
       contactMapEnabled: contactConfig['map_enabled'] ?? false,
       latitude: (contactConfig['latitude'] as num?)?.toDouble(),
       longitude: (contactConfig['longitude'] as num?)?.toDouble(),
@@ -289,6 +297,27 @@ class RemoteSettings {
           .map((item) => item['name'].toString())
           .toList(),
     );
+  }
+
+  static String? _readOptionalString(dynamic value) {
+    if (value == null) return null;
+    final normalized = value.toString().trim();
+    return normalized.isEmpty ? null : normalized;
+  }
+
+  static String? _buildAddressFromParts(Map<dynamic, dynamic> contactConfig) {
+    final addressParts = [
+      _readOptionalString(contactConfig['street']),
+      _readOptionalString(contactConfig['address1']),
+      _readOptionalString(contactConfig['city']),
+      _readOptionalString(contactConfig['postcode']),
+    ].whereType<String>().toList();
+
+    if (addressParts.isEmpty) {
+      return null;
+    }
+
+    return addressParts.join(', ');
   }
 
   static Map<String, List<OpeningHoursEntry>> _parseOpeningHours(dynamic rawValue) {
