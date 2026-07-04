@@ -10,6 +10,7 @@ import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pharos/ui/widgets/product_shimmer.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -160,14 +161,14 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Consumer<SearchProvider>(
         builder: (context, searchProvider, child) {
           if (searchProvider.isSearching) {
-            return const Center(child: CircularProgressIndicator(color: Colors.orange));
+            return const ProductShimmer();
           }
 
           if (searchProvider.query.isEmpty) {
             if (searchProvider.recentSearches.isNotEmpty) {
               return _buildRecentSearches(searchProvider);
             }
-            return _buildEmptyState('Zacznij pisać, aby znaleźć produkty');
+            return _buildEmptyState('Zacznij pisać, aby znaleźć produkty', icon: Icons.search_rounded);
           }
 
           // Show Autocomplete suggestions if full results are not yet loaded
@@ -276,19 +277,24 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildEmptyState(String message) {
+  Widget _buildEmptyState(String message, {IconData icon = Icons.search_off}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 80, color: Colors.white.withOpacity(0.05)),
-            const SizedBox(height: 16),
+            Lottie.network(
+              'https://assets9.lottiefiles.com/private_files/lf30_cg9qtpre.json',
+              height: 180,
+              repeat: true,
+              errorBuilder: (context, error, stackTrace) => Icon(icon, size: 80, color: Colors.white.withOpacity(0.05)),
+            ),
+            const SizedBox(height: 24),
             Text(
-              message,
+              message.toUpperCase(),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 16),
+              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5),
             ),
           ],
         ),

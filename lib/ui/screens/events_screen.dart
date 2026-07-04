@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
-import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+class EventsScreen extends StatefulWidget {
+  const EventsScreen({super.key});
 
   @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
+  State<EventsScreen> createState() => _EventsScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> {
+class _EventsScreenState extends State<EventsScreen> {
   WebViewController? _webViewController;
   bool _isLoading = true;
   bool _hasError = false;
@@ -30,16 +29,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _initializeWebView() {
-    final settings = context.read<SettingsProvider>().settings;
-    final embedUrl = settings.publicCalendarEmbedUrl;
-
-    if (!settings.hasPublicCalendar || embedUrl == null) {
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-      });
-      return;
-    }
+    // URL kalendarza dostarczony przez użytkownika
+    const String calendarUrl = "https://calendar.google.com/calendar/embed?src=6e67e8f88d83544199fb89c68454ba7c48aadf1f85e1fc86e0c56be537dc9670%40group.calendar.google.com&ctz=Europe%2FWarsaw";
 
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -53,28 +44,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
           }),
         ),
       )
-      ..loadRequest(Uri.parse(embedUrl));
+      ..loadRequest(Uri.parse(calendarUrl));
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final loc = context.watch<LocalizationProvider>();
-    final settings = context.watch<SettingsProvider>().settings;
-    final title = settings.publicCalendarTitleFor(loc.currentLanguageCode);
-
-    if (!settings.hasPublicCalendar) {
-      return Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: Center(child: Text(l10n.calendarUnavailable)),
-      );
-    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          title.toUpperCase(),
+          l10n.calendar.toUpperCase(), // "WYDARZENIA" w ARB
           style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 16),
         ),
         centerTitle: true,

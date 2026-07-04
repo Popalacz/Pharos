@@ -25,6 +25,7 @@ import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
 import 'package:pharos/ui/screens/catalog_screen.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
@@ -59,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'home',
+        if (_selectedCategoryId != null) 'id_category': _selectedCategoryId.toString(),
       },
       mapper: (json) => json,
     );
@@ -95,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showPromoDialog(String imageUrl) {
     final settings = context.read<SettingsProvider>().settings;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -126,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text('TWÓJ KOD RABATOWY:', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(l10n.yourPromoCode, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Text(settings.appOnlyDiscountCode!, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
                   ],
@@ -313,6 +316,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCartRecoveryBanner(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final settings = context.watch<SettingsProvider>().settings;
+    final l10n = AppLocalizations.of(context)!;
+    final loc = context.read<LocalizationProvider>();
     
     if (!settings.cartRecoveryEnabled || cart.itemCount == 0) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -335,8 +340,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Dokończ zakupy!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  Text('W Twoim koszyku czekają produkty o wartości ${context.read<LocalizationProvider>().formatPrice(cart.totalAmount)}', 
+                  Text(l10n.finishShopping, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(l10n.cartRecoveryMessage(loc.formatPrice(cart.totalAmount)), 
                     style: const TextStyle(fontSize: 12, color: Colors.white70)),
                 ],
               ),
@@ -351,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              child: const Text('KOSZYK'),
+              child: Text(l10n.cart.toUpperCase()),
             ),
           ],
         ),
@@ -360,6 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentlyViewedSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<RecentlyViewedProvider>(
       builder: (context, recentProvider, child) {
         if (recentProvider.recentProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -368,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionHeaderWidget(data: {'title': 'Ostatnio oglądane'}),
+              SectionHeaderWidget(data: {'title': l10n.recentlyViewed}),
               SizedBox(
                 height: 250,
                 child: ListView.builder(
@@ -393,6 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildErrorState() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -403,11 +410,11 @@ class _HomeScreenState extends State<HomeScreen> {
             errorBuilder: (context, error, stackTrace) => const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.grey),
           ),
           const SizedBox(height: 16),
-          const Text('Błąd synchronizacji z Pharos API', 
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+          Text(l10n.syncErrorTitle, 
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
           const SizedBox(height: 8),
-          const Text('Sprawdź połączenie z internetem i spróbuj ponownie.', 
-            textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+          Text(l10n.syncErrorMessage, 
+            textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => setState(() => _loadData()),
@@ -415,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.orange,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('SPRÓBUJ PONOWNIE', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.tryAgain, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -12,7 +12,20 @@
           "package_name": "pl.studia.pharos"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "350268117127-6j54od630qk21uhcmj8l9sfd99e6dh55.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pl.studia.pharos",
+            "certificate_hash": "9618bfe3cbfaec495017a46fb2efabebfbe50010"
+          }
+        },
+        {
+          "client_id": "350268117127-mfinglansgsbmk1rb58sq64voilmaj3e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAoN59vshD7eLTaUYWTCMxE9EVup1hyHSQ"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350268117127-mfinglansgsbmk1rb58sq64voilmaj3e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

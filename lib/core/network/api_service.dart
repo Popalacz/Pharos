@@ -29,7 +29,7 @@ class ApiService {
 
   ApiService() {
     dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.baseUrl.split('/api').first,
+      baseUrl: ApiConfig.originUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       headers: {
@@ -37,6 +37,11 @@ class ApiService {
         'X-Pharos-Platform': 'mobile-flutter',
       },
     ));
+
+    if (kDebugMode) {
+      debugPrint('Pharos API origin: ${ApiConfig.originUrl}');
+      debugPrint('Pharos API webservice: ${ApiConfig.baseUrl}');
+    }
 
     (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
       final client = HttpClient();

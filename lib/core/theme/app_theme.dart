@@ -6,22 +6,16 @@ import 'app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData get dark {
-    final ColorScheme colorScheme = const ColorScheme.dark(
-      primary: AppColors.accent,
-      onPrimary: AppColors.text,
-      secondary: AppColors.surface,
-      onSecondary: AppColors.text,
-      surface: AppColors.surface,
-      onSurface: AppColors.text,
-      error: Color(0xFFCF6679),
-      onError: AppColors.black,
-    );
-
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.accent,
+        brightness: Brightness.dark,
+        surface: AppColors.surface,
+        background: AppColors.background,
+      ),
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: colorScheme,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: <TargetPlatform, PageTransitionsBuilder>{
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),

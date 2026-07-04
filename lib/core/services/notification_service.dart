@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:pharos/main.dart';
 import 'package:pharos/ui/screens/order_tracking_screen.dart';
 import 'package:pharos/data/models/order_model.dart';
@@ -80,8 +83,13 @@ class NotificationService {
     try {
       _cachedToken = token;
       final dio = Dio(BaseOptions(
-        baseUrl: ApiConfig.baseUrl.split('/api').first,
+        baseUrl: ApiConfig.originUrl,
       ));
+      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final client = HttpClient();
+        client.badCertificateCallback = (cert, host, port) => true;
+        return client;
+      };
 
       await dio.post('/index.php', queryParameters: {
         'fc': 'module',

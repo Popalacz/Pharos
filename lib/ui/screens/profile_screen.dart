@@ -13,6 +13,7 @@ import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 import 'package:pharos/core/error/failures.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -125,19 +126,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text('Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.', 
               textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5)),
             const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text('ZALOGUJ SIĘ LUB ZAŁÓŻ KONTO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
+            PharosButton(
+              label: 'ZALOGUJ SIĘ LUB ZAŁÓŻ KONTO',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
             ),
           ],
         ),
@@ -146,30 +137,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildOrderHistory(BuildContext context, int customerId) {
-    return FutureBuilder<Either<Failure, List<OrderModel>>>(
-      future: _orderRepository.getCustomerOrders(customerId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const ListShimmer(itemCount: 2);
-        }
-
-        if (snapshot.hasError || !snapshot.hasData) {
-           return _buildStatusCard(Icons.error_outline, 'Nie udało się pobrać historii', isError: true);
-        }
-
-        return snapshot.data!.fold(
-          (failure) => _buildStatusCard(Icons.error_outline, failure.message, isError: true),
-          (orders) {
-            if (orders.isEmpty) {
-              return _buildStatusCard(Icons.receipt_long, 'Brak historii zamówień');
-            }
-
-            return Column(
-              children: orders.map((order) => _buildOrderTile(context, order)).toList(),
-            );
-          },
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() {});
       },
+      color: Colors.orange,
+      backgroundColor: const Color(0xFF1A1A1A),
+      child: FutureBuilder<Either<Failure, List<OrderModel>>>(
+        future: _orderRepository.getCustomerOrders(customerId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ListShimmer(itemCount: 2);
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+             return _buildStatusCard(Icons.error_outline, 'Nie udało się pobrać historii', isError: true);
+          }
+
+          return snapshot.data!.fold(
+            (failure) => _buildStatusCard(Icons.error_outline, failure.message, isError: true),
+            (orders) {
+              if (orders.isEmpty) {
+                // Aby RefreshIndicator działał na pustej liście, potrzebujemy SingleChildScrollView
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: _buildStatusCard(Icons.receipt_long, 'Brak historii zamówień'),
+                );
+              }
+
+              return Column(
+                children: orders.map((order) => _buildOrderTile(context, order)).toList(),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

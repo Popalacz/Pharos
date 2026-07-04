@@ -112,34 +112,45 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> signInWithGoogle() async {
     _isLoading = true;
+    _authError = null;
     notifyListeners();
     
-    final googleUser = await _googleService.signIn();
-    if (googleUser != null) {
-      final result = await _userRepository.loginWithGoogle(
-        'mock_token',
-        googleUser.email,
-        googleUser.displayName ?? '',
-      );
-      
-      result.fold(
-        (failure) {
-          // Fallback jeśli API Presty zawiedzie, ale Google przeszło
-          _user = UserModel(
-            id: 0, 
-            email: googleUser.email, 
-            firstname: googleUser.displayName?.split(' ').first ?? 'User', 
-            lastname: googleUser.displayName?.split(' ').last ?? '',
-            photoUrl: googleUser.photoUrl,
-          );
-        },
-        (userModel) {
-          _user = userModel;
-        },
-      );
-      await _syncFcmToken();
-      await fetchAddresses();
+    try {
+      final googleUser = await _googleService.signIn();
+      if (googleUser != null) {
+        final result = await _userRepository.loginWithGoogle(
+          'google_auth_token', // Przekazujemy placeholder lub prawdziwy token jeśli potrzebny
+          googleUser.email,
+          googleUser.displayName ?? '',
+        );
+        
+        await result.fold(
+          (failure) async {
+            // Jeśli API PrestaShop nie odpowiada, logujemy lokalnie jako fallback
+            // ale informujemy o błędzie synchronizacji jeśli to istotne
+            debugPrint('PrestaShop Google Login Error: ${failure.message}');
+            _user = UserModel(
+              id: 0, 
+              email: googleUser.email, 
+              firstname: googleUser.displayName?.split(' ').first ?? 'User', 
+              lastname: googleUser.displayName?.split(' ').last ?? '',
+              photoUrl: googleUser.photoUrl,
+            );
+          },
+          (userModel) async {
+            _user = userModel;
+          },
+        );
+        await _syncFcmToken();
+        await fetchAddresses();
+      } else {
+        _authError = 'Logowanie Google zostało przerwane lub wystąpił błąd konfiguracji.';
+      }
+    } catch (e) {
+      debugPrint('Google Sign-In Exception: $e');
+      _authError = 'Wystąpił nieoczekiwany błąd podczas logowania przez Google.';
     }
+
     _isLoading = false;
     notifyListeners();
   }

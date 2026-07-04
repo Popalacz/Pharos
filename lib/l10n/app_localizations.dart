@@ -305,7 +305,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendar.
   ///
   /// In en, this message translates to:
-  /// **'Calendar'**
+  /// **'Events'**
   String get calendar;
 
   /// No description provided for @calendarUnavailable.
@@ -355,6 +355,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Contact details are currently unavailable.'**
   String get contactUnavailable;
+
+  /// No description provided for @yourPromoCode.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PROMO CODE:'**
+  String get yourPromoCode;
+
+  /// No description provided for @finishShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your purchase!'**
+  String get finishShopping;
+
+  /// No description provided for @cartRecoveryMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Items worth {price} are waiting in your cart'**
+  String cartRecoveryMessage(Object price);
+
+  /// No description provided for @recentlyViewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently viewed'**
+  String get recentlyViewed;
+
+  /// No description provided for @syncErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pharos API Sync Error'**
+  String get syncErrorTitle;
+
+  /// No description provided for @syncErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get syncErrorMessage;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'TRY AGAIN'**
+  String get tryAgain;
+
+  /// No description provided for @cartEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It looks like you haven\'t chosen anything yet. Your dream products are waiting!'**
+  String get cartEmptyMessage;
+
+  /// No description provided for @startShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'START SHOPPING'**
+  String get startShopping;
+
+  /// No description provided for @freeShippingUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Free shipping unlocked!'**
+  String get freeShippingUnlocked;
+
+  /// No description provided for @freeShippingMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re {price} away from free shipping'**
+  String freeShippingMissing(Object price);
+
+  /// No description provided for @subtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get subtotal;
+
+  /// No description provided for @shipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping'**
+  String get shipping;
+
+  /// No description provided for @checkoutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'PROCEED TO CHECKOUT'**
+  String get checkoutButton;
+
+  /// No description provided for @voucherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount code'**
+  String get voucherLabel;
+
+  /// No description provided for @voucherApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount code applied'**
+  String get voucherApplied;
+
+  /// No description provided for @removedFromCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from cart'**
+  String get removedFromCart;
+
+  /// No description provided for @discount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discount;
+
+  /// No description provided for @productsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Products total'**
+  String get productsTotal;
 }
 
 class _AppLocalizationsDelegate

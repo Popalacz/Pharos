@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:pharos/ui/screens/categories_screen.dart';
 import 'package:pharos/ui/screens/wishlist_screen.dart';
 import 'package:pharos/ui/screens/localization_settings_screen.dart';
-import 'package:pharos/ui/screens/calendar_screen.dart';
+import 'package:pharos/ui/screens/events_screen.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 
@@ -69,11 +69,10 @@ class PharosNavigationDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const WishlistScreen()));
             }),
-            if (settings.hasPublicCalendar)
-              _buildMenuItem(context, Icons.calendar_month_outlined, l10n.calendar, () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
-              }),
+            _buildMenuItem(context, Icons.calendar_month_outlined, l10n.calendar, () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const EventsScreen()));
+            }),
             _buildMenuItem(context, Icons.language_outlined, l10n.drawerLanguageCurrency, () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen()));

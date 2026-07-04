@@ -15,6 +15,10 @@ class PharosApiInterceptor extends Interceptor {
       options.path = '/api${options.path.startsWith('/') ? '' : '/'}${options.path}';
     }
 
+    if (kDebugMode) {
+      debugPrint('API → ${options.baseUrl}${options.path}');
+    }
+
     if (options.path.contains('/api/')) {
       options.queryParameters['output_format'] = 'JSON';
       options.queryParameters['ws_key'] = ApiConfig.apiKey;
@@ -25,6 +29,9 @@ class PharosApiInterceptor extends Interceptor {
 
     if (options.path.contains('index.php') || options.path.contains('pharosapi')) {
       options.headers['Authorization'] = ApiConfig.headers['Authorization'];
+      if (!options.queryParameters.containsKey('id_lang')) {
+        options.queryParameters['id_lang'] = ApiService.defaultLanguageId.toString();
+      }
     }
 
     if (ApiService.sessionCookie != null) {

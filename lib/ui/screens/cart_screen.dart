@@ -10,6 +10,7 @@ import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -55,6 +56,7 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildEmptyCart(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -68,41 +70,30 @@ class CartScreen extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_basket_outlined, size: 100, color: Colors.grey),
             ),
             const SizedBox(height: 24),
-            const Text('Twój koszyk jest pusty', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(l10n.cartEmpty, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            const Text(
-              'Wygląda na to, że jeszcze nic nie wybrałeś. Twoje wymarzone produkty czekają!',
+            Text(
+              l10n.cartEmptyMessage,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Senior Fix: Zamiast pop (który wywala czarny ekran), 
-                  // przełączamy index w głównym nawigatorze na Home (0)
-                  final state = context.findAncestorStateOfType<State<StatefulWidget>>();
-                  if (state != null && state.toString().contains('MainNavigation')) {
-                    // Próba dostania się do MainNavigationState
-                    try {
-                      (state as dynamic).setState(() {
-                        (state as dynamic)._selectedIndex = 0;
-                      });
-                    } catch (e) {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }
-                  } else {
-                     Navigator.of(context).popUntil((route) => route.isFirst);
+            PharosButton(
+              label: l10n.startShopping,
+              onPressed: () {
+                final state = context.findAncestorStateOfType<State<StatefulWidget>>();
+                if (state != null && state.toString().contains('MainNavigation')) {
+                  try {
+                    (state as dynamic).setState(() {
+                      (state as dynamic)._selectedIndex = 0;
+                    });
+                  } catch (e) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('ZACZNIJ ZAKUPY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
+                } else {
+                   Navigator.of(context).popUntil((route) => route.isFirst);
+                }
+              },
             )
           ],
         ),
@@ -113,7 +104,7 @@ class CartScreen extends StatelessWidget {
   Widget _buildSummary(BuildContext context, CartProvider cart) {
     final settings = context.watch<SettingsProvider>().settings;
     final loc = context.watch<LocalizationProvider>();
-    final userProvider = context.watch<UserProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     final double? threshold = settings.freeShippingThreshold;
     final double current = cart.subtotalAmount;
@@ -146,8 +137,8 @@ class CartScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           progress >= 1.0
-                              ? 'Darmowa dostawa odblokowana!'
-                              : 'Brakuje Ci ${loc.formatPrice(remaining)} do darmowej dostawy',
+                              ? l10n.freeShippingUnlocked
+                              : l10n.freeShippingMissing(loc.formatPrice(remaining)),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: progress >= 1.0 ? Colors.green : Colors.white,
@@ -175,7 +166,7 @@ class CartScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Suma częściowa', style: TextStyle(color: Colors.grey)),
+                Text(l10n.subtotal, style: const TextStyle(color: Colors.grey)),
                 Text(loc.formatPrice(cart.subtotalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
@@ -183,7 +174,7 @@ class CartScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Dostawa', style: TextStyle(color: Colors.grey)),
+                Text(l10n.shipping, style: const TextStyle(color: Colors.grey)),
                 Text(
                   (showFreeShipping && cart.subtotalAmount >= threshold!) || cart.shippingAmount == 0
                       ? 'GRATIS'
@@ -201,31 +192,20 @@ class CartScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('RAZEM', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text(loc.formatPrice(cart.totalAmount),
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.orange)),
               ],
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CheckoutScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange, 
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
-                ),
-                child: const Text(
-                  'PRZEJDŹ DO KASY', 
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
-                ),
-              ),
+            PharosButton(
+              label: l10n.checkoutButton,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                );
+              },
             )
           ],
         ),
@@ -266,7 +246,25 @@ class _CartItemTile extends StatelessWidget {
               children: [
                 Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1),
                 const SizedBox(height: 4),
-                Text(context.read<LocalizationProvider>().formatPrice(item.product.price), style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  children: [
+                    Text(
+                      context.read<LocalizationProvider>().formatPrice(item.product.price), 
+                      style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)
+                    ),
+                    if (item.product.hasDiscount && item.product.priceOld != null)
+                      Text(
+                        context.read<LocalizationProvider>().formatPrice(item.product.priceOld!),
+                        style: TextStyle(
+                          fontSize: 11, 
+                          color: Colors.white.withOpacity(0.3),
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -292,9 +290,9 @@ class _CartItemTile extends StatelessWidget {
             onPressed: () {
               context.read<CartProvider>().removeItem(item.key);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Usunięto z koszyka'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.removedFromCart),
+                  duration: const Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -345,6 +343,7 @@ class _VoucherInputState extends State<_VoucherInput> {
   }
 
   Future<void> _apply() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_isApplying) return;
     setState(() => _isApplying = true);
     final error = await context.read<CartProvider>().applyVoucher(_controller.text);
@@ -352,7 +351,7 @@ class _VoucherInputState extends State<_VoucherInput> {
     setState(() => _isApplying = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error ?? 'Kod rabatowy zastosowany'),
+        content: Text(error ?? l10n.voucherApplied),
         backgroundColor: error == null ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -362,6 +361,7 @@ class _VoucherInputState extends State<_VoucherInput> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -370,7 +370,7 @@ class _VoucherInputState extends State<_VoucherInput> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: 'Kod rabatowy',
+                hintText: l10n.voucherLabel,
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.05),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

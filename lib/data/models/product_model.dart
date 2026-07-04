@@ -105,8 +105,7 @@ class ProductModel with _$ProductModel {
       images.add(json['image_ws'].toString());
     } else if (json['id_default_image'] != null && json['id_default_image'] != '0') {
       final imgId = json['id_default_image'].toString();
-      final apiBase = ApiConfig.baseUrl.split('/api').first;
-      images.add('$apiBase/api/images/products/$productId/$imgId');
+      images.add('${ApiConfig.originUrl}/api/images/products/$productId/$imgId');
     }
     return images.map((url) => _stabilizeImageUrl(url, productId)).where((url) => url.isNotEmpty).toList();
   }
@@ -127,10 +126,9 @@ class ProductModel with _$ProductModel {
 
   static String _stabilizeImageUrl(String url, int productId) {
     if (url.isEmpty) return '';
-    final apiBase = ApiConfig.baseUrl.split('/api').first;
     String finalUrl = url;
     if (!finalUrl.startsWith('http')) {
-      finalUrl = '$apiBase${finalUrl.startsWith('/') ? '' : '/'}$finalUrl';
+      finalUrl = '${ApiConfig.originUrl}${finalUrl.startsWith('/') ? '' : '/'}$finalUrl';
     }
     finalUrl = finalUrl.replaceFirst('://', '@@@').replaceAll('//', '/').replaceFirst('@@@', '://');
     if (finalUrl.contains('/api/images/') && !finalUrl.toLowerCase().contains('.jpg')) {

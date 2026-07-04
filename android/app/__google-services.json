@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "350268117127",
+    "project_id": "pharos-app-0620",
+    "storage_bucket": "pharos-app-0620.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350268117127:android:4dedf788e468af9c90e822",
+        "android_client_info": {
+          "package_name": "pl.studia.pharos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoN59vshD7eLTaUYWTCMxE9EVup1hyHSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

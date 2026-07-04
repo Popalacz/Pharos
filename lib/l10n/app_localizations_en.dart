@@ -114,7 +114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerRefreshStore => 'Refresh store';
 
   @override
-  String get calendar => 'Calendar';
+  String get calendar => 'Events';
 
   @override
   String get calendarUnavailable => 'Calendar is currently unavailable.';
@@ -139,4 +139,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactUnavailable => 'Contact details are currently unavailable.';
+
+  @override
+  String get yourPromoCode => 'YOUR PROMO CODE:';
+
+  @override
+  String get finishShopping => 'Complete your purchase!';
+
+  @override
+  String cartRecoveryMessage(Object price) {
+    return 'Items worth $price are waiting in your cart';
+  }
+
+  @override
+  String get recentlyViewed => 'Recently viewed';
+
+  @override
+  String get syncErrorTitle => 'Pharos API Sync Error';
+
+  @override
+  String get syncErrorMessage =>
+      'Check your internet connection and try again.';
+
+  @override
+  String get tryAgain => 'TRY AGAIN';
+
+  @override
+  String get cartEmptyMessage =>
+      'It looks like you haven\'t chosen anything yet. Your dream products are waiting!';
+
+  @override
+  String get startShopping => 'START SHOPPING';
+
+  @override
+  String get freeShippingUnlocked => 'Free shipping unlocked!';
+
+  @override
+  String freeShippingMissing(Object price) {
+    return 'You\'re $price away from free shipping';
+  }
+
+  @override
+  String get subtotal => 'Subtotal';
+
+  @override
+  String get shipping => 'Shipping';
+
+  @override
+  String get checkoutButton => 'PROCEED TO CHECKOUT';
+
+  @override
+  String get voucherLabel => 'Discount code';
+
+  @override
+  String get voucherApplied => 'Discount code applied';
+
+  @override
+  String get removedFromCart => 'Removed from cart';
+
+  @override
+  String get discount => 'Discount';
+
+  @override
+  String get productsTotal => 'Products total';
 }

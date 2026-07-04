@@ -23,10 +23,13 @@ class CategoryRepository implements ICategoryRepository {
         'action': 'list',
       },
       mapper: (json) {
-        final List categoriesJson = json['categories'] ?? [];
-        return categoriesJson
-            .map((j) => CategoryModel.fromJson(j as Map<String, dynamic>))
-            .toList();
+        if (json is Map && json['status'] == 'success') {
+          final List categoriesJson = json['data'] ?? json['categories'] ?? [];
+          return categoriesJson
+              .map((j) => CategoryModel.fromJson(j as Map<String, dynamic>))
+              .toList();
+        }
+        return <CategoryModel>[];
       },
     );
   }

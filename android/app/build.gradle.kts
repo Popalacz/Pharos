@@ -1,22 +1,14 @@
 plugins {
     id("com.android.application")
-    // Usunięcie id("org.jetbrains.kotlin.android") - Flutter sam zarządza Kotlinem w nowszych wersjach
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 dependencies {
-  // Import the Firebase BoM
-  implementation(platform("com.google.firebase:firebase-bom:34.14.1"))
-
-
-  // TODO: Add the dependencies for Firebase products you want to use
-  // When using the BoM, don't specify versions in Firebase dependencies
-  implementation("com.google.firebase:firebase-analytics")
-
-
-  // Add the dependencies for any other desired Firebase products
-  // https://firebase.google.com/docs/android/setup#available-libraries
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 }
 
 android {
@@ -51,7 +43,8 @@ android {
         targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = ""
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] =
+            rootProject.extra.get("googleMapsApiKey") as String
     }
 
     buildTypes {

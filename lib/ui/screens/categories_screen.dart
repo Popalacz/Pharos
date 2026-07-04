@@ -56,7 +56,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             ),
             (categories) {
               if (categories.isEmpty) {
-                return const SizedBox.shrink();
+                return const Center(
+                  child: Text('Brak kategorii do wyświetlenia.', style: TextStyle(color: Colors.white30)),
+                );
               }
 
               return ListView.separated(

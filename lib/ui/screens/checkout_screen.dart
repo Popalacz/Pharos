@@ -23,6 +23,8 @@ import 'package:pharos/ui/screens/order_confirmation_screen.dart';
 import 'package:pharos/ui/screens/address_selection_screen.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -702,6 +704,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildOrderSummary(CartProvider cart, double shipping, double total, LocalizationProvider loc) {
+    final l10n = AppLocalizations.of(context)!;
+    final double calculatedTotal = cart.subtotalAmount + shipping;
+    final double discount = (calculatedTotal - total).clamp(0.0, double.infinity);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -711,18 +717,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
       child: Column(
         children: [
-          _summaryRow('Suma produktów', loc.formatPrice(cart.subtotalAmount)),
+          _summaryRow(l10n.productsTotal, loc.formatPrice(cart.subtotalAmount)),
           const SizedBox(height: 12),
-          _summaryRow('Dostawa', shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
-          if (cart.shippingAmount > 0 && cart.totalAmount != cart.subtotalAmount + cart.shippingAmount) ...[
+          _summaryRow(l10n.shipping, shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
+          if (discount > 0.05) ...[
              const SizedBox(height: 12),
-             _summaryRow('Rabat', '- ${loc.formatPrice(cart.subtotalAmount + cart.shippingAmount - cart.totalAmount)}', color: Colors.green),
+             _summaryRow(l10n.discount, '- ${loc.formatPrice(discount)}', color: Colors.green),
           ],
           const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(color: Colors.white10)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('ŁĄCZNIE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.5)),
+              Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.5)),
               Text(loc.formatPrice(total), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.accent)),
             ],
           ),
@@ -779,21 +785,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, -8))],
       ),
       child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          height: 60,
-          child: ElevatedButton(
-            onPressed: canPlaceOrder && !_isProcessing ? () => _placeOrder(total) : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              disabledBackgroundColor: Colors.white.withOpacity(0.05),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd)),
-              elevation: 0,
-            ),
-            child: _isProcessing
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text(buttonText.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
-          ),
+        child: PharosButton(
+          label: buttonText,
+          isLoading: _isProcessing,
+          onPressed: canPlaceOrder ? () => _placeOrder(total) : null,
         ),
       ),
     );

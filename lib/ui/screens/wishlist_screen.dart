@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
+import 'package:lottie/lottie.dart';
 
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
@@ -54,16 +56,14 @@ class WishlistScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.03),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.1)),
+            Lottie.network(
+              'https://assets1.lottiefiles.com/packages/lf20_v7v9z8zv.json',
+              height: 200,
+              repeat: true,
+              errorBuilder: (context, error, stackTrace) => Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.1)),
             ),
             const SizedBox(height: 32),
-            const Text('Twoja lista jest pusta', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+            const Text('TWOJA LISTA JEST PUSTA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
             const SizedBox(height: 12),
             Text(
               'Zapisuj produkty, które Ci się podobają, aby wrócić do nich w dowolnym momencie.',
@@ -71,25 +71,13 @@ class WishlistScreen extends StatelessWidget {
               style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5),
             ),
             const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Powrót do zakupów jest realizowany przez nawigację dolną (tab 0)
-                  // ale możemy tu dodać akcję nawigacyjną jeśli ekran jest w stosie
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text('ZACZNIJ ODKRYWAĆ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
+            PharosButton(
+              label: 'ZACZNIJ ODKRYWAĆ',
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              },
             ),
           ],
         ),

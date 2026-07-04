@@ -194,6 +194,8 @@ class _PharosProductCardState extends State<PharosProductCard> {
   }
 
   Widget _buildProductInfo(BuildContext context) {
+    final loc = context.read<LocalizationProvider>();
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
@@ -206,11 +208,25 @@ class _PharosProductCardState extends State<PharosProductCard> {
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.white),
           ),
           const SizedBox(height: 4),
-          Consumer<LocalizationProvider>(
-            builder: (context, loc, child) => Text(
-              loc.formatPrice(widget.product.price),
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange),
-            ),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            children: [
+              Text(
+                loc.formatPrice(widget.product.price),
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange),
+              ),
+              if (widget.product.hasDiscount && widget.product.priceOld != null)
+                Text(
+                  loc.formatPrice(widget.product.priceOld!),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500, 
+                    fontSize: 12, 
+                    color: Colors.white.withOpacity(0.3),
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+            ],
           ),
         ],
       ),

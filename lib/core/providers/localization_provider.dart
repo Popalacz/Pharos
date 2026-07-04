@@ -3,7 +3,12 @@ import 'package:pharos/data/models/localization_models.dart';
 import '../network/api_service.dart';
 
 class LocalizationProvider extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+
+  LocalizationProvider({ApiService? apiService})
+      : _apiService = apiService ?? ApiService() {
+    _loadFromPrestaShop();
+  }
   List<LanguageModel> _languages = [];
   List<CurrencyModel> _currencies = [];
 
@@ -25,10 +30,6 @@ class LocalizationProvider extends ChangeNotifier {
   }
 
   String get currentLanguageCode => _currentLanguage?.languageCode ?? 'pl';
-
-  LocalizationProvider() {
-    _loadFromPrestaShop();
-  }
 
   Future<void> reload() => _loadFromPrestaShop();
 
@@ -58,10 +59,20 @@ class LocalizationProvider extends ChangeNotifier {
         final int serverCurrId = int.tryParse(locData['current_currency_id']?.toString() ?? '') ?? 0;
 
         if (_languages.isNotEmpty) {
-          _currentLanguage = _languages.firstWhere(
-            (l) => l.id == serverLangId,
-            orElse: () => _languages.first,
-          );
+          // Senior Fix: Zachowujemy aktualny język jeśli już był wybrany, 
+          // w przeciwnym razie bierzemy z serwera.
+          if (_currentLanguage != null) {
+             _currentLanguage = _languages.firstWhere(
+              (l) => l.id == _currentLanguage!.id,
+              orElse: () => _languages.first,
+            );
+          } else {
+            _currentLanguage = _languages.firstWhere(
+              (l) => l.id == serverLangId,
+              orElse: () => _languages.first,
+            );
+          }
+
           if (_currentLanguage != null) {
             ApiService.defaultLanguageId = _currentLanguage!.id;
           }
@@ -83,6 +94,7 @@ class LocalizationProvider extends ChangeNotifier {
   }
 
   Future<void> setLanguage(LanguageModel lang) async {
+    debugPrint('Switching language to: ${lang.name} (${lang.languageCode})');
     _currentLanguage = lang;
     ApiService.defaultLanguageId = lang.id;
     notifyListeners();

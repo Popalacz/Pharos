@@ -17,6 +17,7 @@ import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
 import 'package:pharos/core/error/failures.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
@@ -174,7 +175,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         const SizedBox(height: 8),
         Text(widget.product.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white)),
         const SizedBox(height: 12),
-        Text(loc.formatPrice(widget.product.price), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.orange)),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(loc.formatPrice(widget.product.price), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.orange)),
+            if (widget.product.hasDiscount && widget.product.priceOld != null) ...[
+              const SizedBox(width: 12),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  loc.formatPrice(widget.product.priceOld!),
+                  style: TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.w500, 
+                    color: Colors.white.withOpacity(0.3),
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                margin: const EdgeInsets.only(bottom: 4),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '-${widget.product.discountPercentage ?? (((1 - widget.product.price / widget.product.priceOld!) * 100).round())}%',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            ],
+          ],
+        ),
       ],
     );
   }
@@ -329,12 +363,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: widget.product.canBeAddedToCart
-                  ? ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        minimumSize: const Size(double.infinity, 60),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
+                  ? PharosButton(
+                      label: widget.product.isOnOrder ? 'KUP NA ZAMÓWIENIE' : 'DODAJ DO KOSZYKA',
                       onPressed: () {
                         context.read<CartProvider>().addItem(widget.product);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -351,22 +381,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           ),
                         );
                       },
-                      child: Text(widget.product.isOnOrder ? 'KUP NA ZAMÓWIENIE' : 'DODAJ DO KOSZYKA', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     )
                   : widget.product.shouldShowNotifyMe
-                    ? OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.orange,
-                          minimumSize: const Size(double.infinity, 60),
-                          side: const BorderSide(color: Colors.orange),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
+                    ? PharosButton(
+                        style: PharosButtonStyle.outline,
+                        label: 'POWIADOM O DOSTĘPNOŚCI',
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Zapisano Cię na powiadomienie o dostępności!'), backgroundColor: Colors.blue),
                           );
                         },
-                        child: const Text('POWIADOM O DOSTĘPNOŚCI', style: TextStyle(fontWeight: FontWeight.bold)),
                       )
                     : Container(
                         height: 60,

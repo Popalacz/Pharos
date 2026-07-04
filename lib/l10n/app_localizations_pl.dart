@@ -114,7 +114,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get drawerRefreshStore => 'Odśwież sklep';
 
   @override
-  String get calendar => 'Kalendarz';
+  String get calendar => 'Wydarzenia';
 
   @override
   String get calendarUnavailable => 'Kalendarz jest obecnie niedostępny.';
@@ -139,4 +139,67 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get contactUnavailable => 'Dane kontaktowe są obecnie niedostępne.';
+
+  @override
+  String get yourPromoCode => 'TWÓJ KOD RABATOWY:';
+
+  @override
+  String get finishShopping => 'Dokończ zakupy!';
+
+  @override
+  String cartRecoveryMessage(Object price) {
+    return 'W Twoim koszyku czekają produkty o wartości $price';
+  }
+
+  @override
+  String get recentlyViewed => 'Ostatnio oglądane';
+
+  @override
+  String get syncErrorTitle => 'Błąd synchronizacji z Pharos API';
+
+  @override
+  String get syncErrorMessage =>
+      'Sprawdź połączenie z internetem i spróbuj ponownie.';
+
+  @override
+  String get tryAgain => 'SPRÓBUJ PONOWNIE';
+
+  @override
+  String get cartEmptyMessage =>
+      'Wygląda na to, że jeszcze nic nie wybrałeś. Twoje wymarzone produkty czekają!';
+
+  @override
+  String get startShopping => 'ZACZNIJ ZAKUPY';
+
+  @override
+  String get freeShippingUnlocked => 'Darmowa dostawa odblokowana!';
+
+  @override
+  String freeShippingMissing(Object price) {
+    return 'Brakuje Ci $price do darmowej dostawy';
+  }
+
+  @override
+  String get subtotal => 'Suma częściowa';
+
+  @override
+  String get shipping => 'Dostawa';
+
+  @override
+  String get checkoutButton => 'PRZEJDŹ DO KASY';
+
+  @override
+  String get voucherLabel => 'Kod rabatowy';
+
+  @override
+  String get voucherApplied => 'Kod rabatowy zastosowany';
+
+  @override
+  String get removedFromCart => 'Usunięto z koszyka';
+
+  @override
+  String get discount => 'Rabat';
+
+  @override
+  String get productsTotal => 'Suma produktów';
 }

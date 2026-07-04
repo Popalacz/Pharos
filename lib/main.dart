@@ -32,6 +32,8 @@ import 'package:pharos/data/repositories/user_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:version/version.dart' as v;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:pharos/core/config/google_config.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -51,17 +53,28 @@ void main() async {
   
   try {
     await Firebase.initializeApp();
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+    if (!GoogleConfig.hasServerClientId) {
+      debugPrint(
+        'Google Sign-In: brak GOOGLE_SERVER_CLIENT_ID. '
+        'Dodaj SHA-1 w Firebase, pobierz google-services.json '
+        'i uruchom z --dart-define=GOOGLE_SERVER_CLIENT_ID=...',
+      );
+    }
   } catch (e) {
     debugPrint('Firebase Init Error: $e');
   }
-  
+
   final apiService = ApiService();
   final settingsProvider = SettingsProvider(apiService: apiService);
-  
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    FirebaseCrashlytics.instance.recordFlutterError(details);
+
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
   };
+
+  FirebaseAnalytics.instance.logAppOpen();
 
   NotificationService().initialize();
   
@@ -82,7 +95,7 @@ void main() async {
         Provider<ICategoryRepository>(
           create: (_) => CategoryRepository(apiService: apiService),
         ),
-        ChangeNotifierProvider(create: (_) => LocalizationProvider()),
+        ChangeNotifierProvider(create: (_) => LocalizationProvider(apiService: apiService)),
         ChangeNotifierProvider(
           create: (_) => UserProvider(
             apiService: apiService,

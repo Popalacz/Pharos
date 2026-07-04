@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -125,19 +126,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: userProvider.isLoading ? null : _handleLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: userProvider.isLoading 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('ZALOGUJ SIĘ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-              ),
+            PharosButton(
+              label: 'ZALOGUJ SIĘ',
+              isLoading: userProvider.isLoading,
+              onPressed: _handleLogin,
             ),
             const SizedBox(height: 32),
             const Row(
@@ -188,19 +180,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               validator: _passwordValidator,
             ),
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: userProvider.isLoading ? null : _handleRegister,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: userProvider.isLoading 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('ZAŁÓŻ KONTO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-              ),
+            PharosButton(
+              label: 'ZAŁÓŻ KONTO',
+              isLoading: userProvider.isLoading,
+              onPressed: _handleRegister,
             ),
           ],
         ),
@@ -251,24 +234,57 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildGoogleButton() {
+    final userProvider = context.watch<UserProvider>();
+    
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: OutlinedButton.icon(
-        onPressed: () async {
-          await context.read<UserProvider>().signInWithGoogle();
-          if (mounted && context.read<UserProvider>().isLoggedIn) {
-            Navigator.pop(context);
-          }
-        },
-        icon: Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_Color_Icon.svg/1200px-Google_Color_Icon.svg.png', height: 20),
-        label: const Text('KONTYNUUJ PRZEZ GOOGLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      child: OutlinedButton(
+        onPressed: userProvider.isLoading ? null : _handleGoogleSignIn,
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.white24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white.withOpacity(0.05),
         ),
+        child: userProvider.isLoading 
+          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.orange, strokeWidth: 2))
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.network(
+                  'https://authjs.dev/img/providers/google.svg',
+                  height: 24,
+                  width: 24,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'KONTYNUUJ PRZEZ GOOGLE', 
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)
+                ),
+              ],
+            ),
       ),
     );
+  }
+
+  void _handleGoogleSignIn() async {
+    final userProvider = context.read<UserProvider>();
+    await userProvider.signInWithGoogle();
+    
+    if (mounted) {
+      if (userProvider.isLoggedIn) {
+        Navigator.pop(context);
+      } else if (userProvider.authError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(userProvider.authError!),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _handleLogin() async {
