@@ -48,3 +48,6 @@ app.*.map.json
 project-2e69b345*.json
 **/service-account*.json
 android/local.properties
+
+
+/prestashop_module/pharosapi/*.zip
