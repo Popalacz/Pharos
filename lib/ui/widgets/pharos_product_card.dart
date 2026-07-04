@@ -46,55 +46,55 @@ class _PharosProductCardState extends State<PharosProductCard> {
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            AspectRatio(
-              aspectRatio: 0.75,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Hero(
-                      tag: '${widget.heroTagPrefix}_${widget.product.id}',
-                      child: Container(
-                        key: _imageKey,
-                        child: widget.product.imageUrl.isEmpty
-                            ? ColoredBox(
-                                color: Colors.white.withOpacity(0.05),
-                                child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: widget.product.getSizedImageUrl('home_default'),
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 400,
-                                placeholder: (context, url) => Container(
-                                  color: Colors.white.withOpacity(0.03),
-                                  child: Shimmer.fromColors(
-                                    baseColor: Colors.white.withOpacity(0.05),
-                                    highlightColor: Colors.white.withOpacity(0.1),
-                                    child: Container(color: Colors.white),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
-                              ),
-                      ),
-                    ),
-                    _buildWishlistButton(),
-                    if (!widget.product.isAvailable) _buildStatusBadge('BRAK', Colors.red)
-                    else if (widget.product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', Colors.blue)
-                    else if (widget.product.isLowStock) _buildStatusBadge('OSTATNIE', Colors.orange),
-                    _buildQuickAddButton(context),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            Expanded(child: _buildImageArea()),
+            const SizedBox(height: 8),
             _buildProductInfo(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImageArea() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Hero(
+            tag: '${widget.heroTagPrefix}_${widget.product.id}',
+            child: Container(
+              key: _imageKey,
+              child: widget.product.imageUrl.isEmpty
+                  ? ColoredBox(
+                      color: Colors.white.withOpacity(0.05),
+                      child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: widget.product.getSizedImageUrl('home_default'),
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 400,
+                      placeholder: (context, url) => Container(
+                        color: Colors.white.withOpacity(0.03),
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.white.withOpacity(0.05),
+                          highlightColor: Colors.white.withOpacity(0.1),
+                          child: Container(color: Colors.white),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
+                    ),
+            ),
+          ),
+          _buildWishlistButton(),
+          if (!widget.product.isAvailable) _buildStatusBadge('BRAK', Colors.red)
+          else if (widget.product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', Colors.blue)
+          else if (widget.product.isLowStock) _buildStatusBadge('OSTATNIE', Colors.orange),
+          _buildQuickAddButton(context),
+        ],
       ),
     );
   }

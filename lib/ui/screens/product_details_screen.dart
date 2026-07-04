@@ -37,7 +37,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     super.initState();
     _reviewsFuture = ReviewRepository(useMockData: false).getProductReviews(widget.product.id);
     _relatedFuture = context.read<IProductRepository>().getRelatedProducts(widget.product.id);
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<RecentlyViewedProvider>().addProduct(widget.product);
     });
@@ -66,7 +66,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       _buildSectionTitle('OPIS PRODUKTU'),
                       const SizedBox(height: 12),
                       Text(
-                        widget.product.description, 
+                        widget.product.description,
                         style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.7), height: 1.6)
                       ),
                       const SizedBox(height: 32),
@@ -120,7 +120,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Widget _buildImageGallery() {
     final sizedImages = widget.product.getSizedImages('large_default');
-    
+
     return SliverAppBar(
       expandedHeight: 450,
       automaticallyImplyLeading: false,
@@ -170,10 +170,23 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.product.manufacturerName.isNotEmpty)
-          Text(widget.product.manufacturerName.toUpperCase(), 
-            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 12)),
+          Text(
+            widget.product.manufacturerName.toUpperCase(),
+            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 12)
+          ),
         const SizedBox(height: 8),
-        Text(widget.product.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white)),
+        // Fix for bottom overflow: Product name now wrapped in a Flexible/FittedBox and uses maxLines
+        LayoutBuilder(
+          builder: (context, constraints) => ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+            child: Text(
+              widget.product.name,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
         const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -186,8 +199,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 child: Text(
                   loc.formatPrice(widget.product.priceOld!),
                   style: TextStyle(
-                    fontSize: 18, 
-                    fontWeight: FontWeight.w500, 
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
                     color: Colors.white.withOpacity(0.3),
                     decoration: TextDecoration.lineThrough,
                   ),
@@ -272,7 +285,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       future: _relatedFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox(height: 100);
-        
+
         return snapshot.data!.fold(
           (_) => const SizedBox.shrink(),
           (products) {
@@ -305,7 +318,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         if (snapshot.hasError || !snapshot.hasData) {
           return Text('Błąd podczas ładowania opinii.', style: TextStyle(color: Colors.white.withOpacity(0.3)));
         }
-        
+
         return snapshot.data!.fold(
           (failure) => Text('Nie udało się pobrać opinii.', style: TextStyle(color: Colors.white.withOpacity(0.3))),
           (reviews) {
@@ -363,40 +376,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: widget.product.canBeAddedToCart
-                  ? PharosButton(
-                      label: widget.product.isOnOrder ? 'KUP NA ZAMÓWIENIE' : 'DODAJ DO KOSZYKA',
-                      onPressed: () {
-                        context.read<CartProvider>().addItem(widget.product);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(widget.product.isOnOrder ? 'Dodano produkt (Na zamówienie)' : 'Dodano do koszyka'),
-                            backgroundColor: Colors.green,
-                            action: SnackBarAction(
-                              label: 'KOSZYK',
-                              textColor: Colors.white,
-                              onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    )
-                  : widget.product.shouldShowNotifyMe
                     ? PharosButton(
-                        style: PharosButtonStyle.outline,
-                        label: 'POWIADOM O DOSTĘPNOŚCI',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Zapisano Cię na powiadomienie o dostępności!'), backgroundColor: Colors.blue),
-                          );
-                        },
-                      )
-                    : Container(
-                        height: 60,
-                        alignment: Alignment.center,
-                        child: const Text('PRODUKT NIEDOSTĘPNY', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  label: widget.product.isOnOrder ? 'KUP NA ZAMÓWIENIE' : 'DODAJ DO KOSZYKA',
+                  onPressed: () {
+                    context.read<CartProvider>().addItem(widget.product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(widget.product.isOnOrder ? 'Dodano produkt (Na zamówienie)' : 'Dodano do koszyka'),
+                        backgroundColor: Colors.green,
+                        action: SnackBarAction(
+                          label: 'KOSZYK',
+                          textColor: Colors.white,
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+                          },
+                        ),
                       ),
+                    );
+                  },
+                )
+                    : widget.product.shouldShowNotifyMe
+                    ? PharosButton(
+                  style: PharosButtonStyle.outline,
+                  label: 'POWIADOM O DOSTĘPNOŚCI',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Zapisano Cię na powiadomienie o dostępności!'), backgroundColor: Colors.blue),
+                    );
+                  },
+                )
+                    : Container(
+                  height: 60,
+                  alignment: Alignment.center,
+                  child: const Text('PRODUKT NIEDOSTĘPNY', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ),
               ),
             ],
           ),
