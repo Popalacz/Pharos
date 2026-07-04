@@ -31,7 +31,6 @@ class WishlistProvider extends ChangeNotifier {
     if (userProvider.isLoggedIn && !wasLoggedIn) {
       _syncGuestWithServer();
     } else if (!userProvider.isLoggedIn && wasLoggedIn) {
-      // Jeśli się wylogował, wracamy do czystej listy (lub zostawiamy lokalną - Senior wybiera czystą dla bezpieczeństwa)
       _wishlistIds.clear();
       _wishlistProducts.clear();
       _loadLocalWishlist();

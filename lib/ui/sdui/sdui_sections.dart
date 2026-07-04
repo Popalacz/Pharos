@@ -1,7 +1,23 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/data/models/category_model.dart';
 import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
+
+List<ProductModel> _parseProductItems(List items) {
+  final products = <ProductModel>[];
+  for (final item in items) {
+    if (item is! Map) continue;
+    try {
+      products.add(ProductModel.fromJson(Map<String, dynamic>.from(item)));
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('ProductGridSection: skip invalid product item: $error\n$stackTrace');
+      }
+    }
+  }
+  return products;
+}
 
 class BannerSliderSection extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -67,9 +83,12 @@ class CategoryChipsSection extends StatelessWidget {
     final items = data['items'] as List? ?? [];
     if (items.isEmpty) return const SizedBox.shrink();
 
-    final categories = items
-        .map((item) => CategoryModel.fromJson(Map<String, dynamic>.from(item as Map)))
-        .toList();
+    final categories = items.map((item) {
+      if (item is Map) {
+        return CategoryModel.fromJson(Map<String, dynamic>.from(item));
+      }
+      return null;
+    }).whereType<CategoryModel>().toList();
 
     return SizedBox(
       height: 60,
@@ -150,7 +169,9 @@ class ProductGridSection extends StatelessWidget {
     final items = data['items'] as List? ?? [];
     if (items.isEmpty) return const SizedBox.shrink();
 
-    final products = items.map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map))).toList();
+    final products = _parseProductItems(items);
+    if (products.isEmpty) return const SizedBox.shrink();
+
     final title = data['title']?.toString();
 
     return Column(
@@ -164,7 +185,7 @@ class ProductGridSection extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.55,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
@@ -187,7 +208,8 @@ class RecommendationsSection extends StatelessWidget {
     final items = data['items'] as List? ?? [];
     if (items.isEmpty) return const SizedBox.shrink();
 
-    final products = items.map((item) => ProductModel.fromJson(Map<String, dynamic>.from(item as Map))).toList();
+    final products = _parseProductItems(items);
+    if (products.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

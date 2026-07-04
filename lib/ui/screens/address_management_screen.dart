@@ -51,7 +51,6 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                 ],
               ),
           
-          // Senior Fix: Przycisk zakotwiczony w body zapobiega błędom NEEDS-LAYOUT
           Positioned(
             bottom: 24,
             left: 20,

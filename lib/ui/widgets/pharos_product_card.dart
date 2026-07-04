@@ -46,39 +46,40 @@ class _PharosProductCardState extends State<PharosProductCard> {
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
+            AspectRatio(
+              aspectRatio: 0.75,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     Hero(
                       tag: '${widget.heroTagPrefix}_${widget.product.id}',
                       child: Container(
                         key: _imageKey,
                         child: widget.product.imageUrl.isEmpty
-                            ? Container(
-                                width: double.infinity,
-                                height: double.infinity,
+                            ? ColoredBox(
                                 color: Colors.white.withOpacity(0.05),
                                 child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
                               )
                             : CachedNetworkImage(
-                          imageUrl: widget.product.getSizedImageUrl('home_default'),
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 400, 
-                          placeholder: (context, url) => Container(
-                            color: Colors.white.withOpacity(0.03),
-                            child: Shimmer.fromColors(
-                              baseColor: Colors.white.withOpacity(0.05),
-                              highlightColor: Colors.white.withOpacity(0.1),
-                              child: Container(color: Colors.white),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
-                        ),
+                                imageUrl: widget.product.getSizedImageUrl('home_default'),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 400,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.white.withOpacity(0.03),
+                                  child: Shimmer.fromColors(
+                                    baseColor: Colors.white.withOpacity(0.05),
+                                    highlightColor: Colors.white.withOpacity(0.1),
+                                    child: Container(color: Colors.white),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
+                              ),
                       ),
                     ),
                     _buildWishlistButton(),
@@ -107,8 +108,6 @@ class _PharosProductCardState extends State<PharosProductCard> {
         onTap: () {
           HapticFeedback.heavyImpact();
           context.read<CartProvider>().addItem(widget.product);
-          
-          // Trigger Fly Animation (Engineering Thesis Point 3)
           context.read<UiFeedbackProvider>().triggerFlyToCart(_imageKey);
           
           ScaffoldMessenger.of(context).hideCurrentSnackBar();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/data/models/category_model.dart';
 import 'package:pharos/data/repositories/category_repository.dart';
 import 'package:pharos/ui/screens/catalog_screen.dart';
@@ -17,11 +18,15 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   late Future<Either<Failure, List<CategoryModel>>> _categoriesFuture;
+  bool _initialLoadDone = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadCategories();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialLoadDone) {
+      _initialLoadDone = true;
+      _loadCategories();
+    }
   }
 
   void _loadCategories() {
@@ -31,8 +36,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: const Text('KATEGORIE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'KATEGORIE',
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white),
+        ),
         centerTitle: true,
       ),
       body: FutureBuilder<Either<Failure, List<CategoryModel>>>(
@@ -57,15 +68,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             (categories) {
               if (categories.isEmpty) {
                 return const Center(
-                  child: Text('Brak kategorii do wyświetlenia.', style: TextStyle(color: Colors.white30)),
+                  child: Text(
+                    'Brak kategorii do wyświetlenia.',
+                    style: TextStyle(color: Colors.white30),
+                  ),
                 );
               }
 
-              return ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: categories.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
-                itemBuilder: (context, index) => _CategoryTile(category: categories[index]),
+              return RefreshIndicator(
+                onRefresh: () async => setState(_loadCategories),
+                color: Colors.orange,
+                backgroundColor: const Color(0xFF1A1A1A),
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.85,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) => _CategoryCard(category: categories[index]),
+                ),
               );
             },
           );
@@ -75,27 +100,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 }
 
-class _CategoryTile extends StatelessWidget {
+class _CategoryCard extends StatelessWidget {
   final CategoryModel category;
-  const _CategoryTile({required this.category});
+
+  const _CategoryCard({required this.category});
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white.withValues(alpha: 0.05),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Colors.white10),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        title: Text(
-          category.name.toUpperCase(),
-          style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.orange),
+      child: InkWell(
         onTap: () {
           Navigator.push(
             context,
@@ -107,6 +123,61 @@ class _CategoryTile extends StatelessWidget {
             ),
           );
         },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (category.imageUrl.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: category.imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => ColoredBox(
+                  color: Colors.white.withValues(alpha: 0.04),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)),
+                ),
+                errorWidget: (context, url, error) => _buildPlaceholder(),
+              )
+            else
+              _buildPlaceholder(),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.85),
+                    Colors.black.withValues(alpha: 0.15),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  category.name.toUpperCase(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return ColoredBox(
+      color: Colors.white.withValues(alpha: 0.04),
+      child: Center(
+        child: Icon(Icons.category_outlined, size: 48, color: Colors.white.withValues(alpha: 0.15)),
       ),
     );
   }

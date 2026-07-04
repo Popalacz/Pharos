@@ -16,6 +16,9 @@ _$CategoryModelImpl _$$CategoryModelImplFromJson(Map<String, dynamic> json) =>
       idParent: const DefensiveNullableIntConverter().fromJson(
         json['id_parent'],
       ),
+      imageUrl: json['image'] == null
+          ? ''
+          : const DefensiveStringConverter().fromJson(json['image']),
     );
 
 Map<String, dynamic> _$$CategoryModelImplToJson(
@@ -25,4 +28,5 @@ Map<String, dynamic> _$$CategoryModelImplToJson(
   'name': const DefensiveStringConverter().toJson(instance.name),
   'description': const DefensiveStringConverter().toJson(instance.description),
   'id_parent': const DefensiveNullableIntConverter().toJson(instance.idParent),
+  'image': const DefensiveStringConverter().toJson(instance.imageUrl),
 };

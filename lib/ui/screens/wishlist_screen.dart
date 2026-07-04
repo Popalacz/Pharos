@@ -34,14 +34,13 @@ class WishlistScreen extends StatelessWidget {
                     physics: const BouncingScrollPhysics(),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.65,
+                      childAspectRatio: 0.55,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),
                     itemCount: wishlistProvider.wishlistProducts.length,
                     itemBuilder: (context, index) {
                       final product = wishlistProvider.wishlistProducts[index];
-                      // Senior Fix: Używamy zunifikowanej karty produktu dla zachowania spójności UI i logiki
                       return PharosProductCard(product: product, heroTagPrefix: 'wishlist');
                     },
                   ),

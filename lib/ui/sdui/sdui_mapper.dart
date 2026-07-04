@@ -18,6 +18,49 @@ class SduiMapper {
     };
   }
 
+  List<Map<String, dynamic>> filterVisibleSections(List sectionsData) {
+    final sections = sectionsData
+        .whereType<Map>()
+        .map((section) => Map<String, dynamic>.from(section))
+        .toList();
+
+    final visibleSections = <Map<String, dynamic>>[];
+    for (var index = 0; index < sections.length; index++) {
+      final section = sections[index];
+      final type = section['type']?.toString() ?? '';
+
+      if (type == 'SECTION_HEADER' && !_hasProductsAfter(sections, index)) {
+        continue;
+      }
+
+      if ((type == 'PRODUCT_GRID' || type == 'RECOMMENDATIONS') && !_sectionHasItems(section)) {
+        continue;
+      }
+
+      visibleSections.add(section);
+    }
+
+    return visibleSections;
+  }
+
+  bool _sectionHasItems(Map<String, dynamic> section) {
+    final items = resolveSectionData(section)['items'];
+    return items is List && items.isNotEmpty;
+  }
+
+  bool _hasProductsAfter(List<Map<String, dynamic>> sections, int headerIndex) {
+    for (var index = headerIndex + 1; index < sections.length; index++) {
+      final type = sections[index]['type']?.toString() ?? '';
+      if (type == 'SECTION_HEADER') {
+        return false;
+      }
+      if (type == 'PRODUCT_GRID' || type == 'RECOMMENDATIONS') {
+        return _sectionHasItems(sections[index]);
+      }
+    }
+    return false;
+  }
+
   bool shouldSkipSection(Map<String, dynamic> section) {
     final typeStr = section['type']?.toString() ?? '';
     if (typeStr.isEmpty) return true;
@@ -51,7 +94,9 @@ class SduiMapper {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
-    final typeStr = section['type'] as String;
+    final typeStr = section['type']?.toString() ?? '';
+    if (typeStr.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
     final data = resolveSectionData(section);
     final type = HomeSectionType.values.firstWhere(
       (value) => value.name == typeStr,

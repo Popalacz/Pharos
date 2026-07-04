@@ -12,6 +12,7 @@ class CategoryModel with _$CategoryModel {
     @DefensiveStringConverter() @JsonKey(name: 'name') required String name,
     @DefensiveStringConverter() @JsonKey(name: 'description') @Default('') String description,
     @DefensiveNullableIntConverter() @JsonKey(name: 'id_parent') int? idParent,
+    @DefensiveStringConverter() @JsonKey(name: 'image') @Default('') String imageUrl,
   }) = _CategoryModel;
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) => _$CategoryModelFromJson(json);

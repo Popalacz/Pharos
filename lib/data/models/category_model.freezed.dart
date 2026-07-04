@@ -33,6 +33,9 @@ mixin _$CategoryModel {
   @DefensiveNullableIntConverter()
   @JsonKey(name: 'id_parent')
   int? get idParent => throw _privateConstructorUsedError;
+  @DefensiveStringConverter()
+  @JsonKey(name: 'image')
+  String get imageUrl => throw _privateConstructorUsedError;
 
   /// Serializes this CategoryModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,6 +61,7 @@ abstract class $CategoryModelCopyWith<$Res> {
     @JsonKey(name: 'description')
     String description,
     @DefensiveNullableIntConverter() @JsonKey(name: 'id_parent') int? idParent,
+    @DefensiveStringConverter() @JsonKey(name: 'image') String imageUrl,
   });
 }
 
@@ -80,6 +84,7 @@ class _$CategoryModelCopyWithImpl<$Res, $Val extends CategoryModel>
     Object? name = null,
     Object? description = null,
     Object? idParent = freezed,
+    Object? imageUrl = null,
   }) {
     return _then(
       _value.copyWith(
@@ -99,6 +104,10 @@ class _$CategoryModelCopyWithImpl<$Res, $Val extends CategoryModel>
                 ? _value.idParent
                 : idParent // ignore: cast_nullable_to_non_nullable
                       as int?,
+            imageUrl: null == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -121,6 +130,7 @@ abstract class _$$CategoryModelImplCopyWith<$Res>
     @JsonKey(name: 'description')
     String description,
     @DefensiveNullableIntConverter() @JsonKey(name: 'id_parent') int? idParent,
+    @DefensiveStringConverter() @JsonKey(name: 'image') String imageUrl,
   });
 }
 
@@ -142,6 +152,7 @@ class __$$CategoryModelImplCopyWithImpl<$Res>
     Object? name = null,
     Object? description = null,
     Object? idParent = freezed,
+    Object? imageUrl = null,
   }) {
     return _then(
       _$CategoryModelImpl(
@@ -161,6 +172,10 @@ class __$$CategoryModelImplCopyWithImpl<$Res>
             ? _value.idParent
             : idParent // ignore: cast_nullable_to_non_nullable
                   as int?,
+        imageUrl: null == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -176,6 +191,7 @@ class _$CategoryModelImpl implements _CategoryModel {
     @JsonKey(name: 'description')
     this.description = '',
     @DefensiveNullableIntConverter() @JsonKey(name: 'id_parent') this.idParent,
+    @DefensiveStringConverter() @JsonKey(name: 'image') this.imageUrl = '',
   });
 
   factory _$CategoryModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -197,10 +213,14 @@ class _$CategoryModelImpl implements _CategoryModel {
   @DefensiveNullableIntConverter()
   @JsonKey(name: 'id_parent')
   final int? idParent;
+  @override
+  @DefensiveStringConverter()
+  @JsonKey(name: 'image')
+  final String imageUrl;
 
   @override
   String toString() {
-    return 'CategoryModel(id: $id, name: $name, description: $description, idParent: $idParent)';
+    return 'CategoryModel(id: $id, name: $name, description: $description, idParent: $idParent, imageUrl: $imageUrl)';
   }
 
   @override
@@ -213,12 +233,15 @@ class _$CategoryModelImpl implements _CategoryModel {
             (identical(other.description, description) ||
                 other.description == description) &&
             (identical(other.idParent, idParent) ||
-                other.idParent == idParent));
+                other.idParent == idParent) &&
+            (identical(other.imageUrl, imageUrl) ||
+                other.imageUrl == imageUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, description, idParent);
+  int get hashCode =>
+      Object.hash(runtimeType, id, name, description, idParent, imageUrl);
 
   /// Create a copy of CategoryModel
   /// with the given fields replaced by the non-null parameter values.
@@ -246,6 +269,7 @@ abstract class _CategoryModel implements CategoryModel {
     @DefensiveNullableIntConverter()
     @JsonKey(name: 'id_parent')
     final int? idParent,
+    @DefensiveStringConverter() @JsonKey(name: 'image') final String imageUrl,
   }) = _$CategoryModelImpl;
 
   factory _CategoryModel.fromJson(Map<String, dynamic> json) =
@@ -267,6 +291,10 @@ abstract class _CategoryModel implements CategoryModel {
   @DefensiveNullableIntConverter()
   @JsonKey(name: 'id_parent')
   int? get idParent;
+  @override
+  @DefensiveStringConverter()
+  @JsonKey(name: 'image')
+  String get imageUrl;
 
   /// Create a copy of CategoryModel
   /// with the given fields replaced by the non-null parameter values.

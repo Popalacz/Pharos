@@ -1,32 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:pharos/data/repositories/product_repository.dart';
+import 'package:pharos/core/error/failures.dart';
 import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/ui/sdui/sdui_mapper.dart';
 import 'package:pharos/ui/sdui/sdui_sections.dart';
 import 'package:pharos/ui/widgets/banner_shimmer.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:pharos/ui/screens/search_screen.dart';
 import 'package:pharos/ui/screens/scanner_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
-import 'package:pharos/data/repositories/category_repository.dart';
-import 'package:pharos/data/models/category_model.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
-import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
 import 'package:pharos/ui/widgets/pharos_navigation_drawer.dart';
 import 'package:pharos/ui/widgets/localization_selector.dart';
-import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
-import 'package:pharos/ui/screens/catalog_screen.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pharos/l10n/app_localizations.dart';
-import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,18 +32,31 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<Map<String, dynamic>> _homeDataFuture;
+  late Future<Either<Failure, List<ProductModel>>> _fallbackProductsFuture;
   int? _selectedCategoryId;
+  bool _initialLoadDone = false;
   final SduiMapper _sduiMapper = const SduiMapper();
 
   @override
   void initState() {
     super.initState();
-    _loadData();
     _checkPromoPopup();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialLoadDone) {
+      _initialLoadDone = true;
+      _loadData();
+    }
   }
 
   void _loadData() {
     _homeDataFuture = _fetchFullHomeData();
+    _fallbackProductsFuture = context.read<IProductRepository>().getProducts(
+      categoryId: _selectedCategoryId,
+    );
   }
 
   Future<Map<String, dynamic>> _fetchFullHomeData() async {
@@ -68,13 +76,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return response.fold(
       (failure) => {'error': failure.message, 'sections': <dynamic>[]},
       (data) {
-        if (data is Map && data['status'] == 'success') {
+        if (data is Map && (data['status'] == 'success' || data['success'] == true)) {
+          List sections = [];
+          final rawSections = data['sections'] ?? (data['home_config'] is Map ? data['home_config']['sections'] : data['home_config']);
+          
+          if (rawSections is List) {
+            sections = rawSections;
+          }
+
           return {
-            'sections': data['sections'] ?? [],
+            'sections': sections,
             'cart_count': data['cart_count'] ?? 0,
           };
         }
-        return {'sections': <dynamic>[]};
+        return {
+          'error': data is Map ? (data['message'] ?? 'Błąd pobierania danych') : 'Błędny format odpowiedzi',
+          'sections': <dynamic>[]
+        };
       },
     );
   }
@@ -171,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           final List sectionsData = data['sections'] ?? [];
+          final visibleSections = _sduiMapper.filterVisibleSections(sectionsData);
           
           return RefreshIndicator(
             onRefresh: () async {
@@ -189,14 +208,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 _buildCartRecoveryBanner(context),
                 
-                if (sectionsData.isNotEmpty)
-                  for (final sectionMap in sectionsData)
+                if (visibleSections.isNotEmpty)
+                  for (final sectionMap in visibleSections)
                     _sduiMapper.mapSectionAsSliver(
                       context,
-                      sectionMap as Map<String, dynamic>,
+                      sectionMap,
                       selectedCategoryId: _selectedCategoryId,
                       onCategorySelected: _onCategorySelected,
                     ),
+
+                if (!_sectionsIncludeProducts(visibleSections))
+                  _buildProductGridFallback(),
 
                 _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
@@ -209,107 +231,103 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAppBar(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settingsProvider, child) {
-        final settings = settingsProvider.settings;
-        return SliverAppBar(
-          floating: true,
-          pinned: true,
-          expandedHeight: 120,
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-          flexibleSpace: LayoutBuilder(
-            builder: (context, constraints) {
-              final isCollapsed = constraints.biggest.height <= kToolbarHeight + 30;
-              final showLogo = settings.brandingEnabled && settings.logoUrl != null && !isCollapsed;
+    final settings = context.watch<SettingsProvider>().settings;
+    return SliverAppBar(
+      floating: true,
+      pinned: true,
+      expandedHeight: 120,
+      leading: IconButton(
+        icon: const Icon(Icons.menu),
+        onPressed: () => Scaffold.of(context).openDrawer(),
+      ),
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCollapsed = constraints.biggest.height <= kToolbarHeight + 30;
+          final showLogo = settings.brandingEnabled && settings.logoUrl != null && !isCollapsed;
 
-              return FlexibleSpaceBar(
-                titlePadding: EdgeInsets.only(
-                  left: isCollapsed ? 56 : 16,
-                  right: 16,
-                  bottom: 12,
-                ),
-                title: Text(
-                  settings.storeName.toUpperCase(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    fontSize: 18,
-                  ),
-                ),
-                centerTitle: false,
-                background: showLogo
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: CachedNetworkImage(
-                            imageUrl: settings.logoUrl!,
-                            height: 48,
-                            errorWidget: (context, url, error) => const SizedBox.shrink(),
-                          ),
-                        ),
-                      )
-                    : null,
-              );
-            },
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.qr_code_scanner),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ScannerScreen()),
-                );
-              },
+          return FlexibleSpaceBar(
+            titlePadding: EdgeInsets.only(
+              left: isCollapsed ? 56 : 16,
+              right: 16,
+              bottom: 12,
             ),
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SearchScreen()),
-                );
-              },
+            title: Text(
+              settings.storeName.toUpperCase(),
+              style: const TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+                fontSize: 18,
+              ),
             ),
-            Consumer<CartProvider>(
-              builder: (context, cart, child) {
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.shopping_bag_outlined),
-                      onPressed: () {
-                         Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
-                      },
-                    ),
-                    if (cart.itemCount > 0)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                          child: Text(
-                            '${cart.itemCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+            centerTitle: false,
+            background: showLogo
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: CachedNetworkImage(
+                        imageUrl: settings.logoUrl!,
+                        height: 48,
+                        errorWidget: (context, url, error) => const SizedBox.shrink(),
                       ),
-                  ],
-                );
-              },
-            ),
-          ],
-        );
-      },
+                    ),
+                  )
+                : null,
+          );
+        },
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.qr_code_scanner),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ScannerScreen()),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
+            );
+          },
+        ),
+        Consumer<CartProvider>(
+          builder: (context, cart, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+                  },
+                ),
+                if (cart.itemCount > 0)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Text(
+                        '${cart.itemCount}',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -364,37 +382,83 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  bool _sectionsIncludeProducts(List sectionsData) {
+    for (final rawSection in sectionsData) {
+      if (rawSection is! Map) continue;
+
+      final type = rawSection['type']?.toString();
+      if (type != 'PRODUCT_GRID' && type != 'RECOMMENDATIONS') continue;
+
+      final data = rawSection['data'];
+      if (data is Map && (data['items'] as List?)?.isNotEmpty == true) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Widget _buildProductGridFallback() {
+    return SliverToBoxAdapter(
+      child: FutureBuilder<Either<Failure, List<ProductModel>>>(
+        future: _fallbackProductsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ProductShimmer();
+          }
+
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+
+          return snapshot.data!.fold(
+            (_) => const SizedBox.shrink(),
+            (products) {
+              if (products.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return ProductGridSection(
+                data: {
+                  'items': products.map((product) => product.toJson()).toList(),
+                },
+                heroTagPrefix: 'home_fallback',
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildRecentlyViewedSection() {
     final l10n = AppLocalizations.of(context)!;
-    return Consumer<RecentlyViewedProvider>(
-      builder: (context, recentProvider, child) {
-        if (recentProvider.recentProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-        
-        return SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SectionHeaderWidget(data: {'title': l10n.recentlyViewed}),
-              SizedBox(
-                height: 250,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: recentProvider.recentProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = recentProvider.recentProducts[index];
-                    return Container(
-                      width: 160,
-                      margin: const EdgeInsets.only(right: 16),
-                      child: PharosProductCard(product: product, heroTagPrefix: 'recent'),
-                    );
-                  },
-                ),
-              ),
-            ],
+    final recentProducts = context.watch<RecentlyViewedProvider>().recentProducts;
+
+    if (recentProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+    return SliverToBoxAdapter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeaderWidget(data: {'title': l10n.recentlyViewed}),
+          SizedBox(
+            height: 250,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: recentProducts.length,
+              itemBuilder: (context, index) {
+                final product = recentProducts[index];
+                return Container(
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: PharosProductCard(product: product, heroTagPrefix: 'recent'),
+                );
+              },
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

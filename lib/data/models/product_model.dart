@@ -117,11 +117,13 @@ class ProductModel with _$ProductModel {
 
   static bool _resolveAllowOutOfStock(Map<String, dynamic> json) {
     final outOfStock = json['out_of_stock'];
+    if (outOfStock == '0' || outOfStock == 0) {
+      return false;
+    }
     if (outOfStock == '1' || outOfStock == '2' || outOfStock == 1 || outOfStock == 2) {
       return true;
     }
-    final stock = int.tryParse((json['stock'] ?? json['quantity'] ?? '0').toString()) ?? 0;
-    return stock > 0;
+    return false;
   }
 
   static String _stabilizeImageUrl(String url, int productId) {

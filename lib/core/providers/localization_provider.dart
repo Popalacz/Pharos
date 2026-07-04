@@ -59,8 +59,6 @@ class LocalizationProvider extends ChangeNotifier {
         final int serverCurrId = int.tryParse(locData['current_currency_id']?.toString() ?? '') ?? 0;
 
         if (_languages.isNotEmpty) {
-          // Senior Fix: Zachowujemy aktualny język jeśli już był wybrany, 
-          // w przeciwnym razie bierzemy z serwera.
           if (_currentLanguage != null) {
              _currentLanguage = _languages.firstWhere(
               (l) => l.id == _currentLanguage!.id,

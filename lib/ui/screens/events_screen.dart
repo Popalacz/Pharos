@@ -29,7 +29,6 @@ class _EventsScreenState extends State<EventsScreen> {
   }
 
   void _initializeWebView() {
-    // URL kalendarza dostarczony przez użytkownika
     const String calendarUrl = "https://calendar.google.com/calendar/embed?src=6e67e8f88d83544199fb89c68454ba7c48aadf1f85e1fc86e0c56be537dc9670%40group.calendar.google.com&ctz=Europe%2FWarsaw";
 
     _webViewController = WebViewController()
