@@ -6,6 +6,7 @@ import '../../core/network/api_service.dart';
 import '../../core/error/failures.dart';
 import '../../core/services/database/local_db_service.dart';
 import '../models/product_model.dart';
+import '../../core/utils/product_list_filters.dart';
 
 abstract class IProductRepository {
   Future<Either<Failure, List<ProductModel>>> getProducts({int? categoryId, Map<String, List<String>>? filters});
@@ -23,18 +24,34 @@ class ProductRepository implements IProductRepository {
 
   @override
   Future<Either<Failure, List<ProductModel>>> getProducts({int? categoryId, Map<String, List<String>>? filters}) async {
-    if (useMockData) return Right(await _loadMockData());
-    
+    if (useMockData) {
+      final products = await _loadMockData();
+      return Right(ProductListFilters.apply(products: products, selectedFilters: filters ?? {}));
+    }
+
+    final listQuery = ProductListFilters.buildQuery(
+      selectedFilters: filters ?? {},
+      catalogCategoryId: categoryId,
+    );
+
     final Map<String, dynamic> params = {
       'fc': 'module',
       'module': 'pharosapi',
       'controller': 'products',
       'action': 'list',
-      'limit': '24',
+      'limit': _resolveLimit(listQuery),
+      'order_by': listQuery.orderBy,
+      'order_way': listQuery.orderWay,
     };
 
-    if (categoryId != null) {
-      params['id_category'] = categoryId.toString();
+    if (listQuery.categoryId != null) {
+      params['id_category'] = listQuery.categoryId.toString();
+    }
+    if (listQuery.priceMin != null) {
+      params['price_min'] = listQuery.priceMin.toString();
+    }
+    if (listQuery.priceMax != null) {
+      params['price_max'] = listQuery.priceMax.toString();
     }
 
     final response = await _apiService.getSafe(
@@ -51,21 +68,33 @@ class ProductRepository implements IProductRepository {
 
     return response.fold(
       (failure) async {
-        // Fallback to local cache on network error
         if (failure is NetworkFailure) {
           final cached = await LocalDbService().getCachedProducts();
-          if (cached.isNotEmpty) return Right(cached);
+          if (cached.isNotEmpty) {
+            return Right(ProductListFilters.apply(products: cached, selectedFilters: filters ?? {}));
+          }
         }
         return Left(failure);
       },
       (products) async {
-        // Update cache on success
+        final filteredProducts = ProductListFilters.apply(
+          products: products,
+          selectedFilters: filters ?? {},
+        );
+
         if (categoryId == null) {
-          await LocalDbService().cacheProducts(products);
+          await LocalDbService().cacheProducts(filteredProducts);
         }
-        return Right(products);
+        return Right(filteredProducts);
       },
     );
+  }
+
+  String _resolveLimit(ProductListQuery listQuery) {
+    if (listQuery.priceMin != null || listQuery.priceMax != null) {
+      return '100';
+    }
+    return '48';
   }
 
   @override
@@ -90,7 +119,7 @@ class ProductRepository implements IProductRepository {
 
   @override
   Future<Either<Failure, List<ProductModel>>> searchProducts(String query, {Map<String, List<String>>? filters}) async {
-    return _apiService.getSafe(
+    final response = await _apiService.getSafe(
       '/index.php',
       queryParameters: {
         'fc': 'module',
@@ -106,6 +135,16 @@ class ProductRepository implements IProductRepository {
         }
         return [];
       },
+    );
+
+    return response.fold(
+      (failure) => Left(failure),
+      (products) => Right(
+        ProductListFilters.apply(
+          products: products,
+          selectedFilters: filters ?? {},
+        ),
+      ),
     );
   }
 

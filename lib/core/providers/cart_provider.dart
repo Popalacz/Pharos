@@ -114,7 +114,8 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<String?> applyVoucher(String code) async {
-    if (_idCart == null || code.trim().isEmpty) return 'Brak koszyka lub kodu.';
+    if (code.trim().isEmpty) return 'Wpisz kod rabatowy.';
+    if (_idCart == null) return 'Dodaj produkty do koszyka, zanim użyjesz kodu rabatowego.';
     final result = await _repository.applyVoucher(cartId: _idCart!, code: code.trim());
     return result.fold(
       (failure) => failure.message,

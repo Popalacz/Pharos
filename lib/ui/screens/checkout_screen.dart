@@ -15,11 +15,14 @@ import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
 import 'package:pharos/core/services/google_places_service.dart';
+import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:pharos/ui/screens/order_confirmation_screen.dart';
 import 'package:pharos/ui/screens/address_selection_screen.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
+import 'package:pharos/core/utils/form_validation.dart';
+import 'package:pharos/core/utils/validation_feedback.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -35,6 +38,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   AddressModel? _selectedAddress;
   bool _isProcessing = false;
   bool _createAccount = false;
+  String? _validationMessage;
+  final _guestFormKey = GlobalKey<FormState>();
 
   final _emailController = TextEditingController();
   final _firstnameController = TextEditingController();
@@ -187,6 +192,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const SizedBox(height: PharosLayout.spaceMd),
                   _buildStepProgress(),
                   const SizedBox(height: PharosLayout.spaceLg),
+                  if (_validationMessage != null) ...[
+                    _buildValidationBanner(_validationMessage!),
+                    const SizedBox(height: 16),
+                  ],
                   _buildSectionHeader('Adres dostawy', Icons.location_on_rounded),
                   _buildAnimatedAddressSection(userProvider),
                   const SizedBox(height: 32),
@@ -227,6 +236,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ],
       ),
       bottomNavigationBar: _buildBottomBar(cart, total, formattedTotal),
+    );
+  }
+
+  Widget _buildValidationBanner(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
+        border: Border.all(color: Colors.red.withOpacity(0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -288,11 +322,120 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildAnimatedAddressSection(UserProvider userProvider) {
-    return AnimatedSwitcher(
-      duration: PharosLayout.motionNormal,
-      transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: SlideTransition(position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(animation), child: child)),
-      child: (!userProvider.isLoggedIn && _selectedAddress == null) ? _buildGuestForm() : _buildAddressCard(context, userProvider),
+    if (userProvider.isLoggedIn) {
+      return AnimatedSwitcher(
+        duration: PharosLayout.motionNormal,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(animation),
+            child: child,
+          ),
+        ),
+        child: _buildAddressCard(context, userProvider),
+      );
+    }
+
+    return Column(
+      key: const ValueKey('guest_checkout'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildGuestLoginPrompt(),
+        const SizedBox(height: 16),
+        _buildGuestForm(),
+      ],
     );
+  }
+
+  Widget _buildGuestLoginPrompt() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
+        border: Border.all(color: AppColors.accent.withOpacity(0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Masz już konto?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Zaloguj się, aby użyć zapisanych adresów i szybciej dokończyć zamówienie.',
+            style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _openLoginFromCheckout,
+            icon: const Icon(Icons.login_rounded, size: 18),
+            label: const Text('ZALOGUJ SIĘ'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.accent,
+              side: BorderSide(color: AppColors.accent.withOpacity(0.6)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: Divider(color: Colors.white.withOpacity(0.08))),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'LUB KONTYNUUJ JAKO GOŚĆ',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.35),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              Expanded(child: Divider(color: Colors.white.withOpacity(0.08))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openLoginFromCheckout() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    final userProvider = context.read<UserProvider>();
+    if (!userProvider.isLoggedIn) {
+      return;
+    }
+
+    if (userProvider.addresses.isEmpty) {
+      await userProvider.fetchAddresses();
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _validationMessage = null;
+      if (userProvider.addresses.isNotEmpty) {
+        _selectedAddress = userProvider.addresses.first;
+      }
+    });
+
+    if (_selectedAddress != null) {
+      await _updateShippingCost();
+    }
   }
 
   Widget _buildAddressCard(BuildContext context, UserProvider userProvider) {
@@ -403,7 +546,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _applyVoucher() async {
     final code = _voucherController.text.trim();
-    if (code.isEmpty) return;
+    if (code.isEmpty) {
+      showValidationSnackBar(context, 'Wpisz kod rabatowy.');
+      return;
+    }
+
+    if (context.read<CartProvider>().idCart == null) {
+      showValidationSnackBar(context, 'Dodaj produkty do koszyka, zanim użyjesz kodu rabatowego.');
+      return;
+    }
 
     setState(() => _isApplyingVoucher = true);
     final error = await context.read<CartProvider>().applyVoucher(code);
@@ -424,73 +575,124 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildGuestForm() {
-    return Container(
-      key: const ValueKey('guest_form'),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Column(
-        children: [
-          _guestField(_emailController, 'Adres e-mail', Icons.alternate_email_rounded, keyboardType: TextInputType.emailAddress),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _guestField(_firstnameController, 'Imię', Icons.person_outline_rounded)),
-              const SizedBox(width: 12),
-              Expanded(child: _guestField(_lastnameController, 'Nazwisko', Icons.person_outline_rounded)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _guestField(
-            _addressController, 
-            'Ulica i numer', 
-            Icons.home_work_outlined,
-            onChanged: _onAddressChanged,
-          ),
-          if (_addressSuggestions.isNotEmpty) _buildAddressSuggestions(),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _guestField(_postcodeController, 'Kod', Icons.map_outlined)),
-              const SizedBox(width: 12),
-              Expanded(child: _guestField(_cityController, 'Miasto', Icons.location_city_rounded)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _guestField(_phoneController, 'Numer telefonu', Icons.phone_android_rounded, keyboardType: TextInputType.phone),
-          const SizedBox(height: 16),
-          Theme(
-            data: ThemeData(unselectedWidgetColor: Colors.white24),
-            child: CheckboxListTile(
-              value: _createAccount,
-              onChanged: (val) => setState(() => _createAccount = val ?? false),
-              title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: Colors.white70, fontSize: 13)),
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-              activeColor: AppColors.accent,
-              dense: true,
+    return Form(
+      key: _guestFormKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: Container(
+        key: const ValueKey('guest_form'),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Column(
+          children: [
+            _guestField(
+              _emailController,
+              'Adres e-mail',
+              Icons.alternate_email_rounded,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) => FormValidation.emailField(value),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _guestField(
+                    _firstnameController,
+                    'Imię',
+                    Icons.person_outline_rounded,
+                    validator: (value) => FormValidation.nameField(value, 'Imię'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _guestField(
+                    _lastnameController,
+                    'Nazwisko',
+                    Icons.person_outline_rounded,
+                    validator: (value) => FormValidation.nameField(value, 'Nazwisko'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _guestField(
+              _addressController,
+              'Ulica i numer',
+              Icons.home_work_outlined,
+              onChanged: _onAddressChanged,
+              validator: (value) => FormValidation.addressField(value),
+            ),
+            if (_addressSuggestions.isNotEmpty) _buildAddressSuggestions(),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _guestField(
+                    _postcodeController,
+                    'Kod pocztowy',
+                    Icons.map_outlined,
+                    validator: (value) => FormValidation.postcodeField(value),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _guestField(
+                    _cityController,
+                    'Miasto',
+                    Icons.location_city_rounded,
+                    validator: (value) => FormValidation.cityField(value),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _guestField(
+              _phoneController,
+              'Numer telefonu',
+              Icons.phone_android_rounded,
+              keyboardType: TextInputType.phone,
+              validator: (value) => FormValidation.phoneField(value),
+            ),
+            const SizedBox(height: 16),
+            Theme(
+              data: ThemeData(unselectedWidgetColor: Colors.white24),
+              child: CheckboxListTile(
+                value: _createAccount,
+                onChanged: (val) => setState(() => _createAccount = val ?? false),
+                title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+                activeColor: AppColors.accent,
+                dense: true,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _guestField(
-    TextEditingController controller, 
-    String hint, 
+    TextEditingController controller,
+    String hint,
     IconData icon, {
     TextInputType? keyboardType,
     ValueChanged<String>? onChanged,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      validator: validator,
       style: const TextStyle(color: Colors.white, fontSize: 14),
       cursorColor: AppColors.accent,
+      onChanged: (value) {
+        onChanged?.call(value);
+        setState(() {});
+      },
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.2)),
@@ -499,12 +701,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         fillColor: Colors.black.withOpacity(0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide(color: AppColors.accent.withOpacity(0.3))),
+        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: const BorderSide(color: Colors.redAccent)),
+        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: const BorderSide(color: Colors.redAccent, width: 2)),
+        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
       ),
-      onChanged: (val) {
-        if (onChanged != null) onChanged(val);
-        setState(() {});
-      },
     );
   }
 
@@ -745,26 +947,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildBottomBar(CartProvider cart, double total, String formattedTotal) {
     final userProvider = context.read<UserProvider>();
     final bool isGuest = !userProvider.isLoggedIn;
-    
-    bool hasValidGuestInfo = false;
-    if (isGuest) {
-      hasValidGuestInfo = _emailController.text.contains('@') &&
-          _firstnameController.text.length >= 2 &&
-          _lastnameController.text.length >= 2 &&
-          _addressController.text.length >= 5 &&
-          _postcodeController.text.isNotEmpty &&
-          _cityController.text.length >= 2;
-    }
-
-    final bool canPlaceOrder = (isGuest ? hasValidGuestInfo : _selectedAddress != null) &&
-        cart.idCart != null &&
-        (_carriers == null || _carriers!.isEmpty || _selectedCarrier != null) &&
-        (_payments == null || _payments!.isEmpty || _selectedPayment != null);
 
     String buttonText = 'ZAPŁAĆ $formattedTotal';
+    final validationPreview = _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart);
     if (!isGuest && _selectedAddress == null) {
       buttonText = 'WYBIERZ ADRES';
-    } else if (isGuest && !hasValidGuestInfo) {
+    } else if (isGuest && validationPreview.isNotEmpty) {
       buttonText = 'UZUPEŁNIJ DANE';
     } else if (_carriers != null && _carriers!.isNotEmpty && _selectedCarrier == null) {
       buttonText = 'WYBIERZ DOSTAWĘ';
@@ -783,10 +971,84 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: PharosButton(
           label: buttonText,
           isLoading: _isProcessing,
-          onPressed: canPlaceOrder ? () => _placeOrder(total) : null,
+          onPressed: _isProcessing ? null : () => _handleCheckoutAction(total),
         ),
       ),
     );
+  }
+
+  bool _isGuestCheckoutDataValid() {
+    return FormValidation.collectMissingLabels({
+      'adres e-mail': FormValidation.emailField(_emailController.text),
+      'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
+      'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
+      'ulica i numer': FormValidation.addressField(_addressController.text),
+      'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
+      'miasto': FormValidation.cityField(_cityController.text),
+      'numer telefonu': FormValidation.phoneField(_phoneController.text),
+    }).isEmpty;
+  }
+
+  List<String> _collectCheckoutMissingLabels({required bool isGuest, required CartProvider cart}) {
+    final missingLabels = <String>[];
+
+    if (cart.items.isEmpty) {
+      missingLabels.add('produktów w koszyku');
+    } else if (cart.idCart == null) {
+      missingLabels.add('zsynchronizowanego koszyka');
+    }
+
+    if (isGuest) {
+      missingLabels.addAll(
+        FormValidation.collectMissingLabels({
+          'adres e-mail': FormValidation.emailField(_emailController.text),
+          'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
+          'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
+          'ulica i numer': FormValidation.addressField(_addressController.text),
+          'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
+          'miasto': FormValidation.cityField(_cityController.text),
+          'numer telefonu': FormValidation.phoneField(_phoneController.text),
+        }),
+      );
+    } else if (_selectedAddress == null) {
+      missingLabels.add('adresu dostawy');
+    }
+
+    if (_carriers != null && _carriers!.isNotEmpty && _selectedCarrier == null) {
+      missingLabels.add('metody dostawy');
+    }
+    if (_payments != null && _payments!.isNotEmpty && _selectedPayment == null) {
+      missingLabels.add('metody płatności');
+    }
+
+    return missingLabels;
+  }
+
+  String? _validateCheckoutForm({required bool isGuest, required CartProvider cart}) {
+    if (isGuest) {
+      _guestFormKey.currentState?.validate();
+    }
+
+    final missingLabels = _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart);
+    if (missingLabels.isEmpty) {
+      return null;
+    }
+    return FormValidation.formatMissingFields(missingLabels);
+  }
+
+  Future<void> _handleCheckoutAction(double totalAmount) async {
+    final cart = context.read<CartProvider>();
+    final isGuest = !context.read<UserProvider>().isLoggedIn;
+    final validationMessage = _validateCheckoutForm(isGuest: isGuest, cart: cart);
+
+    if (validationMessage != null) {
+      setState(() => _validationMessage = validationMessage);
+      showValidationSnackBar(context, validationMessage);
+      return;
+    }
+
+    setState(() => _validationMessage = null);
+    await _placeOrder(totalAmount);
   }
 
   Future<void> _placeOrder(double totalAmount) async {
@@ -801,6 +1063,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final authenticated = await context.read<UserProvider>().authenticateBiometrically();
         if (!authenticated) {
           setState(() => _isProcessing = false);
+          showValidationSnackBar(context, 'Anulowano weryfikację tożsamości. Zamówienie nie zostało złożone.');
           return;
         }
       }
@@ -809,12 +1072,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _checkoutNotifier.selectCarrier(_selectedCarrier);
       _checkoutNotifier.selectPayment(_selectedPayment);
 
-      final guestAddressValid = user != null ||
-          (_emailController.text.isNotEmpty &&
-              _firstnameController.text.isNotEmpty &&
-              _addressController.text.isNotEmpty &&
-              _cityController.text.isNotEmpty &&
-              _postcodeController.text.isNotEmpty);
+      final guestAddressValid = user != null || _isGuestCheckoutDataValid();
 
       final prepared = await _checkoutNotifier.prepareOrder(
         cart: cart,
@@ -888,13 +1146,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Błąd: ${e.toString().replaceAll('Exception:', '')}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        final message = FormValidation.cleanErrorMessage(e);
+        setState(() => _validationMessage = message);
+        showValidationSnackBar(context, message);
       }
     } finally {
       if (mounted) setState(() => _isProcessing = false);

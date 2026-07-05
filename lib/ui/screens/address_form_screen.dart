@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pharos/data/models/address_model.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/utils/form_validation.dart';
+import 'package:pharos/core/utils/validation_feedback.dart';
 
 class AddressFormScreen extends StatefulWidget {
   final AddressModel? address;
@@ -49,11 +51,28 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   }
 
   void _saveForm() async {
-    if (_formKey.currentState!.validate() && !_isSaving) {
-      setState(() => _isSaving = true);
-      final userProvider = context.read<UserProvider>();
-      
-      final address = AddressModel(
+    final missingLabels = FormValidation.collectMissingLabels({
+      'nazwa adresu': FormValidation.requiredField(_aliasController.text, 'Nazwa adresu'),
+      'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
+      'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
+      'ulica i numer': FormValidation.addressField(_address1Controller.text),
+      'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
+      'miasto': FormValidation.cityField(_cityController.text),
+      'numer telefonu': FormValidation.phoneField(_phoneController.text),
+    });
+
+    if (missingLabels.isNotEmpty) {
+      showValidationSnackBar(context, FormValidation.formatMissingFields(missingLabels));
+    }
+
+    if (!_formKey.currentState!.validate() || _isSaving) {
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    final userProvider = context.read<UserProvider>();
+
+    final address = AddressModel(
         id: widget.address?.id ?? 0,
         alias: _aliasController.text,
         firstname: _firstnameController.text,
@@ -63,39 +82,35 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
         city: _cityController.text,
         country: 'Polska',
         phone: _phoneController.text,
-      );
+    );
 
-      bool success;
-      if (widget.address == null) {
-        success = await userProvider.addAddress(address);
-      } else {
-        success = await userProvider.updateAddress(address);
-      }
+    bool success;
+    if (widget.address == null) {
+      success = await userProvider.addAddress(address);
+    } else {
+      success = await userProvider.updateAddress(address);
+    }
 
-      if (mounted) {
-        setState(() => _isSaving = false);
-        if (success) {
-          // ... reszta logiki sukcesu
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Adres został zapisany pomyślnie'), backgroundColor: Colors.green),
-          );
-          // Odświeżamy adresy u dostawcy danych
-          await userProvider.fetchAddresses();
-          // Zwracamy nowo utworzony adres (bierzemy ostatni z listy)
-          if (mounted && userProvider.addresses.isNotEmpty) {
-            Navigator.pop(context, userProvider.addresses.last);
-          } else {
-            Navigator.pop(context);
-          }
+    if (mounted) {
+      setState(() => _isSaving = false);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Adres został zapisany pomyślnie'), backgroundColor: Colors.green),
+        );
+        await userProvider.fetchAddresses();
+        if (mounted && userProvider.addresses.isNotEmpty) {
+          Navigator.pop(context, userProvider.addresses.last);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(userProvider.addressError ?? 'Błąd podczas zapisywania adresu'), 
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          Navigator.pop(context);
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(userProvider.addressError ?? 'Nie udało się zapisać adresu. Sprawdź wprowadzone dane.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
@@ -116,48 +131,33 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
           key: _formKey,
           child: Column(
             children: [
-              _buildField(_aliasController, 'Nazwa adresu (np. Dom, Praca)', Icons.label_outline),
+              _buildField(_aliasController, 'Nazwa adresu (np. Dom, Praca)', Icons.label_outline,
+                validator: (value) => FormValidation.requiredField(value, 'Nazwa adresu')),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildField(_firstnameController, 'Imię', Icons.person_outline, validator: _nameValidator)),
+                  Expanded(child: _buildField(_firstnameController, 'Imię', Icons.person_outline, validator: (value) => FormValidation.nameField(value, 'Imię'))),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildField(_lastnameController, 'Nazwisko', Icons.person_outline, validator: _nameValidator)),
+                  Expanded(child: _buildField(_lastnameController, 'Nazwisko', Icons.person_outline, validator: (value) => FormValidation.nameField(value, 'Nazwisko'))),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildField(_address1Controller, 'Ulica i numer domu', Icons.home_outlined, 
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Pole jest wymagane';
-                  if (v.length < 3) return 'Adres jest za krótki';
-                  return null;
-                }
-              ),
+              _buildField(_address1Controller, 'Ulica i numer domu', Icons.home_outlined,
+                validator: (value) => FormValidation.addressField(value)),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildField(_postcodeController, 'Kod pocztowy (np. 00-000)', Icons.markunread_mailbox_outlined, 
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Pole wymagane';
-                      if (!RegExp(r'^\d{2}-\d{3}$').hasMatch(v)) return 'Format: 00-000';
-                      return null;
-                    }
-                  )),
+                  Expanded(child: _buildField(_postcodeController, 'Kod pocztowy (np. 00-000)', Icons.markunread_mailbox_outlined,
+                    validator: (value) => FormValidation.postcodeField(value))),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildField(_cityController, 'Miasto', Icons.location_city_outlined)),
+                  Expanded(child: _buildField(_cityController, 'Miasto', Icons.location_city_outlined,
+                    validator: (value) => FormValidation.cityField(value))),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildField(_phoneController, 'Numer telefonu', Icons.phone_android_outlined, 
+              _buildField(_phoneController, 'Numer telefonu', Icons.phone_android_outlined,
                 keyboardType: TextInputType.phone,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Pole wymagane';
-                  // PrestaShop isPhoneNumber
-                  if (!RegExp(r'^[+0-9. ()-]*$').hasMatch(v)) return 'Błędny format numeru';
-                  if (v.replaceAll(RegExp(r'[^0-9]'), '').length < 9) return 'Minimum 9 cyfr';
-                  return null;
-                }
-              ),
+                validator: (value) => FormValidation.phoneField(value)),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -200,23 +200,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
         ),
         errorStyle: const TextStyle(color: Colors.redAccent),
       ),
-      validator: validator ?? (value) {
-        if (value == null || value.trim().isEmpty) return 'Pole jest wymagane';
-        // PrestaShop isName validation for generic fields
-        if (RegExp(r'[<>{}=;]').hasMatch(value)) return 'Pole zawiera niedozwolone znaki';
-        return null;
-      },
+      validator: validator ?? (value) => FormValidation.requiredField(value, label),
     );
-  }
-
-  // PrestaShop-aligned name validator
-  String? _nameValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Pole jest wymagane';
-    if (value.length < 2) return 'Minimum 2 znaki';
-    // PrestaShop isName pattern (approximate)
-    if (!RegExp(r'^[^0-9!<>,;?=+()@#"°*!$^_]+$').hasMatch(value)) {
-      return 'Imię/Nazwisko zawiera niedozwolone znaki';
-    }
-    return null;
   }
 }

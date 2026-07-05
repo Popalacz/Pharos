@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/utils/form_validation.dart';
+import 'package:pharos/core/utils/validation_feedback.dart';
 import 'package:pharos/data/repositories/review_repository.dart';
 
 class ReviewFormScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class ReviewFormScreen extends StatefulWidget {
 }
 
 class _ReviewFormScreenState extends State<ReviewFormScreen> {
+  final _formKey = GlobalKey<FormState>();
   double _rating = 5;
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
@@ -42,9 +45,11 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
             const Icon(Icons.rate_review_outlined, size: 80, color: Colors.orange),
             const SizedBox(height: 24),
             const Text(
@@ -84,9 +89,10 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
             
             const SizedBox(height: 40),
             
-            TextField(
+            TextFormField(
               controller: _commentController,
               maxLines: 5,
+              validator: (value) => FormValidation.commentField(value),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Napisz coś więcej...',
@@ -100,6 +106,10 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: Colors.orange),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Colors.redAccent),
                 ),
               ),
             ),
@@ -123,6 +133,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -136,7 +147,21 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
 
   void _submitReview() async {
     final userProvider = context.read<UserProvider>();
-    if (!userProvider.isLoggedIn) return;
+    if (!userProvider.isLoggedIn) {
+      showValidationSnackBar(context, 'Zaloguj się, aby dodać opinię.');
+      return;
+    }
+
+    final missingLabels = FormValidation.collectMissingLabels({
+      'treść opinii': FormValidation.commentField(_commentController.text),
+    });
+    if (missingLabels.isNotEmpty) {
+      showValidationSnackBar(context, FormValidation.formatMissingFields(missingLabels));
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 

@@ -130,7 +130,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RecentlyViewedProvider()),
         ChangeNotifierProvider(create: (_) => UiFeedbackProvider()),
         ChangeNotifierProvider(
-          create: (context) => SearchProvider(context.read<IProductRepository>()),
+          create: (context) => SearchProvider(
+            context.read<IProductRepository>(),
+            categoryRepository: context.read<ICategoryRepository>(),
+          ),
         ),
       ],
       child: const PharosApp(),
