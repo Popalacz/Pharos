@@ -5,19 +5,23 @@ import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/data/models/filter_model.dart';
 import 'package:pharos/data/repositories/category_repository.dart';
+import 'package:pharos/data/repositories/filter_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchProvider extends ChangeNotifier {
   SearchProvider(
     this._repository, {
     ICategoryRepository? categoryRepository,
-  }) : _categoryRepository = categoryRepository {
+    IFilterRepository? filterRepository,
+  })  : _categoryRepository = categoryRepository,
+        _filterRepository = filterRepository {
     _initializeFilters();
     _loadRecentSearches();
   }
 
   final IProductRepository _repository;
   final ICategoryRepository? _categoryRepository;
+  final IFilterRepository? _filterRepository;
 
   String _query = '';
   List<ProductModel> _searchResults = [];
@@ -37,6 +41,45 @@ class SearchProvider extends ChangeNotifier {
   bool get isSearching => _isSearching;
   bool get isSuggesting => _isSuggesting;
   int get filterRevision => _filterRevision;
+
+  bool get hasActiveProductFilters {
+    for (final group in _availableFilters) {
+      if (group.id == ProductListFilters.sortGroupId) {
+        final selectedSort = group.values.where((value) => value.isSelected).toList();
+        if (selectedSort.isEmpty) {
+          continue;
+        }
+        if (selectedSort.first.id != ProductSortOption.recommended.name) {
+          return true;
+        }
+        continue;
+      }
+
+      if (group.values.any((value) => value.isSelected)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  int get activeFilterCount {
+    var count = 0;
+
+    for (final group in _availableFilters) {
+      if (group.id == ProductListFilters.sortGroupId) {
+        final selectedSort = group.values.where((value) => value.isSelected).toList();
+        if (selectedSort.isNotEmpty && selectedSort.first.id != ProductSortOption.recommended.name) {
+          count++;
+        }
+        continue;
+      }
+
+      count += group.values.where((value) => value.isSelected).length;
+    }
+
+    return count;
+  }
 
   Future<void> _initializeFilters() async {
     _availableFilters = [
@@ -72,7 +115,62 @@ class SearchProvider extends ChangeNotifier {
         .isSelected = true;
 
     await _loadCategoryFilters();
+    await _loadCatalogFilters();
     notifyListeners();
+  }
+
+  Future<void> _loadCatalogFilters() async {
+    final filterRepository = _filterRepository;
+    if (filterRepository == null) {
+      return;
+    }
+
+    final previousSelection = _collectSelectedFilterIds();
+    final filtersResult = await filterRepository.getCatalogFilters();
+
+    filtersResult.fold(
+      (_) {},
+      (catalogFilters) {
+        _availableFilters.removeWhere(
+          (group) =>
+              group.id.startsWith('feature_') || group.id.startsWith('attribute_group_'),
+        );
+
+        final insertIndex = _availableFilters.indexWhere(
+          (group) => group.id == ProductListFilters.priceGroupId,
+        );
+        final targetIndex = insertIndex >= 0 ? insertIndex + 1 : _availableFilters.length;
+        _availableFilters.insertAll(targetIndex, catalogFilters);
+        _restoreSelectedFilters(previousSelection);
+      },
+    );
+  }
+
+  Map<String, Set<String>> _collectSelectedFilterIds() {
+    final selectedFilters = <String, Set<String>>{};
+    for (final group in _availableFilters) {
+      final selectedValues = group.values
+          .where((value) => value.isSelected)
+          .map((value) => value.id)
+          .toSet();
+      if (selectedValues.isNotEmpty) {
+        selectedFilters[group.id] = selectedValues;
+      }
+    }
+    return selectedFilters;
+  }
+
+  void _restoreSelectedFilters(Map<String, Set<String>> previousSelection) {
+    for (final group in _availableFilters) {
+      final selectedValues = previousSelection[group.id];
+      if (selectedValues == null) {
+        continue;
+      }
+
+      for (final value in group.values) {
+        value.isSelected = selectedValues.contains(value.id);
+      }
+    }
   }
 
   Future<void> _loadRecentSearches() async {

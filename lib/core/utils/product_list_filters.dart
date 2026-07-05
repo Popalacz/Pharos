@@ -79,6 +79,30 @@ class ProductListFilters {
     return _sortProducts(filteredProducts, sortOption);
   }
 
+  static Map<String, String> buildAttributeAndFeatureParams(
+    Map<String, List<String>> selectedFilters,
+  ) {
+    final params = <String, String>{};
+
+    selectedFilters.forEach((groupId, values) {
+      if (values.isEmpty) {
+        return;
+      }
+
+      if (groupId.startsWith('feature_') || groupId.startsWith('attribute_group_')) {
+        params[groupId] = values.join(',');
+      }
+    });
+
+    return params;
+  }
+
+  static bool hasServerSideFilters(Map<String, List<String>> selectedFilters) {
+    return selectedFilters.keys.any(
+      (groupId) => groupId.startsWith('feature_') || groupId.startsWith('attribute_group_'),
+    );
+  }
+
   static ProductSortOption _resolveSortOption(List<String>? selectedSortValues) {
     if (selectedSortValues == null || selectedSortValues.isEmpty) {
       return ProductSortOption.recommended;

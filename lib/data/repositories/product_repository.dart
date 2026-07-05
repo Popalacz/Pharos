@@ -39,7 +39,7 @@ class ProductRepository implements IProductRepository {
       'module': 'pharosapi',
       'controller': 'products',
       'action': 'list',
-      'limit': _resolveLimit(listQuery),
+      'limit': _resolveLimit(listQuery, filters ?? {}),
       'order_by': listQuery.orderBy,
       'order_way': listQuery.orderWay,
     };
@@ -53,6 +53,8 @@ class ProductRepository implements IProductRepository {
     if (listQuery.priceMax != null) {
       params['price_max'] = listQuery.priceMax.toString();
     }
+
+    params.addAll(ProductListFilters.buildAttributeAndFeatureParams(filters ?? {}));
 
     final response = await _apiService.getSafe(
       '/index.php',
@@ -90,8 +92,10 @@ class ProductRepository implements IProductRepository {
     );
   }
 
-  String _resolveLimit(ProductListQuery listQuery) {
-    if (listQuery.priceMin != null || listQuery.priceMax != null) {
+  String _resolveLimit(ProductListQuery listQuery, Map<String, List<String>> selectedFilters) {
+    if (listQuery.priceMin != null ||
+        listQuery.priceMax != null ||
+        ProductListFilters.hasServerSideFilters(selectedFilters)) {
       return '100';
     }
     return '48';
@@ -119,21 +123,25 @@ class ProductRepository implements IProductRepository {
 
   @override
   Future<Either<Failure, List<ProductModel>>> searchProducts(String query, {Map<String, List<String>>? filters}) async {
+    final Map<String, dynamic> params = {
+      'fc': 'module',
+      'module': 'pharosapi',
+      'controller': 'products',
+      'action': 'search',
+      'query': query,
+    };
+
+    params.addAll(ProductListFilters.buildAttributeAndFeatureParams(filters ?? {}));
+
     final response = await _apiService.getSafe(
       '/index.php',
-      queryParameters: {
-        'fc': 'module',
-        'module': 'pharosapi',
-        'controller': 'products',
-        'action': 'search',
-        'query': query,
-      },
+      queryParameters: params,
       mapper: (json) {
         if (json is Map && json['status'] == 'success') {
           final List rawList = json['data'] ?? [];
           return rawList.map((j) => ProductModel.fromJson(j)).toList();
         }
-        return [];
+        return <ProductModel>[];
       },
     );
 

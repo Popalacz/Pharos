@@ -10,6 +10,10 @@ import 'package:pharos/ui/widgets/banner_shimmer.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/ui/screens/search_screen.dart';
+import 'package:pharos/core/providers/search_provider.dart';
+import 'package:pharos/core/utils/product_list_filters.dart';
+import 'package:pharos/ui/widgets/search_filter_drawer.dart';
+import 'package:pharos/ui/widgets/catalog_empty_state.dart';
 import 'package:pharos/ui/screens/scanner_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
@@ -31,9 +35,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<Map<String, dynamic>> _homeDataFuture;
   late Future<Either<Failure, List<ProductModel>>> _fallbackProductsFuture;
   int? _selectedCategoryId;
+  int _lastFilterRevision = -1;
   bool _initialLoadDone = false;
   final SduiMapper _sduiMapper = const SduiMapper();
 
@@ -53,13 +59,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadData() {
-    _homeDataFuture = _fetchFullHomeData();
-    _fallbackProductsFuture = context.read<IProductRepository>().getProducts(
-      categoryId: _selectedCategoryId,
+    final searchProvider = context.read<SearchProvider>();
+    _lastFilterRevision = searchProvider.filterRevision;
+
+    final listQuery = ProductListFilters.buildQuery(
+      selectedFilters: searchProvider.getSelectedFilters(),
+      catalogCategoryId: _selectedCategoryId,
     );
+
+    _homeDataFuture = _fetchFullHomeData(categoryId: listQuery.categoryId);
+    _fallbackProductsFuture = context.read<IProductRepository>().getProducts(
+          categoryId: listQuery.categoryId,
+          filters: searchProvider.getSelectedFilters(),
+        );
   }
 
-  Future<Map<String, dynamic>> _fetchFullHomeData() async {
+  Future<Map<String, dynamic>> _fetchFullHomeData({int? categoryId}) async {
     final settingsProvider = context.read<SettingsProvider>();
 
     final response = await settingsProvider.apiService.getSafe(
@@ -68,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'home',
-        if (_selectedCategoryId != null) 'id_category': _selectedCategoryId.toString(),
+        if (categoryId != null) 'id_category': categoryId.toString(),
       },
       mapper: (json) => json,
     );
@@ -161,15 +176,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = context.watch<SearchProvider>();
+
+    if (searchProvider.filterRevision != _lastFilterRevision) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(_loadData);
+      });
+    }
+
     return Scaffold(
+      key: _scaffoldKey,
       drawer: PharosNavigationDrawer(onRefreshCatalog: _loadData),
+      endDrawer: const SearchFilterDrawer(),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _homeDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CustomScrollView(
               slivers: [
-                _buildAppBar(context),
+                _buildAppBar(context, searchProvider),
                 const SliverToBoxAdapter(child: BannerShimmer()),
                 const SliverToBoxAdapter(child: ProductShimmer()),
               ],
@@ -189,17 +215,18 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           final List sectionsData = data['sections'] ?? [];
-          final visibleSections = _sduiMapper.filterVisibleSections(sectionsData);
+          final hasActiveFilters = searchProvider.hasActiveProductFilters;
+          final visibleSections = _resolveVisibleSections(sectionsData, hasActiveFilters);
           
           return RefreshIndicator(
             onRefresh: () async {
               await context.read<LocalizationProvider>().reload();
-              setState(() => _loadData());
+              setState(_loadData);
             },
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                _buildAppBar(context),
+                _buildAppBar(context, searchProvider),
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -217,7 +244,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       onCategorySelected: _onCategorySelected,
                     ),
 
-                if (!_sectionsIncludeProducts(visibleSections))
+                if (hasActiveFilters)
+                  _buildFilteredProductsSection()
+                else if (!_sectionsIncludeProducts(visibleSections))
                   _buildProductGridFallback(),
 
                 _buildRecentlyViewedSection(),
@@ -230,7 +259,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  List<Map<String, dynamic>> _resolveVisibleSections(
+    List sectionsData,
+    bool hasActiveFilters,
+  ) {
+    final visibleSections = _sduiMapper.filterVisibleSections(sectionsData);
+    if (!hasActiveFilters) {
+      return visibleSections;
+    }
+
+    return visibleSections.where((section) {
+      final type = section['type']?.toString();
+      return type != 'PRODUCT_GRID' && type != 'RECOMMENDATIONS';
+    }).toList();
+  }
+
+  Widget _buildAppBar(BuildContext context, SearchProvider searchProvider) {
     final settings = context.watch<SettingsProvider>().settings;
     return SliverAppBar(
       floating: true,
@@ -284,6 +328,33 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (context) => const ScannerScreen()),
             );
           },
+        ),
+        IconButton(
+          icon: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Icon(Icons.tune),
+              if (searchProvider.activeFilterCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '${searchProvider.activeFilterCount}',
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
         ),
         IconButton(
           icon: const Icon(Icons.search),
@@ -395,6 +466,59 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     return false;
+  }
+
+  Widget _buildFilteredProductsSection() {
+    return SliverToBoxAdapter(
+      child: FutureBuilder<Either<Failure, List<ProductModel>>>(
+        future: _fallbackProductsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ProductShimmer();
+          }
+
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+
+          return snapshot.data!.fold(
+            (_) => const SizedBox.shrink(),
+            (products) {
+              if (products.isEmpty) {
+                return const CatalogEmptyState();
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionHeaderWidget(data: {'title': 'Przefiltrowane produkty'}),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.55,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        return PharosProductCard(
+                          product: products[index],
+                          heroTagPrefix: 'home_filtered',
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildProductGridFallback() {

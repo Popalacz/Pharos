@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/data/repositories/category_repository.dart';
+import 'package:pharos/data/repositories/filter_repository.dart';
 import 'package:pharos/data/repositories/system_repository.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
@@ -97,6 +98,9 @@ void main() async {
         Provider<ICategoryRepository>(
           create: (_) => CategoryRepository(apiService: apiService),
         ),
+        Provider<IFilterRepository>(
+          create: (_) => FilterRepository(apiService: apiService),
+        ),
         ChangeNotifierProvider(create: (_) => LocalizationProvider(apiService: apiService)),
         ChangeNotifierProvider(
           create: (_) => UserProvider(
@@ -133,6 +137,7 @@ void main() async {
           create: (context) => SearchProvider(
             context.read<IProductRepository>(),
             categoryRepository: context.read<ICategoryRepository>(),
+            filterRepository: context.read<IFilterRepository>(),
           ),
         ),
       ],

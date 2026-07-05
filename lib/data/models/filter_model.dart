@@ -38,7 +38,24 @@ class FilterValue {
     return FilterValue(
       id: json['id'].toString(),
       name: json['name'],
-      colorHex: json['color'],
+      colorHex: _normalizeColor(json['color']),
     );
+  }
+
+  static String? _normalizeColor(dynamic rawColor) {
+    if (rawColor == null) {
+      return null;
+    }
+
+    final color = rawColor.toString().trim();
+    if (color.isEmpty) {
+      return null;
+    }
+
+    if (color.startsWith('#')) {
+      return color;
+    }
+
+    return '#$color';
   }
 }
