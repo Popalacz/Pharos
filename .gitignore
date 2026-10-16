@@ -51,3 +51,10 @@ android/local.properties
 
 
 /prestashop_module/pharosapi/*.zip
+# Oddanie pracy i pliki lokalne
+*.zip
+/*.pdf
+/*.pptx.pdf
+.cursor copy/
+pack-submission.ps1
+prestashop_module/
