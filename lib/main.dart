@@ -410,7 +410,7 @@ class _MainNavigationState extends State<MainNavigation> with WidgetsBindingObse
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+    // add to cart animation section
     return AddToCartAnimation(
       cartKey: cartKey,
       height: 30, width: 30,

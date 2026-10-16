@@ -98,7 +98,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
       ),
     );
   }
-
+// Fly to cart animation section
   Widget _buildQuickAddButton(BuildContext context) {
     if (!widget.product.canBeAddedToCart) return const SizedBox.shrink();
 
