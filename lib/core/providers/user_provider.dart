@@ -119,7 +119,7 @@ class UserProvider extends ChangeNotifier {
       final googleUser = await _googleService.signIn();
       if (googleUser != null) {
         final result = await _userRepository.loginWithGoogle(
-          'google_auth_token', // Przekazujemy placeholder lub prawdziwy token jeśli potrzebny
+          googleUser.authentication.idToken ?? '',
           googleUser.email,
           googleUser.displayName ?? '',
         );
