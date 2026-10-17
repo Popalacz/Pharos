@@ -25,7 +25,6 @@ import 'package:pharos/core/services/deeplink/deeplink_service.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:pharos/core/api/api_config.dart';
 import 'package:pharos/core/network/api_service.dart';
@@ -39,20 +38,8 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:pharos/core/config/google_config.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-  }
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  if (kDebugMode) {
-    HttpOverrides.global = MyHttpOverrides();
-  }
   
   try {
     await Firebase.initializeApp();

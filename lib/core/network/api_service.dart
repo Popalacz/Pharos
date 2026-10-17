@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import '../api/api_config.dart';
@@ -19,8 +17,16 @@ class ApiService {
     _sessionCookie = cookie;
   }
 
+  static String? _authToken;
+  static String? get authToken => _authToken;
+
+  static void setAuthToken(String? token) {
+    _authToken = (token == null || token.isEmpty) ? null : token;
+  }
+
   static void clearSession() {
     _sessionCookie = null;
+    _authToken = null;
   }
 
   static int defaultLanguageId = 1;
@@ -42,12 +48,6 @@ class ApiService {
       debugPrint('Pharos API origin: ${ApiConfig.originUrl}');
       debugPrint('Pharos API webservice: ${ApiConfig.baseUrl}');
     }
-
-    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient();
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-      return client;
-    };
 
     _apiInterceptor = PharosApiInterceptor();
     dio.interceptors.add(_apiInterceptor!);

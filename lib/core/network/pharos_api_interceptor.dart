@@ -28,7 +28,10 @@ class PharosApiInterceptor extends Interceptor {
     }
 
     if (options.path.contains('index.php') || options.path.contains('pharosapi')) {
-      options.headers['Authorization'] = ApiConfig.headers['Authorization'];
+      final authToken = ApiService.authToken;
+      if (authToken != null) {
+        options.headers['Authorization'] = 'Bearer $authToken';
+      }
       if (!options.queryParameters.containsKey('id_lang')) {
         options.queryParameters['id_lang'] = ApiService.defaultLanguageId.toString();
       }
@@ -68,6 +71,11 @@ class PharosApiInterceptor extends Interceptor {
       }
     }
 
+    final body = response.data;
+    if (body is Map && body['token'] is String && response.requestOptions.path.contains('index.php')) {
+      ApiService.setAuthToken(body['token'] as String);
+    }
+
     final cookies = response.headers['set-cookie'];
     if (cookies != null && cookies.isNotEmpty) {
       ApiService.setSessionCookie(cookies.first.split(';').first);
@@ -84,6 +92,9 @@ class PharosApiInterceptor extends Interceptor {
     debugPrint('Message: ${err.message}');
 
     final statusCode = err.response?.statusCode;
+    if (statusCode == 401 && ApiService.authToken != null && err.requestOptions.path.contains('index.php')) {
+      ApiService.setAuthToken(null);
+    }
     if (statusCode != null) {
       debugPrint('Status Code: $statusCode');
       debugPrint('Data: ${err.response?.data}');
