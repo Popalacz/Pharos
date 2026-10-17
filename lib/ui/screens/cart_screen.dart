@@ -4,6 +4,7 @@ import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/data/models/cart_model.dart';
 import 'package:pharos/ui/screens/checkout_screen.dart';
 import 'package:pharos/ui/screens/login_screen.dart';
@@ -12,8 +13,25 @@ import 'package:pharos/l10n/app_localizations.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  final AnalyticsService _analytics = AnalyticsService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cart = context.read<CartProvider>();
+      if (cart.items.isNotEmpty) _analytics.logViewCart(cart.totalAmount, cart.itemCount);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
