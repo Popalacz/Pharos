@@ -61,5 +61,181 @@
   "voucherApplied": "Discount code applied",
   "removedFromCart": "Removed from cart",
   "discount": "Discount",
-  "productsTotal": "Products total"
+  "productsTotal": "Products total",
+  "addressSavedSuccess": "Address saved successfully",
+  "newAddress": "New address",
+  "editAddress": "Edit address",
+  "saveAddressButton": "SAVE ADDRESS",
+  "chooseAddress": "Choose address",
+  "addNewAddressButton": "ADD NEW ADDRESS",
+  "editProfileTitle": "EDIT PROFILE",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "saveChangesButton": "SAVE CHANGES",
+  "profileUpdated": "Profile updated!",
+  "myAddressesTitle": "MY ADDRESSES",
+  "noSavedAddresses": "You have no saved addresses yet",
+  "deleteAddress": "Delete address",
+  "cancelButton": "CANCEL",
+  "deleteButton": "DELETE",
+  "regionalSettings": "Regional settings",
+  "categoriesTitle": "CATEGORIES",
+  "wishlistTitle": "FAVORITES",
+  "wishlistEmpty": "YOUR LIST IS EMPTY",
+  "startDiscovering": "START EXPLORING",
+  "orderSuccessTitle": "SUCCESS!",
+  "orderValue": "ORDER VALUE",
+  "paidBadge": "PAID",
+  "continueShopping": "CONTINUE SHOPPING",
+  "warehouseMarker": "Pharos warehouse",
+  "yourAddressMarker": "Your address",
+  "courierMarker": "Pharos courier",
+  "trackingPlacedTitle": "ORDER PLACED",
+  "trackingPlacedDesc": "We have received your order.",
+  "trackingPreparingTitle": "BEING PREPARED",
+  "trackingPreparingDesc": "Your products are being packed.",
+  "trackingShippedTitle": "ON THE WAY",
+  "trackingShippedDesc": "The courier has picked up the parcel.",
+  "trackingDeliveredTitle": "DELIVERED",
+  "trackingDeliveredDesc": "Your order has arrived!",
+  "orderStatusTitle": "ORDER STATUS",
+  "fulfillmentHistory": "FULFILLMENT HISTORY",
+  "referenceLabel": "REFERENCE",
+  "rateProductsQuestion": "HOW DO YOU RATE THE PRODUCTS?",
+  "addReviewButton": "ADD REVIEW",
+  "technicalHelp": "TECHNICAL SUPPORT",
+  "askQuestionButton": "ASK A QUESTION",
+  "recentSearches": "RECENT SEARCHES",
+  "clearLabel": "Clear",
+  "suggestions": "SUGGESTIONS",
+  "profileHeading": "YOUR PHAROS PROFILE",
+  "loginOrRegister": "LOG IN OR CREATE AN ACCOUNT",
+  "orderHistory": "ORDER HISTORY",
+  "accountSettings": "ACCOUNT SETTINGS",
+  "languageCurrency": "Language & Currency",
+  "languageCurrencySubtitle": "Change regional settings",
+  "myData": "My details",
+  "myDataSubtitle": "Edit your profile information",
+  "myAddresses": "My addresses",
+  "myAddressesSubtitle": "Manage delivery addresses",
+  "noOrderHistory": "No order history",
+  "scanProduct": "SCAN PRODUCT",
+  "scanHint": "Place the barcode inside the frame",
+  "seeAll": "See all",
+  "reviewHeading": "YOUR OPINION MATTERS TO US",
+  "submitReview": "SUBMIT REVIEW",
+  "reviewThanks": "Thank you for your review!",
+  "rateProduct": "Rate product",
+  "addButton": "ADD",
+  "buyOnOrder": "BUY ON ORDER",
+  "addToCartUpper": "ADD TO CART",
+  "addedOnOrder": "Product added (on order)",
+  "addedToCart": "Added to cart",
+  "cartUpper": "CART",
+  "notifyAvailability": "NOTIFY ME WHEN AVAILABLE",
+  "notifySaved": "You will be notified when it is available!",
+  "productUnavailable": "PRODUCT UNAVAILABLE",
+  "loginTitle": "PHAROS ACCOUNT",
+  "password": "Password",
+  "loginButton": "LOG IN",
+  "orSeparator": "OR",
+  "registerButton": "CREATE ACCOUNT",
+  "continueWithGoogle": "CONTINUE WITH GOOGLE",
+  "chooseLanguage": "Choose language",
+  "chooseCurrency": "Choose currency",
+  "filtering": "FILTERS",
+  "clearUpper": "CLEAR",
+  "showResults": "SHOW RESULTS",
+  "catalogFetchFailed": "Could not load the catalog",
+  "tryAgainSentence": "Try again",
+  "favoritesAdded": "Added to favorites",
+  "favoritesRemoved": "Removed from favorites",
+  "noProductsTitle": "NO PRODUCTS",
+  "noResults": "No results",
+  "clearSearch": "Clear search",
+  "a11yBack": "Back",
+  "a11yClose": "Close",
+  "a11yRemove": "Remove",
+  "a11yAddToFavorites": "Add to favorites",
+  "a11yRemoveFromFavorites": "Remove from favorites",
+  "a11yEdit": "Edit",
+  "a11yShowPassword": "Show password",
+  "a11yHidePassword": "Hide password",
+  "a11yScanBarcode": "Scan barcode",
+  "a11yFilters": "Filters",
+  "a11yIncreaseQuantity": "Increase quantity",
+  "a11yDecreaseQuantity": "Decrease quantity",
+  "a11yOpenMenu": "Open menu",
+  "deleteAddressConfirm": "Are you sure you want to delete the address \"{alias}\"?",
+  "@deleteAddressConfirm": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      }
+    }
+  },
+  "searchFor": "Search for \"{query}\"",
+  "@searchFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yLogout": "Log out",
+  "a11yRefresh": "Refresh",
+  "a11yVoiceSearch": "Voice search",
+  "a11yApplyVoucher": "Apply discount code",
+  "a11yRateStars": "Rate {count} out of 5",
+  "@a11yRateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "galleryImageLabel": "Image {index} of {total}",
+  "@galleryImageLabel": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "addedProduct": "Added: {name}",
+  "@addedProduct": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "currencyRecalcInfo": "Product prices will be converted automatically at the current rate in your store.",
+  "noSavedAddressesDot": "You have no saved addresses yet.",
+  "listening": "LISTENING...",
+  "searchInStore": "Search in {store}...",
+  "@searchInStore": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "orderNumber": "Order #{reference}",
+  "@orderNumber": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewPlaceholder": "Write something more...",
+  "reviewSendError": "An error occurred while submitting your review.",
+  "reviewsLoadError": "Error while loading reviews.",
+  "reviewsFetchFailed": "Could not load reviews.",
+  "noReviews": "No reviews for this product yet.",
+  "reviewTitle": "Review"
 }

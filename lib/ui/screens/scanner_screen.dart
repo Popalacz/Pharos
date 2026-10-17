@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:pharos/core/services/scanner_service.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class ScannerScreen extends StatelessWidget {
   const ScannerScreen({super.key});
@@ -9,7 +10,7 @@ class ScannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SKANUJ PRODUKT', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
+        title: Text(AppLocalizations.of(context)!.scanProduct, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
@@ -40,11 +41,11 @@ class ScannerScreen extends StatelessWidget {
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             bottom: 100,
             left: 0, right: 0,
             child: Text(
-              'Umieść kod kreskowy w ramce',
+              AppLocalizations.of(context)!.scanHint,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
             ),

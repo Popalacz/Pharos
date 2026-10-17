@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/constants/pharos_layout.dart';
 import '../../core/theme/app_colors.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 /// Friendly offline / API failure panel with a clear retry action.
 class NetworkErrorState extends StatelessWidget {
@@ -40,7 +41,7 @@ class NetworkErrorState extends StatelessWidget {
                   ),
                   const SizedBox(height: PharosLayout.spaceMd),
                   Text(
-                    'Nie udało się pobrać katalogu',
+                    AppLocalizations.of(context)!.catalogFetchFailed,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: AppColors.text,
@@ -63,7 +64,7 @@ class NetworkErrorState extends StatelessWidget {
                       onRetry();
                     },
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Spróbuj ponownie'),
+                    label: Text(AppLocalizations.of(context)!.tryAgainSentence),
                   ),
                 ],
               ),

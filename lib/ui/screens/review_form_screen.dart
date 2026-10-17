@@ -8,6 +8,7 @@ import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/core/utils/validation_feedback.dart';
 import 'package:pharos/data/repositories/review_repository.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class ReviewFormScreen extends StatefulWidget {
   final int? productId;
@@ -53,8 +54,8 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
             children: [
             const Icon(Icons.rate_review_outlined, size: 80, color: Colors.orange),
             const SizedBox(height: AppSpacing.s24),
-            const Text(
-              'TWOJA OPINIA JEST DLA NAS WAŻNA',
+            Text(
+              AppLocalizations.of(context)!.reviewHeading,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1),
             ),
@@ -71,6 +72,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (index) {
                 return IconButton(
+                  tooltip: AppLocalizations.of(context)!.a11yRateStars(index + 1),
                   icon: Icon(
                     index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
                     size: 48,
@@ -96,7 +98,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
               validator: (value) => FormValidation.commentField(value),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Napisz coś więcej...',
+                hintText: AppLocalizations.of(context)!.reviewPlaceholder,
                 hintStyle: const TextStyle(color: Colors.white10),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.05),
@@ -128,7 +130,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
                 ),
                 child: _isSubmitting 
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('WYŚLIJ OPINIĘ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  : Text(AppLocalizations.of(context)!.submitReview, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           ],
@@ -190,12 +192,12 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
     if (mounted) {
       if (isSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dziękujemy za Twoją opinię!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.reviewThanks), backgroundColor: Colors.green),
         );
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wystąpił błąd podczas wysyłania opinii.'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context)!.reviewSendError), backgroundColor: Colors.red),
         );
       }
     }

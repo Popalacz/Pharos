@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/data/models/address_model.dart';
 import 'package:pharos/ui/screens/address_form_screen.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class AddressSelectionScreen extends StatelessWidget {
   final AddressModel? selectedAddress;
@@ -19,7 +20,7 @@ class AddressSelectionScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: const Text('Wybierz adres', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.chooseAddress, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -33,7 +34,7 @@ class AddressSelectionScreen extends StatelessWidget {
                     const LinearProgressIndicator(backgroundColor: Colors.transparent, color: Colors.orange, minHeight: 2),
                   Expanded(
                     child: addresses.isEmpty
-                      ? const Center(child: Text('Nie masz jeszcze zapisanych adresów.', style: TextStyle(color: Colors.grey)))
+                      ? Center(child: Text(AppLocalizations.of(context)!.noSavedAddressesDot, style: TextStyle(color: Colors.grey)))
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                           itemCount: addresses.length,
@@ -111,7 +112,7 @@ class AddressSelectionScreen extends StatelessWidget {
                 },
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
-                label: const Text('DODAJ NOWY ADRES', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(AppLocalizations.of(context)!.addNewAddressButton, style: TextStyle(fontWeight: FontWeight.bold)),
                 icon: const Icon(Icons.add),
               ),
             ),

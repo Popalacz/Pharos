@@ -32,6 +32,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           if (userProvider.isLoggedIn)
             IconButton(
+              tooltip: AppLocalizations.of(context)!.a11yLogout,
               icon: const Icon(Icons.logout, color: Colors.white70),
               onPressed: () => userProvider.signOut(),
             )
@@ -61,8 +62,8 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Icon(Icons.account_circle_outlined, size: 100, color: Colors.white.withOpacity(0.05)),
             const SizedBox(height: AppSpacing.s24),
-            const Text(
-              'TWÓJ PROFIL PHAROS',
+            Text(
+              AppLocalizations.of(context)!.profileHeading,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1),
             ),
             const SizedBox(height: AppSpacing.s12),
@@ -73,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.s40),
             PharosButton(
-              label: 'ZALOGUJ SIĘ LUB ZAŁÓŻ KONTO',
+              label: AppLocalizations.of(context)!.loginOrRegister,
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
             ),
           ],
@@ -123,28 +124,28 @@ class _LoggedInProfileContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s40),
-        const Text('HISTORIA ZAMÓWIEŃ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
+        Text(AppLocalizations.of(context)!.orderHistory, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
         const SizedBox(height: AppSpacing.s16),
         const _OrderHistorySection(),
         const SizedBox(height: AppSpacing.s40),
-        const Text('USTAWIENIA KONTA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
+        Text(AppLocalizations.of(context)!.accountSettings, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
         const SizedBox(height: AppSpacing.s16),
         _ProfileMenuTile(
           icon: Icons.language_outlined,
-          title: 'Język i Waluta',
-          subtitle: 'Zmień ustawienia regionalne',
+          title: AppLocalizations.of(context)!.languageCurrency,
+          subtitle: AppLocalizations.of(context)!.languageCurrencySubtitle,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen())),
         ),
         _ProfileMenuTile(
           icon: Icons.person_outline,
-          title: 'Moje dane',
-          subtitle: 'Edytuj informacje o profilu',
+          title: AppLocalizations.of(context)!.myData,
+          subtitle: AppLocalizations.of(context)!.myDataSubtitle,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
         ),
         _ProfileMenuTile(
           icon: Icons.location_on_outlined,
-          title: 'Moje adresy',
-          subtitle: 'Zarządzaj adresami dostaw',
+          title: AppLocalizations.of(context)!.myAddresses,
+          subtitle: AppLocalizations.of(context)!.myAddressesSubtitle,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressManagementScreen())),
         ),
       ],
@@ -172,7 +173,7 @@ class _OrderHistorySection extends StatelessWidget {
     }
 
     if (ordersProvider.orders.isEmpty) {
-      return const _StatusCard(icon: Icons.receipt_long, message: 'Brak historii zamówień');
+      return _StatusCard(icon: Icons.receipt_long, message: AppLocalizations.of(context)!.noOrderHistory);
     }
 
     return Column(
@@ -213,7 +214,7 @@ class _OrderTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Zamówienie #${order.reference}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      Text(AppLocalizations.of(context)!.orderNumber(order.reference), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                       Text(order.date, style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 12)),
                     ],
                   ),

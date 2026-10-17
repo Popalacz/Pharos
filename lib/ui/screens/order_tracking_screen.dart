@@ -12,6 +12,7 @@ import 'package:pharos/core/providers/orders_provider.dart';
 import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:pharos/ui/screens/review_form_screen.dart';
 import 'dart:async';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
   final OrderModel order;
@@ -51,20 +52,20 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       Marker(
         markerId: const MarkerId('warehouse'),
         position: _warehouseLoc,
-        infoWindow: const InfoWindow(title: 'Magazyn Pharos'),
+        infoWindow: InfoWindow(title: AppLocalizations.of(context)!.warehouseMarker),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
       ),
       Marker(
         markerId: const MarkerId('user'),
         position: _userLoc,
-        infoWindow: const InfoWindow(title: 'Twój Adres'),
+        infoWindow: InfoWindow(title: AppLocalizations.of(context)!.yourAddressMarker),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ),
       if (_currentOrder.status == 'Wysłano' || _currentOrder.status == 'W drodze')
         Marker(
           markerId: const MarkerId('courier'),
           position: _courierLoc,
-          infoWindow: const InfoWindow(title: 'Kurier Pharos'),
+          infoWindow: InfoWindow(title: AppLocalizations.of(context)!.courierMarker),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         ),
     };
@@ -106,26 +107,26 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     
     final List<Map<String, dynamic>> steps = [
       {
-        'title': 'ZAMÓWIENIE ZŁOŻONE',
-        'desc': 'Otrzymaliśmy Twoje zamówienie.',
+        'title': AppLocalizations.of(context)!.trackingPlacedTitle,
+        'desc': AppLocalizations.of(context)!.trackingPlacedDesc,
         'icon': Icons.assignment_turned_in_outlined,
         'state': _getStepState(0, _currentOrder.status),
       },
       {
-        'title': 'W PRZYGOTOWANIU',
-        'desc': 'Twoje produkty są pakowane.',
+        'title': AppLocalizations.of(context)!.trackingPreparingTitle,
+        'desc': AppLocalizations.of(context)!.trackingPreparingDesc,
         'icon': Icons.inventory_2_outlined,
         'state': _getStepState(1, _currentOrder.status),
       },
       {
-        'title': 'W DRODZE',
-        'desc': 'Kurier odebrał paczkę.',
+        'title': AppLocalizations.of(context)!.trackingShippedTitle,
+        'desc': AppLocalizations.of(context)!.trackingShippedDesc,
         'icon': Icons.local_shipping_outlined,
         'state': _getStepState(2, _currentOrder.status),
       },
       {
-        'title': 'DOSTARCZONO',
-        'desc': 'Zamówienie dotarło!',
+        'title': AppLocalizations.of(context)!.trackingDeliveredTitle,
+        'desc': AppLocalizations.of(context)!.trackingDeliveredDesc,
         'icon': Icons.verified_outlined,
         'state': _getStepState(3, _currentOrder.status),
       },
@@ -134,12 +135,13 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('STATUS ZAMÓWIENIA', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 16)),
+        title: Text(AppLocalizations.of(context)!.orderStatusTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 16)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
+            tooltip: AppLocalizations.of(context)!.a11yRefresh,
             icon: _isRefreshing 
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText))
                 : const Icon(Icons.refresh_rounded, color: Colors.white),
@@ -223,8 +225,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'HISTORIA REALIZACJI',
+        Text(
+          AppLocalizations.of(context)!.fulfillmentHistory,
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white24),
         ),
         Text(
@@ -251,7 +253,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('REFERENCJA', style: TextStyle(color: Colors.white24, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Text(AppLocalizations.of(context)!.referenceLabel, style: TextStyle(color: Colors.white24, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   const SizedBox(height: AppSpacing.s4),
                   Text(_currentOrder.reference, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
                 ],
@@ -275,7 +277,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             children: [
               _briefItem('DATA', _currentOrder.date.split(' ')[0]),
               _briefItem('KWOTA', loc.formatPrice(_currentOrder.totalPaid)),
-              _briefItem('STATUS', 'OPŁACONE'),
+              _briefItem('STATUS', AppLocalizations.of(context)!.paidBadge),
             ],
           ),
         ],
@@ -308,7 +310,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         children: [
           const Icon(Icons.star_rounded, color: Colors.green, size: 40),
           const SizedBox(height: AppSpacing.s12),
-          const Text('JAK OCENIASZ PRODUKTY?', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
+          Text(AppLocalizations.of(context)!.rateProductsQuestion, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
           const SizedBox(height: AppSpacing.s8),
           const Text(
             'Twoja opinia pomaga nam budować Pharos.',
@@ -321,10 +323,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             height: 48,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ReviewFormScreen(orderId: _currentOrder.id, title: 'Opinia')));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ReviewFormScreen(orderId: _currentOrder.id, title: AppLocalizations.of(context)!.reviewTitle)));
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('DODAJ OPINIĘ', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context)!.addReviewButton, style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           )
         ],
@@ -345,7 +347,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         children: [
           const Icon(Icons.support_agent_rounded, color: AppColors.accentText, size: 32),
           const SizedBox(height: AppSpacing.s12),
-          const Text('POMOC TECHNICZNA', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
+          Text(AppLocalizations.of(context)!.technicalHelp, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
           const SizedBox(height: AppSpacing.s16),
           SizedBox(
             width: double.infinity,
@@ -357,7 +359,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 side: const BorderSide(color: AppColors.accent),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('ZADAJ PYTANIE', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context)!.askQuestionButton, style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           )
         ],

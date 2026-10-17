@@ -11,6 +11,7 @@ import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/ui_feedback_provider.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class PharosProductCard extends StatefulWidget {
   final ProductModel product;
@@ -104,8 +105,12 @@ class _PharosProductCardState extends State<PharosProductCard> {
     if (!widget.product.canBeAddedToCart) return const SizedBox.shrink();
 
     return Positioned(
-      bottom: 10, right: 10,
-      child: GestureDetector(
+      bottom: 4, right: 4,
+      child: Semantics(
+        button: true,
+        label: AppLocalizations.of(context)!.addToCart,
+        child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {
           HapticFeedback.heavyImpact();
           context.read<CartProvider>().addItem(widget.product);
@@ -114,19 +119,21 @@ class _PharosProductCardState extends State<PharosProductCard> {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Dodano: ${widget.product.name}'),
+              content: Text(AppLocalizations.of(context)!.addedProduct(widget.product.name)),
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
               backgroundColor: Colors.orange,
               action: SnackBarAction(
-                label: 'KOSZYK',
+                label: AppLocalizations.of(context)!.cartUpper,
                 textColor: Colors.white,
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
               ),
             ),
           );
         },
-        child: Container(
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.orange,
@@ -135,17 +142,24 @@ class _PharosProductCardState extends State<PharosProductCard> {
           ),
           child: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.white),
         ),
+        ),
+        ),
       ),
     );
   }
 
   Widget _buildWishlistButton() {
     return Positioned(
-      top: 10, right: 10,
+      top: 2, right: 2,
       child: Consumer<WishlistProvider>(
         builder: (context, wishlist, child) {
           final isFav = wishlist.isFavorite(widget.product.id);
-          return GestureDetector(
+          return Semantics(
+            button: true,
+            toggled: isFav,
+            label: isFav ? AppLocalizations.of(context)!.a11yRemoveFromFavorites : AppLocalizations.of(context)!.a11yAddToFavorites,
+            child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () {
               HapticFeedback.mediumImpact();
               final bool willBeFavorite = !wishlist.isFavorite(widget.product.id);
@@ -154,21 +168,25 @@ class _PharosProductCardState extends State<PharosProductCard> {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(willBeFavorite ? 'Dodano do ulubionych' : 'Usunięto z ulubionych'),
+                  content: Text(willBeFavorite ? AppLocalizations.of(context)!.favoritesAdded : AppLocalizations.of(context)!.favoritesRemoved),
                   duration: const Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
                   backgroundColor: willBeFavorite ? Colors.orange : Colors.grey.shade800,
                 ),
               );
             },
-            child: CircleAvatar(
-              backgroundColor: Colors.black45,
-              radius: 16,
-              child: Icon(
-                isFav ? Icons.favorite : Icons.favorite_border,
-                size: 18,
-                color: isFav ? Colors.red : Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: CircleAvatar(
+                backgroundColor: Colors.black45,
+                radius: 16,
+                child: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  size: 18,
+                  color: isFav ? Colors.red : Colors.white,
+                ),
               ),
+            ),
             ),
           );
         },

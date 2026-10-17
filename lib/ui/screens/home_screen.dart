@@ -142,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Align(
               alignment: Alignment.topRight,
               child: IconButton(
+                tooltip: AppLocalizations.of(context)!.a11yClose,
                 icon: const Icon(Icons.close, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -282,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
       pinned: true,
       expandedHeight: 120,
       leading: IconButton(
+        tooltip: AppLocalizations.of(context)!.a11yOpenMenu,
         icon: const Icon(Icons.menu),
         onPressed: () => Scaffold.of(context).openDrawer(),
       ),
@@ -322,6 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       actions: [
         IconButton(
+          tooltip: AppLocalizations.of(context)!.a11yScanBarcode,
           icon: const Icon(Icons.qr_code_scanner),
           onPressed: () {
             Navigator.push(
@@ -331,6 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         IconButton(
+          tooltip: AppLocalizations.of(context)!.a11yFilters,
           icon: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -358,6 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
         ),
         IconButton(
+          tooltip: AppLocalizations.of(context)!.search,
           icon: const Icon(Icons.search),
           onPressed: () {
             Navigator.push(
@@ -372,6 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
               alignment: Alignment.center,
               children: [
                 IconButton(
+                  tooltip: AppLocalizations.of(context)!.cart,
                   icon: const Icon(Icons.shopping_bag_outlined),
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));

@@ -10,6 +10,7 @@ import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:pharos/core/error/failures.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
 import 'package:pharos/ui/widgets/catalog_empty_state.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class CatalogScreen extends StatefulWidget {
   final String title;
@@ -63,6 +64,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         centerTitle: true,
         actions: [
           IconButton(
+            tooltip: AppLocalizations.of(context)!.a11yFilters,
             icon: const Icon(Icons.tune),
             onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
           ),

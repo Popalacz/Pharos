@@ -8,6 +8,7 @@ import 'package:pharos/core/services/notification_service.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class LocalizationSettingsScreen extends StatelessWidget {
   const LocalizationSettingsScreen({super.key});
@@ -18,7 +19,7 @@ class LocalizationSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ustawienia regionalne', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.regionalSettings, style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: locProvider.isLoading
           ? const Padding(padding: EdgeInsets.all(20), child: ListShimmer(itemCount: 4))
@@ -44,7 +45,7 @@ class LocalizationSettingsScreen extends StatelessWidget {
                         _buildCurrencyList(context, locProvider),
                         const SizedBox(height: AppSpacing.s40),
                       ],
-                      _buildInfoText('Ceny produktów zostaną automatycznie przeliczone zgodnie z aktualnym kursem w Twoim sklepie.'),
+                      _buildInfoText(AppLocalizations.of(context)!.currencyRecalcInfo),
                     ],
                   ),
                 ),

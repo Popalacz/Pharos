@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/data/models/address_model.dart';
 import 'package:pharos/ui/screens/address_form_screen.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class AddressManagementScreen extends StatefulWidget {
   const AddressManagementScreen({super.key});
@@ -27,7 +28,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MOJE ADRESY', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
+        title: Text(AppLocalizations.of(context)!.myAddressesTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
       ),
       body: Stack(
         children: [
@@ -63,7 +64,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressFormScreen())),
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
-                label: const Text('DODAJ NOWY ADRES', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(AppLocalizations.of(context)!.addNewAddressButton, style: TextStyle(fontWeight: FontWeight.bold)),
                 icon: const Icon(Icons.add),
               ),
             ),
@@ -80,7 +81,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
         children: [
           Icon(Icons.location_off_outlined, size: 80, color: Colors.white.withOpacity(0.05)),
           const SizedBox(height: AppSpacing.s16),
-          const Text('Nie masz jeszcze zapisanych adresów', style: TextStyle(color: Colors.white30)),
+          Text(AppLocalizations.of(context)!.noSavedAddresses, style: TextStyle(color: Colors.white30)),
         ],
       ),
     );
@@ -105,10 +106,12 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
               Row(
                 children: [
                   IconButton(
+                    tooltip: AppLocalizations.of(context)!.a11yEdit,
                     icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.white70),
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddressFormScreen(address: address))),
                   ),
                   IconButton(
+                    tooltip: AppLocalizations.of(context)!.a11yRemove,
                     icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
                     onPressed: () => _confirmDelete(context, address),
                   ),
@@ -131,16 +134,16 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Usuń adres'),
-        content: Text('Czy na pewno chcesz usunąć adres "${address.alias}"?'),
+        title: Text(AppLocalizations.of(context)!.deleteAddress),
+        content: Text(AppLocalizations.of(context)!.deleteAddressConfirm(address.alias)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('ANULUJ')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancelButton)),
           TextButton(
             onPressed: () {
               context.read<UserProvider>().deleteAddress(address.id);
               Navigator.pop(context);
             }, 
-            child: const Text('USUŃ', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.deleteButton, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

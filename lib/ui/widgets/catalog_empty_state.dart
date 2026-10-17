@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import '../../core/constants/pharos_layout.dart';
 import '../../core/theme/app_colors.dart';
 import 'pharos_button.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class CatalogEmptyState extends StatelessWidget {
   const CatalogEmptyState({super.key});
@@ -27,7 +28,7 @@ class CatalogEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: PharosLayout.spaceMd),
             Text(
-              'BRAK PRODUKTÓW',
+              AppLocalizations.of(context)!.noProductsTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.text,
                     fontWeight: FontWeight.w900,
@@ -75,7 +76,7 @@ class CatalogNoSearchResults extends StatelessWidget {
             ),
             const SizedBox(height: PharosLayout.spaceMd),
             Text(
-              'Brak wyników',
+              AppLocalizations.of(context)!.noResults,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.text,
                     fontWeight: FontWeight.w800,
@@ -93,7 +94,7 @@ class CatalogNoSearchResults extends StatelessWidget {
             const SizedBox(height: PharosLayout.spaceMd),
             PharosButton(
               style: PharosButtonStyle.outline,
-              label: 'Wyczyść wyszukiwanie',
+              label: AppLocalizations.of(context)!.clearSearch,
               onPressed: onClearQuery,
             ),
           ],

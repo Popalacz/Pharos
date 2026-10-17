@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/data/models/product_model.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class ProductImageGallery extends StatefulWidget {
   const ProductImageGallery({
@@ -137,7 +138,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
 
                         return Semantics(
                           button: true,
-                          label: 'Zdjęcie ${index + 1} z ${_imageUrls.length}',
+                          label: AppLocalizations.of(context)!.galleryImageLabel(index + 1, _imageUrls.length),
                           selected: isSelected,
                           child: GestureDetector(
                             onTap: () => _goToPage(index),

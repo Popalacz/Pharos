@@ -3,6 +3,7 @@ import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
 import 'package:pharos/data/models/filter_model.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class SearchFilterDrawer extends StatelessWidget {
   const SearchFilterDrawer({super.key});
@@ -21,10 +22,10 @@ class SearchFilterDrawer extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('FILTROWANIE', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  Text(AppLocalizations.of(context)!.filtering, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
                   TextButton(
                     onPressed: () => searchProvider.clearFilters(),
-                    child: const Text('WYCZYŚĆ', style: TextStyle(color: Colors.orange)),
+                    child: Text(AppLocalizations.of(context)!.clearUpper, style: TextStyle(color: Colors.orange)),
                   ),
                 ],
               ),
@@ -54,7 +55,7 @@ class SearchFilterDrawer extends StatelessWidget {
                     backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('POKAŻ WYNIKI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.showResults, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             )

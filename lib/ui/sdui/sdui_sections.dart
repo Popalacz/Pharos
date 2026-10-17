@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pharos/data/models/category_model.dart';
 import 'package:pharos/data/models/product_model.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 List<ProductModel> _parseProductItems(List items) {
   final products = <ProductModel>[];
@@ -143,9 +144,9 @@ class SectionHeaderWidget extends StatelessWidget {
           if (onSeeAll != null)
             InkWell(
               onTap: onSeeAll,
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text('Zobacz wszystko', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                child: Text(AppLocalizations.of(context)!.seeAll, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
               ),
             ),
         ],
