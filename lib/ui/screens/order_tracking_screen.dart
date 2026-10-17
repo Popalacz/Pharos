@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pharos/core/network/api_service.dart';
@@ -140,7 +141,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         actions: [
           IconButton(
             icon: _isRefreshing 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent))
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText))
                 : const Icon(Icons.refresh_rounded, color: Colors.white),
             onPressed: _isRefreshing ? null : _refreshOrder,
           )
@@ -154,7 +155,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _refreshOrder,
-                  color: AppColors.accent,
+                  color: AppColors.accentText,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(PharosLayout.spaceLg),
@@ -162,9 +163,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildOrderBrief(loc),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppSpacing.s32),
                         _buildTimelineHeader(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppSpacing.s24),
                         ...List.generate(steps.length, (index) {
                           final step = steps[index];
                           return _OrderTimelineTile(
@@ -176,10 +177,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                             isLast: index == steps.length - 1,
                           );
                         }),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppSpacing.s32),
                         if (_currentOrder.status == 'Dostarczono') ...[
                           _buildReviewButton(),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.s16),
                         ],
                         _buildSupportSection(),
                       ],
@@ -228,7 +229,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         ),
         Text(
           'DZIŚ, ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-          style: const TextStyle(fontSize: 11, color: Colors.white10),
+          style: const TextStyle(fontSize: 12, color: Colors.white10),
         ),
       ],
     );
@@ -250,8 +251,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('REFERENCJA', style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                  const SizedBox(height: 4),
+                  const Text('REFERENCJA', style: TextStyle(color: Colors.white24, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(_currentOrder.reference, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
                 ],
               ),
@@ -263,7 +264,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                 ),
                 child: Text(
                   _currentOrder.status.toUpperCase(),
-                  style: const TextStyle(color: AppColors.accent, fontSize: 9, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.accentText, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -286,8 +287,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: Colors.white24, fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: AppSpacing.s4),
         Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
       ],
     );
@@ -306,9 +307,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       child: Column(
         children: [
           const Icon(Icons.star_rounded, color: Colors.green, size: 40),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.s12),
           const Text('JAK OCENIASZ PRODUKTY?', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.s8),
           const Text(
             'Twoja opinia pomaga nam budować Pharos.',
             textAlign: TextAlign.center,
@@ -342,17 +343,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       ),
       child: Column(
         children: [
-          const Icon(Icons.support_agent_rounded, color: AppColors.accent, size: 32),
-          const SizedBox(height: 12),
+          const Icon(Icons.support_agent_rounded, color: AppColors.accentText, size: 32),
+          const SizedBox(height: AppSpacing.s12),
           const Text('POMOC TECHNICZNA', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           SizedBox(
             width: double.infinity,
             height: 48,
             child: OutlinedButton(
               onPressed: () {},
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.accent,
+                foregroundColor: AppColors.accentText,
                 side: const BorderSide(color: AppColors.accent),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -419,16 +420,16 @@ class _OrderTimelineTile extends StatelessWidget {
               if (!isLast) Expanded(child: Container(width: 1, color: color.withOpacity(0.2))),
             ],
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.s16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.s4),
                 Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: state == _TimelineState.pending ? Colors.white10 : Colors.white)),
-                const SizedBox(height: 4),
-                Text(description, style: TextStyle(fontSize: 11, color: state == _TimelineState.pending ? Colors.white.withOpacity(0.02) : Colors.white54)),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.s4),
+                Text(description, style: TextStyle(fontSize: 12, color: state == _TimelineState.pending ? Colors.white.withOpacity(0.02) : Colors.white54)),
+                const SizedBox(height: AppSpacing.s24),
               ],
             ),
           ),

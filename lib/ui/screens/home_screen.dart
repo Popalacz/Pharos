@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:pharos/data/repositories/product_repository.dart';
@@ -162,8 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Column(
                   children: [
-                    Text(l10n.yourPromoCode, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
+                    Text(l10n.yourPromoCode, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: AppSpacing.s4),
                     Text(settings.appOnlyDiscountCode!, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
                   ],
                 ),
@@ -250,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildProductGridFallback(),
 
                 _buildRecentlyViewedSection(),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s32)),
               ],
             ),
           );
@@ -347,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                     child: Text(
                       '${searchProvider.activeFilterCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -389,7 +390,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                       child: Text(
                         '${cart.itemCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -424,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           children: [
             const Icon(Icons.shopping_cart_checkout, color: Colors.orange),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -597,13 +598,13 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 200,
             errorBuilder: (context, error, stackTrace) => const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.grey),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           Text(l10n.syncErrorTitle, 
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.s8),
           Text(l10n.syncErrorMessage, 
             textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.s24),
           ElevatedButton(
             onPressed: () => setState(() => _loadData()),
             style: ElevatedButton.styleFrom(

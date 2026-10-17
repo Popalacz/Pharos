@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -110,7 +111,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                     ],
                   ),
                   
-                  const SizedBox(height: 40),
+                  const SizedBox(height: AppSpacing.s40),
                   
                   FadeTransition(
                     opacity: _fadeAnimation,
@@ -125,7 +126,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.s8),
                         Container(
                           width: 40,
                           height: 4,
@@ -134,7 +135,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppSpacing.s24),
                         Text(
                           'Twoje zamówienie #${widget.orderReference} zostało przyjęte do realizacji.',
                           textAlign: TextAlign.center,
@@ -145,7 +146,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.s8),
                         Text(
                           'Potwierdzenie wysłaliśmy na Twój adres e-mail.',
                           textAlign: TextAlign.center,
@@ -158,7 +159,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                     ),
                   ),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.s48),
 
                   // Order Card
                   FadeTransition(
@@ -187,14 +188,14 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.3), 
                                   fontWeight: FontWeight.w800, 
-                                  fontSize: 11, 
+                                  fontSize: 12, 
                                   letterSpacing: 1.2
                                 )
                               ),
                               const Icon(Icons.receipt_long_rounded, size: 16, color: Colors.white24),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.s8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -202,7 +203,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                               Text(
                                 loc.formatPrice(widget.totalAmount),
                                 style: const TextStyle(
-                                  color: AppColors.accent, 
+                                  color: AppColors.accentText, 
                                   fontWeight: FontWeight.w900, 
                                   fontSize: 32,
                                   letterSpacing: -0.5,

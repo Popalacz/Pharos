@@ -91,7 +91,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
               ),
               errorWidget: (BuildContext context, String url, Object error) => ColoredBox(
                 color: AppColors.surface,
-                child: Icon(Icons.error, size: 100, color: AppColors.accent),
+                child: Icon(Icons.error, size: 100, color: AppColors.accentText),
               ),
             );
 

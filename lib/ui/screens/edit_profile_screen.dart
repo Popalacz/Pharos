@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/utils/form_validation.dart';
@@ -55,14 +56,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Icons.person_outline,
                 validator: (value) => FormValidation.nameField(value, 'Imię'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               _buildTextField(
                 _lastnameController,
                 'Nazwisko',
                 Icons.person_outline,
                 validator: (value) => FormValidation.nameField(value, 'Nazwisko'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               _buildTextField(
                 _emailController,
                 'E-mail',
@@ -70,7 +71,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) => FormValidation.emailField(value),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.s32),
               SizedBox(
                 width: double.infinity,
                 height: 56,
