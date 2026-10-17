@@ -18,7 +18,7 @@ class ApiConfig {
 
   static const String apiKey = String.fromEnvironment(
     'PHAROS_API_KEY',
-    defaultValue: 'PHAROS00008RLIS6EBBLYEYGUPP1XPFA',
+    defaultValue: '',
   );
 
   static Map<String, String> get headers {

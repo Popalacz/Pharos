@@ -113,7 +113,7 @@ class AuthRepository implements IAuthRepository {
         'action': 'google_login',
       },
       data: {
-        'token': token,
+        'id_token': token,
         'email': email,
         'name': name,
       },
