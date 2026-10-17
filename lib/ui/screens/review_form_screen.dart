@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -51,19 +52,19 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
             const Icon(Icons.rate_review_outlined, size: 80, color: Colors.orange),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             const Text(
               'TWOJA OPINIA JEST DLA NAS WAŻNA',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.s8),
             const Text(
               'Podziel się swoimi wrażeniami z innymi klientami.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white30),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: AppSpacing.s48),
             
             // Star Rating
             Row(
@@ -87,7 +88,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
               style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             
-            const SizedBox(height: 40),
+            const SizedBox(height: AppSpacing.s40),
             
             TextFormField(
               controller: _commentController,
@@ -114,7 +115,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
               ),
             ),
             
-            const SizedBox(height: 48),
+            const SizedBox(height: AppSpacing.s48),
             
             SizedBox(
               width: double.infinity,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/ui/screens/categories_screen.dart';
 import 'package:pharos/ui/screens/wishlist_screen.dart';
@@ -47,7 +48,7 @@ class PharosNavigationDrawer extends StatelessWidget {
                       letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.s8),
                   Text(
                     l10n.drawerTagline,
                     style: const TextStyle(

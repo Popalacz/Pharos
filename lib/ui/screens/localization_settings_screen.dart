@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
@@ -33,15 +34,15 @@ class LocalizationSettingsScreen extends StatelessWidget {
                     children: [
                       if (locProvider.showLanguageSelector) ...[
                         _buildSectionHeader('WYBIERZ JĘZYK'),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.s12),
                         _buildLanguageList(context, locProvider),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: AppSpacing.s40),
                       ],
                       if (locProvider.showCurrencySelector) ...[
                         _buildSectionHeader('WYBIERZ WALUTĘ'),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.s12),
                         _buildCurrencyList(context, locProvider),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: AppSpacing.s40),
                       ],
                       _buildInfoText('Ceny produktów zostaną automatycznie przeliczone zgodnie z aktualnym kursem w Twoim sklepie.'),
                     ],

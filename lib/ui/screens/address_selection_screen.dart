@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
@@ -70,7 +71,7 @@ class AddressSelectionScreen extends StatelessWidget {
                                                   if (isSelected) const Icon(Icons.check_circle, color: Colors.orange, size: 20),
                                                 ],
                                               ),
-                                              const SizedBox(height: 8),
+                                              const SizedBox(height: AppSpacing.s8),
                                               Text('${address.firstname} ${address.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
                                               Text(address.address1, style: TextStyle(color: Colors.white.withOpacity(0.6))),
                                               Text('${address.postcode} ${address.city}', style: TextStyle(color: Colors.white.withOpacity(0.6))),

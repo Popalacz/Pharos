@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:pharos/data/models/product_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -60,20 +61,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(loc),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.s24),
                       _buildBadges(),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: AppSpacing.s32),
                       _buildSectionTitle('OPIS PRODUKTU'),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.s12),
                       Text(
                         widget.product.description,
                         style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.7), height: 1.6)
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: AppSpacing.s32),
                       _buildTechnicalDetails(),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: AppSpacing.s48),
                       _buildSectionTitle('PODOBNE PRODUKTY'),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.s16),
                       _buildRelatedProducts(),
                       const Divider(height: 64, color: Colors.white10),
                       Row(
@@ -102,7 +103,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.s16),
                       _buildReviewsList(),
                       const SizedBox(height: 120),
                     ],
@@ -174,7 +175,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             widget.product.manufacturerName.toUpperCase(),
             style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 12)
           ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.s8),
         // Fix for bottom overflow: Product name now wrapped in a Flexible/FittedBox and uses maxLines
         LayoutBuilder(
           builder: (context, constraints) => ConstrainedBox(
@@ -187,13 +188,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.s12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(loc.formatPrice(widget.product.price), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.orange)),
             if (widget.product.hasDiscount && widget.product.priceOld != null) ...[
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.s12),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
@@ -206,7 +207,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.s12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 margin: const EdgeInsets.only(bottom: 4),
@@ -230,9 +231,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     return Row(
       children: [
         _badge(Icons.verified_user_outlined, 'Oryginalny'),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.s12),
         _badge(Icons.local_shipping_outlined, 'Szybka wysyłka'),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.s12),
         if (widget.product.isLowStock) _badge(Icons.flash_on, 'Ostatnie sztuki', color: Colors.red),
       ],
     );
@@ -246,7 +247,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         children: [
           Icon(icon, size: 14, color: color == Colors.white24 ? Colors.white70 : color),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(fontSize: 11, color: color == Colors.white24 ? Colors.white70 : color, fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontSize: 12, color: color == Colors.white24 ? Colors.white70 : color, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -340,7 +341,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         Row(children: List.generate(5, (i) => Icon(Icons.star, size: 14, color: i < review.rating ? Colors.amber : Colors.white10))),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.s8),
                     Text(review.comment, style: const TextStyle(fontSize: 14, color: Colors.white70)),
                   ],
                 ),
@@ -373,7 +374,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   );
                 },
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.s16),
               Expanded(
                 child: widget.product.canBeAddedToCart
                     ? PharosButton(

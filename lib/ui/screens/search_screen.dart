@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
@@ -81,11 +82,11 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(2))),
             const Spacer(),
             const Text('SŁUCHAM...', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 16)),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -210,12 +211,12 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               const Text(
                 'OSTATNIE WYSZUKIWANIA',
-                style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.2),
+                style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
               ),
               TextButton(
                 onPressed: () => searchProvider.clearRecentSearches(),
                 style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                child: const Text('Wyczyść', style: TextStyle(color: Colors.orange, fontSize: 11)),
+                child: const Text('Wyczyść', style: TextStyle(color: Colors.orange, fontSize: 12)),
               ),
             ],
           ),
@@ -245,7 +246,7 @@ class _SearchScreenState extends State<SearchScreen> {
         
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: Text('PODPOWIEDZI', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.2)),
+          child: Text('PODPOWIEDZI', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
         ),
         
         ...searchProvider.suggestions.map((product) => ListTile(
@@ -290,7 +291,7 @@ class _SearchScreenState extends State<SearchScreen> {
               repeat: true,
               errorBuilder: (context, error, stackTrace) => Icon(icon, size: 80, color: Colors.white.withOpacity(0.05)),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             Text(
               message.toUpperCase(),
               textAlign: TextAlign.center,

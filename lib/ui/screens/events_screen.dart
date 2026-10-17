@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/theme/app_colors.dart';
@@ -97,7 +98,7 @@ class _EventsScreenState extends State<EventsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(l10n.calendarLoadError, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
             ElevatedButton(
               onPressed: () {
                 setState(() {

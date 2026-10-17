@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/data/models/address_model.dart';
@@ -78,7 +79,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.location_off_outlined, size: 80, color: Colors.white.withOpacity(0.05)),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           const Text('Nie masz jeszcze zapisanych adresów', style: TextStyle(color: Colors.white30)),
         ],
       ),
@@ -116,7 +117,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
             ],
           ),
           Text('${address.firstname} ${address.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.s4),
           Text(address.address1, style: const TextStyle(color: Colors.white70)),
           Text('${address.postcode} ${address.city}', style: const TextStyle(color: Colors.white70)),
           if (address.phone != null) Text(address.phone!, style: const TextStyle(color: Colors.white70)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
@@ -48,7 +49,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: _buildImageArea()),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.s8),
             _buildProductInfo(context),
           ],
         ),
@@ -186,7 +187,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
         ),
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -206,7 +207,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.white),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.s4),
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 8,

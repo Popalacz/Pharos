@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:pharos/data/models/address_model.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
@@ -133,32 +134,32 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
             children: [
               _buildField(_aliasController, 'Nazwa adresu (np. Dom, Praca)', Icons.label_outline,
                 validator: (value) => FormValidation.requiredField(value, 'Nazwa adresu')),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               Row(
                 children: [
                   Expanded(child: _buildField(_firstnameController, 'Imię', Icons.person_outline, validator: (value) => FormValidation.nameField(value, 'Imię'))),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppSpacing.s16),
                   Expanded(child: _buildField(_lastnameController, 'Nazwisko', Icons.person_outline, validator: (value) => FormValidation.nameField(value, 'Nazwisko'))),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               _buildField(_address1Controller, 'Ulica i numer domu', Icons.home_outlined,
                 validator: (value) => FormValidation.addressField(value)),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               Row(
                 children: [
                   Expanded(child: _buildField(_postcodeController, 'Kod pocztowy (np. 00-000)', Icons.markunread_mailbox_outlined,
                     validator: (value) => FormValidation.postcodeField(value))),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppSpacing.s16),
                   Expanded(child: _buildField(_cityController, 'Miasto', Icons.location_city_outlined,
                     validator: (value) => FormValidation.cityField(value))),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               _buildField(_phoneController, 'Numer telefonu', Icons.phone_android_outlined,
                 keyboardType: TextInputType.phone,
                 validator: (value) => FormValidation.phoneField(value)),
-              const SizedBox(height: 40),
+              const SizedBox(height: AppSpacing.s40),
               SizedBox(
                 width: double.infinity,
                 height: 56,

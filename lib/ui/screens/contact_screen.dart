@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
@@ -36,7 +37,7 @@ class ContactScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildStoreHeader(context, settings),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             if (_hasText(settings.storeEmail))
               _buildContactCard(
                 icon: Icons.email_outlined,
@@ -44,7 +45,7 @@ class ContactScreen extends StatelessWidget {
                 value: settings.storeEmail!,
                 onTap: () => _launchUrl('mailto:${settings.storeEmail}'),
               ),
-            if (_hasText(settings.storeEmail)) const SizedBox(height: 16),
+            if (_hasText(settings.storeEmail)) const SizedBox(height: AppSpacing.s16),
             if (_hasText(settings.storePhone))
               _buildContactCard(
                 icon: Icons.phone_outlined,
@@ -52,7 +53,7 @@ class ContactScreen extends StatelessWidget {
                 value: settings.storePhone!,
                 onTap: () => _launchUrl('tel:${settings.storePhone}'),
               ),
-            if (_hasText(settings.storePhone)) const SizedBox(height: 16),
+            if (_hasText(settings.storePhone)) const SizedBox(height: AppSpacing.s16),
             if (_hasText(settings.storeAddress))
               _buildContactCard(
                 icon: Icons.location_on_outlined,
@@ -64,14 +65,14 @@ class ContactScreen extends StatelessWidget {
                         )
                     : null,
               ),
-            if (_hasText(settings.storeAddress)) const SizedBox(height: 24),
+            if (_hasText(settings.storeAddress)) const SizedBox(height: AppSpacing.s24),
             if (settings.hasContactMap) ...[
               _ContactMapSection(
                 latitude: settings.latitude!,
                 longitude: settings.longitude!,
                 storeName: settings.storeName,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.s24),
             ],
             if (openingHours.isNotEmpty) ...[
               Text(
@@ -83,9 +84,9 @@ class ContactScreen extends StatelessWidget {
                   letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.s16),
               _buildOpeningHours(openingHours),
-              const SizedBox(height: 40),
+              const SizedBox(height: AppSpacing.s40),
             ],
             _buildSocialSection(context, settings),
             if (!_hasText(settings.storeEmail) &&
@@ -123,12 +124,12 @@ class ContactScreen extends StatelessWidget {
             )
           else
             _buildStoreIcon(),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           Text(
             settings.storeName,
             style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.s4),
           Text(
             l10n.officialMobileApp,
             style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 14),
@@ -148,7 +149,7 @@ class ContactScreen extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.accent.withOpacity(0.2)),
       ),
-      child: const Icon(Icons.storefront_rounded, size: 40, color: AppColors.accent),
+      child: const Icon(Icons.storefront_rounded, size: 40, color: AppColors.accentText),
     );
   }
 
@@ -176,7 +177,7 @@ class ContactScreen extends StatelessWidget {
                 color: AppColors.background,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppColors.accent, size: 24),
+              child: Icon(icon, color: AppColors.accentText, size: 24),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -187,12 +188,12 @@ class ContactScreen extends StatelessWidget {
                     title,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.3),
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     value,
                     style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
@@ -224,7 +225,7 @@ class ContactScreen extends StatelessWidget {
             letterSpacing: 1.5,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.s16),
         Row(
           children: [
             if (settings.hasVisibleInstagram)
@@ -335,7 +336,7 @@ class _ContactMapSection extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.s12),
         TextButton.icon(
           onPressed: () async {
             final uri = Uri.parse(
@@ -345,7 +346,7 @@ class _ContactMapSection extends StatelessWidget {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
             }
           },
-          icon: const Icon(Icons.map_outlined, color: AppColors.accent),
+          icon: const Icon(Icons.map_outlined, color: AppColors.accentText),
           label: Text(l10n.openInMaps),
         ),
       ],

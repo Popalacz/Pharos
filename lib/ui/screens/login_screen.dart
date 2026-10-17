@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/utils/form_validation.dart';
@@ -100,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               keyboardType: TextInputType.emailAddress,
               validator: _emailValidator,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
             _buildTextField(
               controller: _loginPasswordController,
               label: 'Hasło',
@@ -112,13 +113,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             PharosButton(
               label: 'ZALOGUJ SIĘ',
               isLoading: userProvider.isLoading,
               onPressed: _handleLogin,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             const Row(
               children: [
                 Expanded(child: Divider(color: Colors.white10)),
@@ -126,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 Expanded(child: Divider(color: Colors.white10)),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             _buildGoogleButton(),
           ],
         ),
@@ -146,11 +147,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             Row(
               children: [
                 Expanded(child: _buildTextField(controller: _regFirstnameController, label: 'Imię', icon: Icons.person_outline, validator: _firstnameValidator)),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.s16),
                 Expanded(child: _buildTextField(controller: _regLastnameController, label: 'Nazwisko', icon: Icons.person_outline, validator: _lastnameValidator)),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
             _buildTextField(
               controller: _regEmailController, 
               label: 'E-mail', 
@@ -158,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               keyboardType: TextInputType.emailAddress,
               validator: _emailValidator,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
             _buildTextField(
               controller: _regPasswordController, 
               label: 'Hasło', 
@@ -166,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               obscureText: _obscurePassword,
               validator: _passwordValidator,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             PharosButton(
               label: 'ZAŁÓŻ KONTO',
               isLoading: userProvider.isLoading,
@@ -234,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           backgroundColor: Colors.white.withOpacity(0.05),
         ),
         child: userProvider.isLoading 
-          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.orange, strokeWidth: 2))
+          ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(color: Colors.orange, strokeWidth: 2))
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -244,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   width: 24,
                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: Colors.white),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.s12),
                 const Text(
                   'KONTYNUUJ PRZEZ GOOGLE', 
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)

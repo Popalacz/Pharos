@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/search_provider.dart';
 import 'package:pharos/data/models/filter_model.dart';
@@ -67,9 +68,9 @@ class SearchFilterDrawer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.s24),
         Text(group.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1, color: Colors.grey)),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.s12),
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -95,7 +96,7 @@ class SearchFilterDrawer extends StatelessWidget {
                 border: Border.all(color: Colors.grey[300]!, width: 1),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.s8),
           ],
           Text(value.name),
         ],
