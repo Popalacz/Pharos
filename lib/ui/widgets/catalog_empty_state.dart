@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:lottie/lottie.dart';
 import '../../core/constants/pharos_layout.dart';
 import '../../core/theme/app_colors.dart';
+import 'pharos_button.dart';
 
 class CatalogEmptyState extends StatelessWidget {
   const CatalogEmptyState({super.key});
@@ -14,26 +15,32 @@ class CatalogEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.inventory_2_outlined,
-              size: 64,
-              color: AppColors.text.withValues(alpha: 0.35),
+            Lottie.network(
+              'https://assets10.lottiefiles.com/packages/lf20_dmw3t0vg.json',
+              height: 150,
+              repeat: true,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.inventory_2_outlined,
+                size: 64,
+                color: AppColors.text.withValues(alpha: 0.35),
+              ),
             ),
             const SizedBox(height: PharosLayout.spaceMd),
             Text(
-              'Brak produktów',
+              'BRAK PRODUKTÓW',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.text,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
                   ),
             ),
-            const SizedBox(height: PharosLayout.spaceXs),
+            const SizedBox(height: PharosLayout.spaceSm),
             Text(
-              'Sprawdź połączenie z PrestaShop lub odśwież katalog z menu.',
+              'W tej kategorii nie ma obecnie żadnych dostępnych produktów. Zapraszamy wkrótce!',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.text.withValues(alpha: 0.72),
-                    height: 1.35,
+                    color: AppColors.text.withValues(alpha: 0.5),
+                    height: 1.5,
                   ),
             ),
           ],
@@ -84,9 +91,10 @@ class CatalogNoSearchResults extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: PharosLayout.spaceMd),
-            OutlinedButton(
+            PharosButton(
+              style: PharosButtonStyle.outline,
+              label: 'Wyczyść wyszukiwanie',
               onPressed: onClearQuery,
-              child: const Text('Wyczyść wyszukiwanie'),
             ),
           ],
         ),

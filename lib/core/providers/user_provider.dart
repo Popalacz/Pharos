@@ -8,12 +8,16 @@ import 'package:pharos/data/repositories/address_repository.dart';
 import 'package:pharos/data/models/user_model.dart';
 import 'package:pharos/data/repositories/user_repository.dart';
 import 'package:pharos/core/network/api_service.dart';
+import 'package:pharos/core/services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:local_auth/local_auth.dart';
 import '../error/failures.dart';
 
 class UserProvider extends ChangeNotifier {
   final GoogleCalendarService _googleService = GoogleCalendarService();
   final IAddressRepository _addressRepository;
   final IUserRepository _userRepository;
+  final LocalAuthentication _localAuth = LocalAuthentication();
   
   UserModel? _user;
   List<AddressModel> _addresses = [];
@@ -51,6 +55,7 @@ class UserProvider extends ChangeNotifier {
       (data) async {
         if (data['success'] == true) {
           _user = UserModel.fromJson(data['customer']);
+          await _syncFcmToken();
           await fetchAddresses();
           _isLoading = false;
           notifyListeners();
@@ -91,6 +96,7 @@ class UserProvider extends ChangeNotifier {
       (data) async {
         if (data['success'] == true) {
           _user = UserModel.fromJson(data['customer']);
+          await _syncFcmToken();
           await fetchAddresses();
           _isLoading = false;
           notifyListeners();
@@ -106,33 +112,45 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> signInWithGoogle() async {
     _isLoading = true;
+    _authError = null;
     notifyListeners();
     
-    final googleUser = await _googleService.signIn();
-    if (googleUser != null) {
-      final result = await _userRepository.loginWithGoogle(
-        'mock_token',
-        googleUser.email,
-        googleUser.displayName ?? '',
-      );
-      
-      result.fold(
-        (failure) {
-          // Fallback jeśli API Presty zawiedzie, ale Google przeszło
-          _user = UserModel(
-            id: 0, 
-            email: googleUser.email, 
-            firstname: googleUser.displayName?.split(' ').first ?? 'User', 
-            lastname: googleUser.displayName?.split(' ').last ?? '',
-            photoUrl: googleUser.photoUrl,
-          );
-        },
-        (userModel) {
-          _user = userModel;
-        },
-      );
-      await fetchAddresses();
+    try {
+      final googleUser = await _googleService.signIn();
+      if (googleUser != null) {
+        final result = await _userRepository.loginWithGoogle(
+          'google_auth_token', // Przekazujemy placeholder lub prawdziwy token jeśli potrzebny
+          googleUser.email,
+          googleUser.displayName ?? '',
+        );
+        
+        await result.fold(
+          (failure) async {
+            // Jeśli API PrestaShop nie odpowiada, logujemy lokalnie jako fallback
+            // ale informujemy o błędzie synchronizacji jeśli to istotne
+            debugPrint('PrestaShop Google Login Error: ${failure.message}');
+            _user = UserModel(
+              id: 0, 
+              email: googleUser.email, 
+              firstname: googleUser.displayName?.split(' ').first ?? 'User', 
+              lastname: googleUser.displayName?.split(' ').last ?? '',
+              photoUrl: googleUser.photoUrl,
+            );
+          },
+          (userModel) async {
+            _user = userModel;
+          },
+        );
+        await _syncFcmToken();
+        await fetchAddresses();
+      } else {
+        _authError = 'Logowanie Google zostało przerwane lub wystąpił błąd konfiguracji.';
+      }
+    } catch (e) {
+      debugPrint('Google Sign-In Exception: $e');
+      _authError = 'Wystąpił nieoczekiwany błąd podczas logowania przez Google.';
     }
+
     _isLoading = false;
     notifyListeners();
   }
@@ -256,14 +274,50 @@ class UserProvider extends ChangeNotifier {
     try {
       // Pobieramy dane o zamówieniu (w prawdziwej apce z PrestaShop)
       // Tutaj używamy naszego serwisu Google Calendar (Twój Cel nr 5)
-      await _googleService.addOrderEvent(
+      await _googleService.createLogisticsEvent(
         orderId: orderId,
         customerName: _user?.displayName ?? 'Klient Pharos',
         totalAmount: amount,
-        items: ['Zamówienie z aplikacji mobilnej'], // Docelowo lista z koszyka
+        items: ['Zamówienie z aplikacji mobilnej'],
       );
     } catch (e) {
       debugPrint('Logistics Automation Error: $e');
+    }
+  }
+
+  Future<bool> authenticateBiometrically() async {
+    try {
+      final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
+      final bool canAuthenticate = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
+
+      if (!canAuthenticate) return true;
+
+      return await _localAuth.authenticate(
+        localizedReason: 'Potwierdź tożsamość odciskiem, Face ID lub PIN urządzenia',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: false,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Biometric Error: $e');
+      return false;
+    }
+  }
+
+  Future<void> _syncFcmToken() async {
+    if (_user == null) return;
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await NotificationService().syncTokenWithServer(
+          token: token,
+          customerId: _user!.id,
+          languageId: ApiService.defaultLanguageId,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error syncing FCM token: $e');
     }
   }
 }

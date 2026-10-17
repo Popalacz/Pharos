@@ -16,9 +16,9 @@ class CatalogScreen extends StatefulWidget {
   final int? categoryId;
 
   const CatalogScreen({
-    super.key, 
-    this.title = 'Katalog produktów', 
-    this.categoryId
+    super.key,
+    this.title = 'Katalog produktów',
+    this.categoryId,
   });
 
   @override
@@ -28,23 +28,33 @@ class CatalogScreen extends StatefulWidget {
 class _CatalogScreenState extends State<CatalogScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<Either<Failure, List<ProductModel>>> _productsFuture;
+  int _lastFilterRevision = -1;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _reloadProducts(context.read<SearchProvider>());
   }
 
-  void _loadProducts() {
-    final filters = context.read<SearchProvider>().getSelectedFilters();
+  void _reloadProducts(SearchProvider searchProvider) {
+    _lastFilterRevision = searchProvider.filterRevision;
     _productsFuture = context.read<IProductRepository>().getProducts(
-      categoryId: widget.categoryId,
-      filters: filters,
-    );
+          categoryId: widget.categoryId,
+          filters: searchProvider.getSelectedFilters(),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = context.watch<SearchProvider>();
+
+    if (searchProvider.filterRevision != _lastFilterRevision) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _reloadProducts(searchProvider));
+      });
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       endDrawer: const SearchFilterDrawer(),
@@ -58,50 +68,42 @@ class _CatalogScreenState extends State<CatalogScreen> {
           ),
         ],
       ),
-      body: Consumer<SearchProvider>(
-        builder: (context, search, child) {
-          return FutureBuilder<Either<Failure, List<ProductModel>>>(
-            future: context.read<IProductRepository>().getProducts(
-              categoryId: widget.categoryId,
-              filters: search.getSelectedFilters(),
-            ),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const ProductShimmer();
+      body: FutureBuilder<Either<Failure, List<ProductModel>>>(
+        future: _productsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ProductShimmer();
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+            return _buildErrorState();
+          }
+
+          return snapshot.data!.fold(
+            (failure) => _buildErrorState(message: failure.message),
+            (products) {
+              if (products.isEmpty) {
+                return _buildEmptyState();
               }
 
-              if (snapshot.hasError || !snapshot.hasData) {
-                return _buildErrorState();
-              }
-
-              return snapshot.data!.fold(
-                (failure) => _buildErrorState(message: failure.message),
-                (products) {
-                  if (products.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _loadProducts();
-                      });
-                    },
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.65,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: products.length,
-                      itemBuilder: (context, index) {
-                        return PharosProductCard(product: products[index], heroTagPrefix: 'catalog');
-                      },
-                    ),
-                  );
+              return RefreshIndicator(
+                onRefresh: () async {
+                  setState(() => _reloadProducts(searchProvider));
+                  await _productsFuture;
                 },
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.55,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    return PharosProductCard(product: products[index], heroTagPrefix: 'catalog');
+                  },
+                ),
               );
             },
           );
@@ -117,7 +119,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   Widget _buildErrorState({String? message}) {
     return NetworkErrorState(
       message: message ?? 'Nie udało się pobrać produktów.',
-      onRetry: () => setState(() => _loadProducts()),
+      onRetry: () => setState(() => _reloadProducts(context.read<SearchProvider>())),
     );
   }
 }

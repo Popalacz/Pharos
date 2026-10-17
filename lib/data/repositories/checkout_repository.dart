@@ -4,7 +4,7 @@ import '../../core/network/api_service.dart';import '../../core/error/failures.d
 import '../models/checkout_models.dart';
 
 abstract class ICheckoutRepository {
-  Future<Either<Failure, List<CarrierModel>>> getCarriers();
+  Future<Either<Failure, List<CarrierModel>>> getCarriers({int? cartId});
   Future<Either<Failure, List<PaymentMethodModel>>> getPaymentMethods();
   Future<Either<Failure, Map<String, dynamic>>> createOrder(Map<String, dynamic> orderData);
   Future<Either<Failure, Map<String, dynamic>>> getShippingCosts({
@@ -23,7 +23,7 @@ class CheckoutRepository implements ICheckoutRepository {
         useMockData = useMockData ?? ApiConfig.forceMockData;
 
   @override
-  Future<Either<Failure, List<CarrierModel>>> getCarriers() async {
+  Future<Either<Failure, List<CarrierModel>>> getCarriers({int? cartId}) async {
     if (useMockData) {
       return Right([
         CarrierModel(id: 1, name: 'Google Express (Mock)', delay: '1-2 dni', price: 0.0),
@@ -37,6 +37,7 @@ class CheckoutRepository implements ICheckoutRepository {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'config',
+        if (cartId != null) 'id_cart': cartId,
       },
       mapper: (json) {
         final List carriers = json['carriers'] ?? [];

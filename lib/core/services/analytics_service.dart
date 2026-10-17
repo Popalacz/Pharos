@@ -3,7 +3,12 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 class AnalyticsService {
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 
-  Future<void> logAddToCart({required String itemId, required String itemName, required double price}) async {
+  Future<void> logAddToCart({
+    required String itemId,
+    required String itemName,
+    required double price,
+    String currency = 'PLN',
+  }) async {
     await _analytics.logAddToCart(
       items: [
         AnalyticsEventItem(
@@ -14,22 +19,22 @@ class AnalyticsService {
         ),
       ],
       value: price,
-      currency: 'PLN',
+      currency: currency,
     );
   }
 
-  Future<void> logBeginCheckout(double value) async {
+  Future<void> logBeginCheckout(double value, {String currency = 'PLN'}) async {
     await _analytics.logBeginCheckout(
       value: value,
-      currency: 'PLN',
+      currency: currency,
     );
   }
 
-  Future<void> logPurchase(String transactionId, double value) async {
+  Future<void> logPurchase(String transactionId, double value, {String currency = 'PLN'}) async {
     await _analytics.logPurchase(
       transactionId: transactionId,
       value: value,
-      currency: 'PLN',
+      currency: currency,
     );
   }
 }

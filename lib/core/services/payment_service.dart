@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/services/deeplink/deeplink_service.dart';
 
 class PaymentService {
   static Future<bool> processBlik(BuildContext context, double amount) async {
     String blikCode = '';
-    
+
     final bool? result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+        title: const Row(
           children: [
-            Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/BLIK_logo.svg/1200px-BLIK_logo.svg.png', height: 24),
-            const SizedBox(width: 12),
-            const Text('Płatność BLIK'),
+            Icon(Icons.payment, color: Colors.black),
+            SizedBox(width: 12),
+            Text('Płatność BLIK'),
           ],
         ),
         content: Column(
@@ -37,26 +38,34 @@ class PaymentService {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('ANULUJ', style: TextStyle(color: Colors.grey))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('ANULUJ')),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               if (blikCode.length == 6) {
-                // Symulacja komunikacji z bankiem
                 Navigator.pop(context, true);
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-            child: const Text('POTWIERDŹ', style: TextStyle(color: Colors.white)),
+            child: const Text('POTWIERDŹ'),
           ),
         ],
       ),
     );
-    
+
     return result ?? false;
   }
 
+  static Future<bool> processBlikWithDeepLink({
+    required String orderReference,
+    required double amount,
+  }) async {
+    final deeplink = DeepLinkService();
+    await deeplink.handlePaymentReturn(
+      uri: Uri.parse('pharos://payment/blik?order=$orderReference&amount=$amount&status=pending'),
+    );
+    return true;
+  }
+
   static Future<bool> processGooglePay(BuildContext context, double amount) async {
-    // Symulacja natywnego arkusza Google Pay
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -72,46 +81,17 @@ class PaymentService {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Google Pay', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.black)),
+                  const Text('Google Pay', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
                 ],
               ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.credit_card, color: Colors.black54),
-                title: const Text('Visa •••• 1234', style: TextStyle(color: Colors.black)),
-                subtitle: const Text('jan.kowalski@gmail.com', style: TextStyle(color: Colors.black54)),
-                trailing: const Text('ZMIEŃ', style: TextStyle(color: Colors.blue)),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Łącznie', style: TextStyle(fontSize: 16, color: Colors.black)),
-                  Text('${amount.toStringAsFixed(2)} PLN', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
-                ],
-              ),
-              const SizedBox(height: 32),
+              Text('${amount.toStringAsFixed(2)} PLN'),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Symulacja autoryzacji biometrycznej
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.fingerprint, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text('ZAPŁAĆ TERAZ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('ZAPŁAĆ TERAZ'),
                 ),
               ),
             ],
@@ -119,6 +99,30 @@ class PaymentService {
         ),
       ),
     );
-    return true; // Sukces po zamknięciu arkusza
+    return true;
+  }
+
+  static Future<bool> processApplePay(BuildContext context, double amount) async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.apple, color: Colors.white, size: 32),
+            const SizedBox(height: 12),
+            Text('Apple Pay • ${amount.toStringAsFixed(2)} PLN', style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Autoryzuj'),
+            ),
+          ],
+        ),
+      ),
+    );
+    return true;
   }
 }

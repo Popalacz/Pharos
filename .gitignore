@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Google secrets (never commit)
+project-2e69b345*.json
+**/service-account*.json
+android/local.properties
+
+
+/prestashop_module/pharosapi/*.zip
+# Oddanie pracy i pliki lokalne
+*.zip
+/*.pdf
+/*.pptx.pdf
+.cursor copy/
+pack-submission.ps1
+prestashop_module/

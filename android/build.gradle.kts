@@ -3,7 +3,8 @@ plugins {
     id("com.android.application") apply false
     id("org.jetbrains.kotlin.android") apply false
 
-   id("com.google.gms.google-services") version "4.4.4" apply false
+   id("com.google.gms.google-services") version "4.5.0" apply false
+   id("com.google.firebase.crashlytics") version "3.0.6" apply false
 }
 
 
@@ -15,6 +16,16 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
 }
 rootProject.extra.set("keystoreProperties", keystoreProperties)
+
+val localProperties = java.util.Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(java.io.FileInputStream(localPropertiesFile))
+}
+rootProject.extra.set(
+    "googleMapsApiKey",
+    localProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: "",
+)
 
 allprojects {
     repositories {

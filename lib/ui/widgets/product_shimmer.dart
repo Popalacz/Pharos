@@ -11,6 +11,8 @@ class ProductShimmer extends StatelessWidget {
       highlightColor: Colors.white.withOpacity(0.1),
       child: GridView.builder(
         padding: const EdgeInsets.all(16),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           childAspectRatio: 0.7,

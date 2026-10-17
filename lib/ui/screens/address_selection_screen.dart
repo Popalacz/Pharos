@@ -89,7 +89,6 @@ class AddressSelectionScreen extends StatelessWidget {
                 ],
               ),
           
-          // Senior Fix: Przeniesienie przycisku FAB do Stacka body zapobiega błędowi "NEEDS-LAYOUT" w Scaffoldzie
           Positioned(
             bottom: 24,
             left: 16,

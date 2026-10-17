@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:pharos/data/repositories/product_repository.dart';
+import 'package:pharos/core/error/failures.dart';
 import 'package:pharos/data/models/product_model.dart';
-import 'package:pharos/data/models/home_config_model.dart';
+import 'package:pharos/ui/sdui/sdui_mapper.dart';
+import 'package:pharos/ui/sdui/sdui_sections.dart';
+import 'package:pharos/ui/widgets/banner_shimmer.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pharos/ui/screens/product_details_screen.dart';
 import 'package:pharos/ui/screens/search_screen.dart';
+import 'package:pharos/core/providers/search_provider.dart';
+import 'package:pharos/core/utils/product_list_filters.dart';
+import 'package:pharos/ui/widgets/search_filter_drawer.dart';
+import 'package:pharos/ui/widgets/catalog_empty_state.dart';
 import 'package:pharos/ui/screens/scanner_screen.dart';
 import 'package:pharos/ui/screens/cart_screen.dart';
-import 'package:pharos/data/repositories/category_repository.dart';
-import 'package:pharos/data/models/category_model.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
-import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/core/providers/recently_viewed_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
 import 'package:pharos/ui/widgets/pharos_navigation_drawer.dart';
 import 'package:pharos/ui/widgets/localization_selector.dart';
-import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
-import 'package:pharos/ui/screens/catalog_screen.dart';
 import 'package:lottie/lottie.dart';
-import 'dart:convert';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,20 +35,46 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<Map<String, dynamic>> _homeDataFuture;
+  late Future<Either<Failure, List<ProductModel>>> _fallbackProductsFuture;
   int? _selectedCategoryId;
+  int _lastFilterRevision = -1;
+  bool _initialLoadDone = false;
+  final SduiMapper _sduiMapper = const SduiMapper();
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _checkPromoPopup();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialLoadDone) {
+      _initialLoadDone = true;
+      _loadData();
+    }
   }
 
   void _loadData() {
-    _homeDataFuture = _fetchFullHomeData();
+    final searchProvider = context.read<SearchProvider>();
+    _lastFilterRevision = searchProvider.filterRevision;
+
+    final listQuery = ProductListFilters.buildQuery(
+      selectedFilters: searchProvider.getSelectedFilters(),
+      catalogCategoryId: _selectedCategoryId,
+    );
+
+    _homeDataFuture = _fetchFullHomeData(categoryId: listQuery.categoryId);
+    _fallbackProductsFuture = context.read<IProductRepository>().getProducts(
+          categoryId: listQuery.categoryId,
+          filters: searchProvider.getSelectedFilters(),
+        );
   }
 
-  Future<Map<String, dynamic>> _fetchFullHomeData() async {
+  Future<Map<String, dynamic>> _fetchFullHomeData({int? categoryId}) async {
     final settingsProvider = context.read<SettingsProvider>();
 
     final response = await settingsProvider.apiService.getSafe(
@@ -55,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'fc': 'module',
         'module': 'pharosapi',
         'controller': 'home',
+        if (categoryId != null) 'id_category': categoryId.toString(),
       },
       mapper: (json) => json,
     );
@@ -62,13 +91,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return response.fold(
       (failure) => {'error': failure.message, 'sections': <dynamic>[]},
       (data) {
-        if (data is Map && data['status'] == 'success') {
+        if (data is Map && (data['status'] == 'success' || data['success'] == true)) {
+          List sections = [];
+          final rawSections = data['sections'] ?? (data['home_config'] is Map ? data['home_config']['sections'] : data['home_config']);
+          
+          if (rawSections is List) {
+            sections = rawSections;
+          }
+
           return {
-            'sections': data['sections'] ?? [],
+            'sections': sections,
             'cart_count': data['cart_count'] ?? 0,
           };
         }
-        return {'sections': <dynamic>[]};
+        return {
+          'error': data is Map ? (data['message'] ?? 'Błąd pobierania danych') : 'Błędny format odpowiedzi',
+          'sections': <dynamic>[]
+        };
       },
     );
   }
@@ -80,15 +119,87 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _checkPromoPopup() {
+    final settings = context.read<SettingsProvider>().settings;
+    if (settings.promoPopupImageUrl != null && settings.promoPopupImageUrl!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showPromoDialog(settings.promoPopupImageUrl!);
+      });
+    }
+  }
+
+  void _showPromoDialog(String imageUrl) {
+    final settings = context.read<SettingsProvider>().settings;
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+            if (settings.appOnlyDiscountCode != null)
+              Container(
+                margin: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Text(l10n.yourPromoCode, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(settings.appOnlyDiscountCode!, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final searchProvider = context.watch<SearchProvider>();
+
+    if (searchProvider.filterRevision != _lastFilterRevision) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(_loadData);
+      });
+    }
+
     return Scaffold(
+      key: _scaffoldKey,
       drawer: PharosNavigationDrawer(onRefreshCatalog: _loadData),
+      endDrawer: const SearchFilterDrawer(),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _homeDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ProductShimmer();
+            return CustomScrollView(
+              slivers: [
+                _buildAppBar(context, searchProvider),
+                const SliverToBoxAdapter(child: BannerShimmer()),
+                const SliverToBoxAdapter(child: ProductShimmer()),
+              ],
+            );
           }
 
           if (snapshot.hasError) {
@@ -104,13 +215,18 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           final List sectionsData = data['sections'] ?? [];
-
+          final hasActiveFilters = searchProvider.hasActiveProductFilters;
+          final visibleSections = _resolveVisibleSections(sectionsData, hasActiveFilters);
+          
           return RefreshIndicator(
-            onRefresh: () async => setState(() => _loadData()),
+            onRefresh: () async {
+              await context.read<LocalizationProvider>().reload();
+              setState(_loadData);
+            },
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                _buildAppBar(context),
+                _buildAppBar(context, searchProvider),
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -119,9 +235,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 _buildCartRecoveryBanner(context),
                 
-                if (sectionsData.isNotEmpty)
-                  for (final sectionMap in sectionsData)
-                    _buildUnifiedSection(sectionMap as Map<String, dynamic>),
+                if (visibleSections.isNotEmpty)
+                  for (final sectionMap in visibleSections)
+                    _sduiMapper.mapSectionAsSliver(
+                      context,
+                      sectionMap,
+                      selectedCategoryId: _selectedCategoryId,
+                      onCategorySelected: _onCategorySelected,
+                    ),
+
+                if (hasActiveFilters)
+                  _buildFilteredProductsSection()
+                else if (!_sectionsIncludeProducts(visibleSections))
+                  _buildProductGridFallback(),
 
                 _buildRecentlyViewedSection(),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
@@ -133,217 +259,154 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  List<HomeSection> _getLegacySections(List<ProductModel> products, List<CategoryModel> categories) {
-    // Prosty mapper dla starego formatu danych
-    return [
-      HomeSection(type: HomeSectionType.BANNER_SLIDER, data: []),
-      HomeSection(type: HomeSectionType.CATEGORY_CHIPS, data: null),
-      HomeSection(type: HomeSectionType.SECTION_HEADER, data: {'title': 'Produkty'}),
-      HomeSection(type: HomeSectionType.PRODUCT_GRID, data: null),
-    ];
-  }
-
-  Widget _buildUnifiedSection(Map<String, dynamic> sectionMap) {
-    final typeStr = sectionMap['type'] as String;
-    final HomeSectionType type = HomeSectionType.values.firstWhere(
-      (e) => e.name == typeStr,
-      orElse: () => HomeSectionType.SECTION_HEADER,
-    );
-
-    final items = sectionMap['items'] ?? [];
-    if (items is List && items.isEmpty && type != HomeSectionType.SECTION_HEADER) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
+  List<Map<String, dynamic>> _resolveVisibleSections(
+    List sectionsData,
+    bool hasActiveFilters,
+  ) {
+    final visibleSections = _sduiMapper.filterVisibleSections(sectionsData);
+    if (!hasActiveFilters) {
+      return visibleSections;
     }
 
-    switch (type) {
-      case HomeSectionType.BANNER_SLIDER:
-        return SliverToBoxAdapter(child: _BannerSlider(data: items));
-      case HomeSectionType.CATEGORY_CHIPS:
-        final categories = (items as List).map((i) => CategoryModel(id: i['id'], name: i['name'])).toList();
-        return SliverToBoxAdapter(
-          child: _CategoryList(
-            categories: categories,
-            selectedId: _selectedCategoryId,
-            onSelected: _onCategorySelected,
-          ),
-        );
-      case HomeSectionType.SECTION_HEADER:
-        return SliverToBoxAdapter(child: _SectionHeader(title: sectionMap['title'] ?? 'Sekcja'));
-      case HomeSectionType.PRODUCT_GRID:
-        final products = (items as List).map((i) => ProductModel.fromJson(i)).toList();
-        
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => PharosProductCard(product: products[index], heroTagPrefix: 'home'),
-              childCount: products.length,
-            ),
-          ),
-        );
-    }
+    return visibleSections.where((section) {
+      final type = section['type']?.toString();
+      return type != 'PRODUCT_GRID' && type != 'RECOMMENDATIONS';
+    }).toList();
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settingsProvider, child) {
-        final settings = settingsProvider.settings;
-        return SliverAppBar(
-          floating: true,
-          pinned: true,
-          expandedHeight: 120,
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-          flexibleSpace: FlexibleSpaceBar(
-            titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (settings.logoUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CachedNetworkImage(
-                      imageUrl: settings.logoUrl!,
-                      height: 24,
-                      errorWidget: (context, url, error) => const SizedBox.shrink(),
-                    ),
-                  ),
-                Text(
-                  settings.storeName.toUpperCase(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    fontSize: 18,
-                  ),
-                ),
-              ],
+  Widget _buildAppBar(BuildContext context, SearchProvider searchProvider) {
+    final settings = context.watch<SettingsProvider>().settings;
+    return SliverAppBar(
+      floating: true,
+      pinned: true,
+      expandedHeight: 120,
+      leading: IconButton(
+        icon: const Icon(Icons.menu),
+        onPressed: () => Scaffold.of(context).openDrawer(),
+      ),
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCollapsed = constraints.biggest.height <= kToolbarHeight + 30;
+          final showLogo = settings.brandingEnabled && settings.logoUrl != null && !isCollapsed;
+
+          return FlexibleSpaceBar(
+            titlePadding: EdgeInsets.only(
+              left: isCollapsed ? 56 : 16,
+              right: 16,
+              bottom: 12,
+            ),
+            title: Text(
+              settings.storeName.toUpperCase(),
+              style: const TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+                fontSize: 18,
+              ),
             ),
             centerTitle: false,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.qr_code_scanner),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ScannerScreen()),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SearchScreen()),
-                );
-              },
-            ),
-            Consumer<CartProvider>(
-              builder: (context, cart, child) {
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.shopping_bag_outlined),
-                      onPressed: () {
-                         Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
-                      },
-                    ),
-                    if (cart.itemCount > 0)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                          child: Text(
-                            '${cart.itemCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+            background: showLogo
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: CachedNetworkImage(
+                        imageUrl: settings.logoUrl!,
+                        height: 48,
+                        errorWidget: (context, url, error) => const SizedBox.shrink(),
                       ),
-                  ],
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSliverSection(HomeSection section, List<ProductModel> products, List<CategoryModel> categories) {
-    if (section.data == null && section.type != HomeSectionType.PRODUCT_GRID && section.type != HomeSectionType.CATEGORY_CHIPS) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-
-    switch (section.type) {
-      case HomeSectionType.BANNER_SLIDER:
-        return SliverToBoxAdapter(
-          child: _BannerSlider(data: section.data ?? []),
-        );
-      case HomeSectionType.CATEGORY_CHIPS:
-        return SliverToBoxAdapter(
-          child: _CategoryList(
-            categories: categories, 
-            selectedId: _selectedCategoryId,
-            onSelected: _onCategorySelected,
-          ),
-        );
-      case HomeSectionType.SECTION_HEADER:
-        final String title = (section.data is Map) ? (section.data['title'] ?? '') : 'Sekcja';
-        return SliverToBoxAdapter(
-          child: _SectionHeader(
-            title: title,
-            onSeeAll: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CatalogScreen(
-                    title: title,
-                    categoryId: _selectedCategoryId,
+                    ),
+                  )
+                : null,
+          );
+        },
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.qr_code_scanner),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ScannerScreen()),
+            );
+          },
+        ),
+        IconButton(
+          icon: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Icon(Icons.tune),
+              if (searchProvider.activeFilterCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '${searchProvider.activeFilterCount}',
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              );
-            },
+            ],
           ),
-        );
-      case HomeSectionType.PRODUCT_GRID:
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => PharosProductCard(product: products[index], heroTagPrefix: 'home'),
-              childCount: products.length,
-            ),
-          ),
-        );
-    }
+          onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+        ),
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
+            );
+          },
+        ),
+        Consumer<CartProvider>(
+          builder: (context, cart, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+                  },
+                ),
+                if (cart.itemCount > 0)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Text(
+                        '${cart.itemCount}',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
   }
 
   Widget _buildCartRecoveryBanner(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final settings = context.watch<SettingsProvider>().settings;
+    final l10n = AppLocalizations.of(context)!;
+    final loc = context.read<LocalizationProvider>();
     
     if (!settings.cartRecoveryEnabled || cart.itemCount == 0) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -366,8 +429,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Dokończ zakupy!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  Text('W Twoim koszyku czekają produkty o wartości ${context.read<LocalizationProvider>().formatPrice(cart.totalAmount)}', 
+                  Text(l10n.finishShopping, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(l10n.cartRecoveryMessage(loc.formatPrice(cart.totalAmount)), 
                     style: const TextStyle(fontSize: 12, color: Colors.white70)),
                 ],
               ),
@@ -382,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              child: const Text('KOSZYK'),
+              child: Text(l10n.cart.toUpperCase()),
             ),
           ],
         ),
@@ -390,40 +453,141 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  bool _sectionsIncludeProducts(List sectionsData) {
+    for (final rawSection in sectionsData) {
+      if (rawSection is! Map) continue;
+
+      final type = rawSection['type']?.toString();
+      if (type != 'PRODUCT_GRID' && type != 'RECOMMENDATIONS') continue;
+
+      final data = rawSection['data'];
+      if (data is Map && (data['items'] as List?)?.isNotEmpty == true) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Widget _buildFilteredProductsSection() {
+    return SliverToBoxAdapter(
+      child: FutureBuilder<Either<Failure, List<ProductModel>>>(
+        future: _fallbackProductsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ProductShimmer();
+          }
+
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+
+          return snapshot.data!.fold(
+            (_) => const SizedBox.shrink(),
+            (products) {
+              if (products.isEmpty) {
+                return const CatalogEmptyState();
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionHeaderWidget(data: {'title': 'Przefiltrowane produkty'}),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.55,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        return PharosProductCard(
+                          product: products[index],
+                          heroTagPrefix: 'home_filtered',
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductGridFallback() {
+    return SliverToBoxAdapter(
+      child: FutureBuilder<Either<Failure, List<ProductModel>>>(
+        future: _fallbackProductsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const ProductShimmer();
+          }
+
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+
+          return snapshot.data!.fold(
+            (_) => const SizedBox.shrink(),
+            (products) {
+              if (products.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return ProductGridSection(
+                data: {
+                  'items': products.map((product) => product.toJson()).toList(),
+                },
+                heroTagPrefix: 'home_fallback',
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildRecentlyViewedSection() {
-    return Consumer<RecentlyViewedProvider>(
-      builder: (context, recentProvider, child) {
-        if (recentProvider.recentProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-        
-        return SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionHeader(title: 'Ostatnio oglądane'),
-              SizedBox(
-                height: 250,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: recentProvider.recentProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = recentProvider.recentProducts[index];
-                    return Container(
-                      width: 160,
-                      margin: const EdgeInsets.only(right: 16),
-                      child: PharosProductCard(product: product, heroTagPrefix: 'recent'),
-                    );
-                  },
-                ),
-              ),
-            ],
+    final l10n = AppLocalizations.of(context)!;
+    final recentProducts = context.watch<RecentlyViewedProvider>().recentProducts;
+
+    if (recentProducts.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+    return SliverToBoxAdapter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeaderWidget(data: {'title': l10n.recentlyViewed}),
+          SizedBox(
+            height: 250,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: recentProducts.length,
+              itemBuilder: (context, index) {
+                final product = recentProducts[index];
+                return Container(
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: PharosProductCard(product: product, heroTagPrefix: 'recent'),
+                );
+              },
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
   Widget _buildErrorState() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -434,11 +598,11 @@ class _HomeScreenState extends State<HomeScreen> {
             errorBuilder: (context, error, stackTrace) => const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.grey),
           ),
           const SizedBox(height: 16),
-          const Text('Błąd synchronizacji z Pharos API', 
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+          Text(l10n.syncErrorTitle, 
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
           const SizedBox(height: 8),
-          const Text('Sprawdź połączenie z internetem i spróbuj ponownie.', 
-            textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+          Text(l10n.syncErrorMessage, 
+            textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => setState(() => _loadData()),
@@ -446,123 +610,10 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.orange,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('SPRÓBUJ PONOWNIE', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.tryAgain, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 }
-
-class _BannerSlider extends StatelessWidget {
-  final dynamic data;
-  const _BannerSlider({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    if ((data as List).isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      height: 200,
-      child: PageView.builder(
-        itemCount: (data as List).length,
-        itemBuilder: (context, index) {
-          final item = data[index];
-          return Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: DecorationImage(image: NetworkImage(item['image']), fit: BoxFit.cover),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                ),
-              ),
-              padding: const EdgeInsets.all(20),
-              alignment: Alignment.bottomLeft,
-              child: Text(item['title'], style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _CategoryList extends StatelessWidget {
-  final List<CategoryModel> categories;
-  final int? selectedId;
-  final Function(int?) onSelected;
-
-  const _CategoryList({
-    required this.categories, 
-    this.selectedId, 
-    required this.onSelected
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        itemCount: categories.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildChip('Wszystko', null);
-          }
-          final category = categories[index - 1];
-          return _buildChip(category.name, category.id);
-        },
-      ),
-    );
-  }
-
-  Widget _buildChip(String label, int? id) {
-    final isSelected = selectedId == id;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) => onSelected(id),
-        selectedColor: Colors.orange,
-        backgroundColor: Colors.white.withOpacity(0.05),
-        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
-        showCheckmark: false,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final VoidCallback? onSeeAll;
-  const _SectionHeader({required this.title, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-          InkWell(
-            onTap: onSeeAll,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text('Zobacz wszystko', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-

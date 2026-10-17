@@ -35,6 +35,9 @@ class SearchFilterDrawer extends StatelessWidget {
                 itemCount: searchProvider.availableFilters.length,
                 itemBuilder: (context, index) {
                   final group = searchProvider.availableFilters[index];
+                  if (group.values.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
                   return _buildFilterGroup(context, group, searchProvider);
                 },
               ),

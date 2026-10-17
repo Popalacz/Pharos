@@ -3,7 +3,12 @@ import 'package:pharos/data/models/localization_models.dart';
 import '../network/api_service.dart';
 
 class LocalizationProvider extends ChangeNotifier {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+
+  LocalizationProvider({ApiService? apiService})
+      : _apiService = apiService ?? ApiService() {
+    _loadFromPrestaShop();
+  }
   List<LanguageModel> _languages = [];
   List<CurrencyModel> _currencies = [];
 
@@ -19,9 +24,12 @@ class LocalizationProvider extends ChangeNotifier {
   bool get showLanguageSelector => _languages.length > 1;
   bool get showCurrencySelector => _currencies.length > 1;
 
-  LocalizationProvider() {
-    _loadFromPrestaShop();
+  Locale get locale {
+    final languageCode = _currentLanguage?.languageCode ?? 'pl';
+    return Locale(languageCode.split('-').first);
   }
+
+  String get currentLanguageCode => _currentLanguage?.languageCode ?? 'pl';
 
   Future<void> reload() => _loadFromPrestaShop();
 
@@ -47,35 +55,46 @@ class LocalizationProvider extends ChangeNotifier {
             .map((e) => CurrencyModel.fromJson(e))
             .toList();
 
+        final int serverLangId = int.tryParse(locData['current_language_id']?.toString() ?? '') ?? 0;
+        final int serverCurrId = int.tryParse(locData['current_currency_id']?.toString() ?? '') ?? 0;
+
         if (_languages.isNotEmpty) {
-          _currentLanguage = _languages.firstWhere(
-            (l) => l.isoCode == (locData['language_code'] ?? locData['locale'] ?? ''),
-            orElse: () => _languages.first,
-          );
-        } else {
-          _currentLanguage = null;
+          if (_currentLanguage != null) {
+             _currentLanguage = _languages.firstWhere(
+              (l) => l.id == _currentLanguage!.id,
+              orElse: () => _languages.first,
+            );
+          } else {
+            _currentLanguage = _languages.firstWhere(
+              (l) => l.id == serverLangId,
+              orElse: () => _languages.first,
+            );
+          }
+
+          if (_currentLanguage != null) {
+            ApiService.defaultLanguageId = _currentLanguage!.id;
+          }
         }
 
         if (_currencies.isNotEmpty) {
-          _currentCurrency = _currencies.first;
-        } else {
-          _currentCurrency = null;
+          _currentCurrency = _currencies.firstWhere(
+            (c) => c.id == serverCurrId,
+            orElse: () => _currencies.first,
+          );
         }
       }
     } catch (e) {
       debugPrint('Localization Load Error: $e');
-      _languages = [];
-      _currencies = [];
-      _currentLanguage = null;
-      _currentCurrency = null;
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  void setLanguage(LanguageModel lang) {
+  Future<void> setLanguage(LanguageModel lang) async {
+    debugPrint('Switching language to: ${lang.name} (${lang.languageCode})');
     _currentLanguage = lang;
+    ApiService.defaultLanguageId = lang.id;
     notifyListeners();
   }
 

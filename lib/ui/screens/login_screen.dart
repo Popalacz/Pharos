@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
+import 'package:pharos/core/utils/form_validation.dart';
+import 'package:pharos/core/utils/validation_feedback.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,28 +45,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
-  // PrestaShop common validators
-  String? _emailValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Adres e-mail jest wymagany';
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    if (!emailRegex.hasMatch(value.trim())) return 'Wprowadź poprawny adres e-mail';
-    return null;
-  }
+  String? _emailValidator(String? value) => FormValidation.emailField(value);
 
-  String? _passwordValidator(String? value) {
-    if (value == null || value.isEmpty) return 'Hasło jest wymagane';
-    if (value.length < 5) return 'Hasło musi mieć min. 5 znaków (wymóg PrestaShop)';
-    return null;
-  }
+  String? _passwordValidator(String? value) => FormValidation.passwordField(value);
 
-  String? _nameValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'To pole jest wymagane';
-    if (value.trim().length < 2) return 'Minimum 2 znaki';
-    if (!RegExp(r'^[^0-9!<>,;?=+()@#"°*!$^_]+$').hasMatch(value.trim())) {
-      return 'Pole zawiera niedozwolone znaki';
-    }
-    return null;
-  }
+  String? _firstnameValidator(String? value) => FormValidation.nameField(value, 'Imię');
+
+  String? _lastnameValidator(String? value) => FormValidation.nameField(value, 'Nazwisko');
 
   @override
   Widget build(BuildContext context) {
@@ -125,19 +113,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: userProvider.isLoading ? null : _handleLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: userProvider.isLoading 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('ZALOGUJ SIĘ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-              ),
+            PharosButton(
+              label: 'ZALOGUJ SIĘ',
+              isLoading: userProvider.isLoading,
+              onPressed: _handleLogin,
             ),
             const SizedBox(height: 32),
             const Row(
@@ -166,9 +145,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           children: [
             Row(
               children: [
-                Expanded(child: _buildTextField(controller: _regFirstnameController, label: 'Imię', icon: Icons.person_outline, validator: _nameValidator)),
+                Expanded(child: _buildTextField(controller: _regFirstnameController, label: 'Imię', icon: Icons.person_outline, validator: _firstnameValidator)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildTextField(controller: _regLastnameController, label: 'Nazwisko', icon: Icons.person_outline, validator: _nameValidator)),
+                Expanded(child: _buildTextField(controller: _regLastnameController, label: 'Nazwisko', icon: Icons.person_outline, validator: _lastnameValidator)),
               ],
             ),
             const SizedBox(height: 16),
@@ -188,19 +167,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               validator: _passwordValidator,
             ),
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: userProvider.isLoading ? null : _handleRegister,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: userProvider.isLoading 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('ZAŁÓŻ KONTO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-              ),
+            PharosButton(
+              label: 'ZAŁÓŻ KONTO',
+              isLoading: userProvider.isLoading,
+              onPressed: _handleRegister,
             ),
           ],
         ),
@@ -251,40 +221,51 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildGoogleButton() {
+    final userProvider = context.watch<UserProvider>();
+    
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: OutlinedButton.icon(
-        onPressed: () async {
-          await context.read<UserProvider>().signInWithGoogle();
-          if (mounted && context.read<UserProvider>().isLoggedIn) {
-            Navigator.pop(context);
-          }
-        },
-        icon: Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_Color_Icon.svg/1200px-Google_Color_Icon.svg.png', height: 20),
-        label: const Text('KONTYNUUJ PRZEZ GOOGLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      child: OutlinedButton(
+        onPressed: userProvider.isLoading ? null : _handleGoogleSignIn,
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.white24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white.withOpacity(0.05),
         ),
+        child: userProvider.isLoading 
+          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.orange, strokeWidth: 2))
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.network(
+                  'https://authjs.dev/img/providers/google.svg',
+                  height: 24,
+                  width: 24,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'KONTYNUUJ PRZEZ GOOGLE', 
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)
+                ),
+              ],
+            ),
       ),
     );
   }
 
-  void _handleLogin() async {
-    if (_loginFormKey.currentState!.validate()) {
-      final userProvider = context.read<UserProvider>();
-      final success = await userProvider.login(
-        _loginEmailController.text.trim(),
-        _loginPasswordController.text,
-      );
-      
-      if (success && mounted) {
+  void _handleGoogleSignIn() async {
+    final userProvider = context.read<UserProvider>();
+    await userProvider.signInWithGoogle();
+    
+    if (mounted) {
+      if (userProvider.isLoggedIn) {
         Navigator.pop(context);
-      } else if (mounted) {
+      } else if (userProvider.authError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(userProvider.authError ?? 'Błąd logowania.'), 
+            content: Text(userProvider.authError!),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -293,27 +274,73 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
-  void _handleRegister() async {
-    if (_registerFormKey.currentState!.validate()) {
-      final userProvider = context.read<UserProvider>();
-      final success = await userProvider.register(
-        email: _regEmailController.text.trim(),
-        password: _regPasswordController.text,
-        firstname: _regFirstnameController.text.trim(),
-        lastname: _regLastnameController.text.trim(),
+  void _handleLogin() async {
+    final missingLabels = FormValidation.collectMissingLabels({
+      'adres e-mail': FormValidation.emailField(_loginEmailController.text),
+      'hasło': FormValidation.passwordField(_loginPasswordController.text),
+    });
+
+    if (missingLabels.isNotEmpty) {
+      showValidationSnackBar(context, FormValidation.formatMissingFields(missingLabels));
+    }
+
+    if (!_loginFormKey.currentState!.validate()) {
+      return;
+    }
+
+    final userProvider = context.read<UserProvider>();
+    final success = await userProvider.login(
+      _loginEmailController.text.trim(),
+      _loginPasswordController.text,
+    );
+
+    if (success && mounted) {
+      Navigator.pop(context);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(userProvider.authError ?? 'Nie udało się zalogować. Sprawdź e-mail i hasło.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
-      
-      if (success && mounted) {
-        Navigator.pop(context);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(userProvider.authError ?? 'Błąd rejestracji.'), 
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+    }
+  }
+
+  void _handleRegister() async {
+    final missingLabels = FormValidation.collectMissingLabels({
+      'imię': FormValidation.nameField(_regFirstnameController.text, 'Imię'),
+      'nazwisko': FormValidation.nameField(_regLastnameController.text, 'Nazwisko'),
+      'adres e-mail': FormValidation.emailField(_regEmailController.text),
+      'hasło': FormValidation.passwordField(_regPasswordController.text),
+    });
+
+    if (missingLabels.isNotEmpty) {
+      showValidationSnackBar(context, FormValidation.formatMissingFields(missingLabels));
+    }
+
+    if (!_registerFormKey.currentState!.validate()) {
+      return;
+    }
+
+    final userProvider = context.read<UserProvider>();
+    final success = await userProvider.register(
+      email: _regEmailController.text.trim(),
+      password: _regPasswordController.text,
+      firstname: _regFirstnameController.text.trim(),
+      lastname: _regLastnameController.text.trim(),
+    );
+
+    if (success && mounted) {
+      Navigator.pop(context);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(userProvider.authError ?? 'Nie udało się utworzyć konta. Sprawdź wprowadzone dane.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }

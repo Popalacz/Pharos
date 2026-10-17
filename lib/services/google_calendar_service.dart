@@ -1,29 +1,40 @@
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gapi;
-import 'package:flutter/material.dart';
+import 'package:pharos/core/config/google_config.dart';
 import 'package:http/http.dart' as http;
 
 class GoogleCalendarService {
-  // Scopes wymagane do zapisu w kalendarzu
   static const _scopes = [gapi.CalendarApi.calendarEventsScope];
 
-  // Singleton pattern dla serwisu
   static final GoogleCalendarService _instance = GoogleCalendarService._internal();
   factory GoogleCalendarService() => _instance;
   GoogleCalendarService._internal();
 
-  // Używamy Twojej niestandardowej instancji .instance
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  
-  GoogleSignInAccount? _currentUser;
 
-  /// Zwraca aktualnie zalogowanego użytkownika lub null
+  GoogleSignInAccount? _currentUser;
+  bool _isInitialized = false;
+
   GoogleSignInAccount? get currentUser => _currentUser;
+
+  Future<void> _ensureInitialized() async {
+    if (_isInitialized) {
+      return;
+    }
+
+    if (GoogleConfig.hasServerClientId) {
+      await _googleSignIn.initialize(serverClientId: GoogleConfig.serverClientId);
+    } else {
+      await _googleSignIn.initialize();
+    }
+
+    _isInitialized = true;
+  }
 
   Future<GoogleSignInAccount?> signIn() async {
     try {
-      await _googleSignIn.initialize();
-      // Używamy Twojej metody authenticate() zamiast signIn()
+      await _ensureInitialized();
       _currentUser = await _googleSignIn.authenticate(scopeHint: _scopes);
       return _currentUser;
     } catch (error) {
@@ -32,6 +43,19 @@ class GoogleCalendarService {
     }
   }
 
+  Future<void> createLogisticsEvent({
+    required String orderId,
+    required String customerName,
+    required double totalAmount,
+    required List<String> items,
+  }) =>
+      addOrderEvent(
+        orderId: orderId,
+        customerName: customerName,
+        totalAmount: totalAmount,
+        items: items,
+      );
+
   Future<void> addOrderEvent({
     required String orderId,
     required String customerName,
@@ -39,8 +63,8 @@ class GoogleCalendarService {
     required List<String> items,
   }) async {
     try {
+      await _ensureInitialized();
       if (_currentUser == null) {
-        await _googleSignIn.initialize();
         _currentUser = await _googleSignIn.attemptLightweightAuthentication();
         _currentUser ??= await _googleSignIn.authenticate(scopeHint: _scopes);
       }

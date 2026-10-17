@@ -1,43 +1,24 @@
-class UserModel {
-  final int id;
-  final String email;
-  final String firstname;
-  final String lastname;
-  final String? photoUrl;
-  final String? birthday;
-  final bool newsletter;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'converters/defensive_json_converters.dart';
 
-  UserModel({
-    required this.id,
-    required this.email,
-    required this.firstname,
-    required this.lastname,
-    this.photoUrl,
-    this.birthday,
-    this.newsletter = false,
-  });
+part 'user_model.freezed.dart';
+part 'user_model.g.dart';
 
-  String get displayName => '$firstname $lastname';
+@freezed
+class UserModel with _$UserModel {
+  const UserModel._();
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      email: json['email'] ?? '',
-      firstname: json['firstname'] ?? '',
-      lastname: json['lastname'] ?? '',
-      photoUrl: json['photo_url'],
-      birthday: json['birthday'],
-      newsletter: json['newsletter'] == '1' || json['newsletter'] == true,
-    );
-  }
+  const factory UserModel({
+    @DefensiveIntConverter() required int id,
+    @DefensiveStringConverter() @Default('') String email,
+    @DefensiveStringConverter() @Default('') String firstname,
+    @DefensiveStringConverter() @Default('') String lastname,
+    @JsonKey(name: 'photo_url') String? photoUrl,
+    String? birthday,
+    @DefensiveBoolConverter() @Default(false) bool newsletter,
+  }) = _UserModel;
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'email': email,
-    'firstname': firstname,
-    'lastname': lastname,
-    'photo_url': photoUrl,
-    'birthday': birthday,
-    'newsletter': newsletter ? '1' : '0',
-  };
+  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+
+  String get displayName => '$firstname $lastname'.trim();
 }

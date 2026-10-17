@@ -12,10 +12,10 @@ class SecurityService {
       if (!canAuthenticate) return true; // Jeśli urządzenie nie wspiera, przepuszczamy (MVP)
 
       return await _auth.authenticate(
-        localizedReason: 'Potwierdź płatność w Pharos Biometric Pay',
+        localizedReason: 'Potwierdź płatność odciskiem, Face ID lub PIN urządzenia',
         options: const AuthenticationOptions(
           stickyAuth: true,
-          biometricOnly: true,
+          biometricOnly: false,
         ),
       );
     } on PlatformException catch (e) {
