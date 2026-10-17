@@ -15,6 +15,7 @@ import 'package:pharos/data/models/address_model.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
+import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/core/services/google_places_service.dart';
 import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:pharos/ui/screens/order_confirmation_screen.dart';
@@ -39,6 +40,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   AddressModel? _selectedAddress;
   bool _isProcessing = false;
   bool _createAccount = false;
+  final AnalyticsService _analytics = AnalyticsService();
+  final Set<String> _completedSteps = {};
   String? _validationMessage;
   final _guestFormKey = GlobalKey<FormState>();
 
@@ -79,6 +82,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = context.read<UserProvider>();
+      _analytics.logBeginCheckout(
+        context.read<CartProvider>().totalAmount,
+        currency: context.read<LocalizationProvider>().currentCurrency?.isoCode ?? 'PLN',
+        isGuest: !userProvider.isLoggedIn,
+      );
       if (userProvider.addresses.isNotEmpty) {
         setState(() => _selectedAddress = userProvider.addresses.first);
         _updateShippingCost();
@@ -269,6 +277,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     bool hasAddress = context.read<UserProvider>().isLoggedIn ? _selectedAddress != null : _emailController.text.isNotEmpty;
     bool hasCarrier = _selectedCarrier != null;
     bool hasPayment = _selectedPayment != null;
+    _trackStepCompletion(hasAddress, hasCarrier, hasPayment);
 
     return Row(
       children: [
@@ -279,6 +288,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _stepIcon(Icons.payment_rounded, hasPayment),
       ],
     );
+  }
+
+  void _trackStepCompletion(bool hasAddress, bool hasCarrier, bool hasPayment) {
+    final done = {
+      AnalyticsService.stepAddress: hasAddress,
+      AnalyticsService.stepShipping: hasCarrier,
+      AnalyticsService.stepPayment: hasPayment,
+    };
+    for (final entry in done.entries) {
+      if (entry.value && _completedSteps.add(entry.key)) {
+        _analytics.logCheckoutStepComplete(entry.key);
+      }
+    }
   }
 
   Widget _stepIcon(IconData icon, bool active) {
@@ -1043,6 +1065,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final validationMessage = _validateCheckoutForm(isGuest: isGuest, cart: cart);
 
     if (validationMessage != null) {
+      _analytics.logCheckoutValidationError('missing_fields');
       setState(() => _validationMessage = validationMessage);
       showValidationSnackBar(context, validationMessage);
       return;
@@ -1127,6 +1150,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               orderId: data['reference'] ?? 'PH-${DateTime.now().millisecondsSinceEpoch}',
               amount: totalAmount,
             );
+            final orderReference = (data['reference'] ?? '').toString();
+            _analytics.logPurchase(
+              orderReference,
+              totalAmount,
+              currency: loc.currentCurrency?.isoCode ?? 'PLN',
+              isGuest: user == null,
+            );
+            if (user == null && _createAccount) _analytics.logAccountCreatedAfterPurchase(orderReference);
             cart.clear();
             if (mounted) {
               HapticFeedback.heavyImpact();
@@ -1146,6 +1177,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         },
       );
     } catch (e) {
+      _analytics.logCheckoutValidationError('order_rejected');
       if (mounted) {
         final message = FormValidation.cleanErrorMessage(e);
         setState(() => _validationMessage = message);
