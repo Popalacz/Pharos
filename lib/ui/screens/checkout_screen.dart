@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -194,23 +195,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const SizedBox(height: PharosLayout.spaceLg),
                   if (_validationMessage != null) ...[
                     _buildValidationBanner(_validationMessage!),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.s16),
                   ],
                   _buildSectionHeader('Adres dostawy', Icons.location_on_rounded),
                   _buildAnimatedAddressSection(userProvider),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppSpacing.s32),
                   if (_carriersError || (_carriers?.isNotEmpty ?? false)) ...[
                     _buildSectionHeader('Metoda dostawy', Icons.local_shipping_rounded),
                     _buildCarrierList(loc),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.s32),
                   ],
                   if (_paymentsError || (_payments?.isNotEmpty ?? false)) ...[
                     _buildSectionHeader('Płatność', Icons.account_balance_wallet_rounded),
                     _buildPaymentList(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: AppSpacing.s32),
                   ],
                   _buildVoucherSection(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.s24),
                   _buildOrderSummary(cart, _resolvedShippingCost, total, loc),
                   const SizedBox(height: 140),
                 ],
@@ -224,10 +225,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: AppColors.accent),
-                    SizedBox(height: 24),
+                    CircularProgressIndicator(color: AppColors.accentText),
+                    SizedBox(height: AppSpacing.s24),
                     Text('Przetwarzanie zamówienia...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                    SizedBox(height: 8),
+                    SizedBox(height: AppSpacing.s8),
                     Text('Proszę nie zamykać aplikacji', style: TextStyle(color: Colors.white60, fontSize: 14)),
                   ],
                 ),
@@ -252,7 +253,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.info_outline, color: Colors.redAccent, size: 20),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.s12),
           Expanded(
             child: Text(
               message,
@@ -310,11 +311,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 16, color: AppColors.accent),
+            child: Icon(icon, size: 16, color: AppColors.accentText),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.s12),
           Text(title.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2)),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.s12),
           Expanded(child: Divider(color: Colors.white.withOpacity(0.05), thickness: 1)),
         ],
       ),
@@ -341,7 +342,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildGuestLoginPrompt(),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.s16),
         _buildGuestForm(),
       ],
     );
@@ -367,19 +368,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             'Zaloguj się, aby użyć zapisanych adresów i szybciej dokończyć zamówienie.',
             style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 13, height: 1.4),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           OutlinedButton.icon(
             onPressed: _openLoginFromCheckout,
             icon: const Icon(Icons.login_rounded, size: 18),
             label: const Text('ZALOGUJ SIĘ'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
+              foregroundColor: AppColors.accentText,
               side: BorderSide(color: AppColors.accent.withOpacity(0.6)),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd)),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.s16),
           Row(
             children: [
               Expanded(child: Divider(color: Colors.white.withOpacity(0.08))),
@@ -389,7 +390,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   'LUB KONTYNUUJ JAKO GOŚĆ',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.35),
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1,
                   ),
@@ -475,7 +476,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         if (_selectedAddress!.phone != null && _selectedAddress!.phone!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
-                            child: Text(_selectedAddress!.phone!, style: const TextStyle(color: AppColors.accent, fontSize: 13, fontWeight: FontWeight.w700)),
+                            child: Text(_selectedAddress!.phone!, style: const TextStyle(color: AppColors.accentText, fontSize: 13, fontWeight: FontWeight.w700)),
                           ),
                       ],
                     )
@@ -483,12 +484,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Gdzie mamy wysłać paczkę?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.s4),
                         Text(hasAddresses ? 'Kliknij, aby wybrać adres' : 'Kliknij, aby dodać dane do wysyłki', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
                       ],
                     ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.accent),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.accentText),
           ],
         ),
       ),
@@ -506,8 +507,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('KOD RABATOWY', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.2)),
-          const SizedBox(height: 12),
+          const Text('KOD RABATOWY', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
+          const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
               Expanded(
@@ -524,14 +525,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.s12),
               _isApplyingVoucher
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent))
+                  ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText))
                   : ElevatedButton(
                       onPressed: _applyVoucher,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent.withOpacity(0.2),
-                        foregroundColor: AppColors.accent,
+                        foregroundColor: AppColors.accentText,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -595,7 +596,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               keyboardType: TextInputType.emailAddress,
               validator: (value) => FormValidation.emailField(value),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             Row(
               children: [
                 Expanded(
@@ -606,7 +607,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     validator: (value) => FormValidation.nameField(value, 'Imię'),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: _guestField(
                     _lastnameController,
@@ -617,7 +618,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             _guestField(
               _addressController,
               'Ulica i numer',
@@ -626,7 +627,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               validator: (value) => FormValidation.addressField(value),
             ),
             if (_addressSuggestions.isNotEmpty) _buildAddressSuggestions(),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             Row(
               children: [
                 Expanded(
@@ -637,7 +638,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     validator: (value) => FormValidation.postcodeField(value),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.s12),
                 Expanded(
                   child: _guestField(
                     _cityController,
@@ -648,7 +649,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             _guestField(
               _phoneController,
               'Numer telefonu',
@@ -656,7 +657,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               keyboardType: TextInputType.phone,
               validator: (value) => FormValidation.phoneField(value),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
             Theme(
               data: ThemeData(unselectedWidgetColor: Colors.white24),
               child: CheckboxListTile(
@@ -665,7 +666,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: Colors.white70, fontSize: 13)),
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
-                activeColor: AppColors.accent,
+                activeColor: AppColors.accentText,
                 dense: true,
               ),
             ),
@@ -688,7 +689,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       keyboardType: keyboardType,
       validator: validator,
       style: const TextStyle(color: Colors.white, fontSize: 14),
-      cursorColor: AppColors.accent,
+      cursorColor: AppColors.accentText,
       onChanged: (value) {
         onChanged?.call(value);
         setState(() {});
@@ -705,7 +706,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide(color: AppColors.accent.withOpacity(0.3))),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: const BorderSide(color: Colors.redAccent)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: const BorderSide(color: Colors.redAccent, width: 2)),
-        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
+        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 12),
       ),
     );
   }
@@ -801,14 +802,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: RadioListTile<CarrierModel>(
               value: carrier,
               groupValue: _selectedCarrier,
-              activeColor: AppColors.accent,
+              activeColor: AppColors.accentText,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               title: Text(carrier.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(carrier.delay, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.s4),
                   Text(
                     carrier.price == 0 ? 'GRATIS' : loc.formatPrice(isSelected ? _resolvedShippingCost : carrier.price),
                     style: TextStyle(fontWeight: FontWeight.w900, color: carrier.price == 0 ? Colors.green : Colors.white, fontSize: 14),
@@ -876,19 +877,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         height: 24,
                         errorWidget: (context, url, error) => Icon(
                           method.id.contains('blik') ? Icons.phonelink_ring_rounded : Icons.credit_card_rounded,
-                          color: isSelected ? AppColors.accent : Colors.white24,
+                          color: isSelected ? AppColors.accentText : Colors.white24,
                           size: 20,
                         ),
                       )
                     : Icon(
                         method.id.contains('blik') ? Icons.phonelink_ring_rounded : Icons.credit_card_rounded,
-                        color: isSelected ? AppColors.accent : Colors.white24,
+                        color: isSelected ? AppColors.accentText : Colors.white24,
                         size: 20,
                       ),
               ),
               title: Text(method.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: Text(method.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11)),
-              trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.accent, size: 22) : Icon(Icons.circle_outlined, color: Colors.white.withOpacity(0.1), size: 22),
+              subtitle: Text(method.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+              trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.accentText, size: 22) : Icon(Icons.circle_outlined, color: Colors.white.withOpacity(0.1), size: 22),
               onTap: () {
                 HapticFeedback.selectionClick();
                 setState(() => _selectedPayment = method);
@@ -915,10 +916,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Column(
         children: [
           _summaryRow(l10n.productsTotal, loc.formatPrice(cart.subtotalAmount)),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.s12),
           _summaryRow(l10n.shipping, shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
           if (discount > 0.05) ...[
-             const SizedBox(height: 12),
+             const SizedBox(height: AppSpacing.s12),
              _summaryRow(l10n.discount, '- ${loc.formatPrice(discount)}', color: Colors.green),
           ],
           const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(color: Colors.white10)),
@@ -926,7 +927,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.5)),
-              Text(loc.formatPrice(total), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.accent)),
+              Text(loc.formatPrice(total), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.accentText)),
             ],
           ),
         ],

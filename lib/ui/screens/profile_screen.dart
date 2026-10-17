@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/orders_provider.dart';
@@ -59,18 +60,18 @@ class ProfileScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.account_circle_outlined, size: 100, color: Colors.white.withOpacity(0.05)),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             const Text(
               'TWÓJ PROFIL PHAROS',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             Text(
               'Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: AppSpacing.s40),
             PharosButton(
               label: 'ZALOGUJ SIĘ LUB ZAŁÓŻ KONTO',
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
@@ -121,13 +122,13 @@ class _LoggedInProfileContent extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: AppSpacing.s40),
         const Text('HISTORIA ZAMÓWIEŃ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.s16),
         const _OrderHistorySection(),
-        const SizedBox(height: 40),
+        const SizedBox(height: AppSpacing.s40),
         const Text('USTAWIENIA KONTA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.s16),
         _ProfileMenuTile(
           icon: Icons.language_outlined,
           title: 'Język i Waluta',
@@ -207,7 +208,7 @@ class _OrderTile extends StatelessWidget {
                   decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                   child: const Icon(Icons.shopping_bag_outlined, color: Colors.orange, size: 20),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +222,7 @@ class _OrderTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
-                    Text(order.status.toUpperCase(), style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(order.status.toUpperCase(), style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 )
               ],
@@ -257,7 +258,7 @@ class _StatusCard extends StatelessWidget {
       child: Column(
         children: [
           Icon(icon, color: isError ? Colors.red : Colors.white24, size: 32),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.s12),
           Text(message, style: TextStyle(color: isError ? Colors.red : Colors.white30, fontWeight: FontWeight.w500)),
         ],
       ),

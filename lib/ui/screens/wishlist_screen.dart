@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/wishlist_provider.dart';
 import 'package:pharos/ui/widgets/product_shimmer.dart';
@@ -61,15 +62,15 @@ class WishlistScreen extends StatelessWidget {
               repeat: true,
               errorBuilder: (context, error, stackTrace) => Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.1)),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             const Text('TWOJA LISTA JEST PUSTA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             Text(
               'Zapisuj produkty, które Ci się podobają, aby wrócić do nich w dowolnym momencie.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: AppSpacing.s40),
             PharosButton(
               label: 'ZACZNIJ ODKRYWAĆ',
               onPressed: () {

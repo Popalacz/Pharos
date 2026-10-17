@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/data/models/localization_models.dart';
@@ -46,7 +47,7 @@ class LocalizationSelector extends StatelessWidget {
       child: Row(
         children: [
           const Icon(Icons.language, size: 16, color: Colors.orange),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.s8),
           Text(
             loc.currentLanguage?.isoCode.toUpperCase() ?? '--',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -62,7 +63,7 @@ class LocalizationSelector extends StatelessWidget {
       child: Row(
         children: [
           const Icon(Icons.payments_outlined, size: 16, color: Colors.orange),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.s8),
           Text(
             loc.currentCurrency?.isoCode ?? '--',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),

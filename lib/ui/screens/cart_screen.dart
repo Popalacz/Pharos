@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
@@ -69,15 +70,15 @@ class CartScreen extends StatelessWidget {
               repeat: true,
               errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_basket_outlined, size: 100, color: Colors.grey),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             Text(l10n.cartEmpty, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.s12),
             Text(
               l10n.cartEmptyMessage,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.grey),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.s32),
             PharosButton(
               label: l10n.startShopping,
               onPressed: () {
@@ -124,7 +125,7 @@ class CartScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const _VoucherInput(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.s16),
             if (showFreeShipping) ...[
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,7 +134,7 @@ class CartScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.local_shipping_outlined,
                           color: progress >= 1.0 ? Colors.green : Colors.orange, size: 20),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.s8),
                       Expanded(
                         child: Text(
                           progress >= 1.0
@@ -148,7 +149,7 @@ class CartScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.s8),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
@@ -161,7 +162,7 @@ class CartScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.s24),
             ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,7 +171,7 @@ class CartScreen extends StatelessWidget {
                 Text(loc.formatPrice(cart.subtotalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.s8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -197,7 +198,7 @@ class CartScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.orange)),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.s24),
             PharosButton(
               label: l10n.checkoutButton,
               onPressed: () {
@@ -239,13 +240,13 @@ class _CartItemTile extends StatelessWidget {
               width: 80, height: 80, fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.s16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.s4),
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 8,
@@ -258,14 +259,14 @@ class _CartItemTile extends StatelessWidget {
                       Text(
                         context.read<LocalizationProvider>().formatPrice(item.product.priceOld!),
                         style: TextStyle(
-                          fontSize: 11, 
+                          fontSize: 12, 
                           color: Colors.white.withOpacity(0.3),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.s8),
                 Row(
                   children: [
                     _QtyBtn(
@@ -377,9 +378,9 @@ class _VoucherInputState extends State<_VoucherInput> {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.s8),
           _isApplying
-              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
               : IconButton(
                   onPressed: _apply,
                   icon: const Icon(Icons.check_circle_outline, color: Colors.orange),
