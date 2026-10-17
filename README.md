@@ -76,3 +76,7 @@ Pharos implements a **Zero-Crash Policy**:
 
 ---
 *Developed with Passion by Patrycja*
+
+## Moduł PrestaShop
+
+Katalog `prestashop_module/pharosapi` jest osobnym repozytorium git (własny `.git`) i nie jest śledzony przez repozytorium aplikacji (wpis w `.gitignore`). Historia zmian modułu żyje w jego repozytorium. Katalog `prestashop_module/_extracted/pharosapi` to rozjechana kopia modułu (pliki kontrolerów się różnią), nieużywana przez aplikację.
