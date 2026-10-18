@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="560" viewBox="0 0 300 560" font-family="Arial,sans-serif">
+<rect x="2" y="2" width="296" height="556" rx="22" fill="#1B1B1B" stroke="#666" stroke-width="2"/>
+<text x="20" y="40" font-size="16" font-weight="bold" fill="#fff">Zamówienie</text>
+<circle cx="30" cy="72" r="10" fill="none" stroke="#F0B07A" stroke-width="2"/><text x="30" y="76" font-size="11" fill="#F0B07A" text-anchor="middle">1</text><text x="46" y="76" font-size="12" fill="#F0B07A">Dane</text>
+<circle cx="118" cy="72" r="10" fill="none" stroke="#777" stroke-width="2"/><text x="118" y="76" font-size="11" fill="#777" text-anchor="middle">2</text><text x="134" y="76" font-size="12" fill="#777">Dostawa</text>
+<circle cx="206" cy="72" r="10" fill="none" stroke="#777" stroke-width="2"/><text x="206" y="76" font-size="11" fill="#777" text-anchor="middle">3</text><text x="222" y="76" font-size="12" fill="#777">Płatność</text>
+<rect x="20" y="100" width="260" height="40" rx="8" fill="#fff"/><text x="150" y="125" font-size="13" text-anchor="middle" fill="#000">G Pay · zapłać od razu</text>
+<text x="20" y="158" font-size="11" fill="#ccc">E-mail</text><rect x="20" y="163" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="185" font-size="12" fill="#fff">anna@example.com</text>
+<text x="20" y="218" font-size="11" fill="#ccc">Imię i nazwisko</text><rect x="20" y="223" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="245" font-size="12" fill="#fff">Anna Nowak</text>
+<text x="20" y="278" font-size="11" fill="#ccc">Adres (podpowiedź)</text><rect x="20" y="283" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="305" font-size="12" fill="#fff">ul. Długa 12/4, 80-827 Gdańsk</text>
+<text x="20" y="338" font-size="11" fill="#ccc">Telefon dla kuriera</text><rect x="20" y="343" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="365" font-size="12" fill="#fff">600 100 200</text>
+<rect x="20" y="480" width="260" height="52" rx="26" fill="#80410E"/><text x="150" y="512" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">Dalej do dostawy</text>
+<text x="150" y="470" font-size="11" fill="#F0B07A" text-anchor="middle">Konto możesz założyć po zakupie</text></svg>
