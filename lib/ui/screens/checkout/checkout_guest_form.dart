@@ -271,6 +271,7 @@ class _GuestField extends StatelessWidget {
         focusedBorder: _border(AppColors.accent.withOpacity(0.6)),
         errorBorder: _border(Colors.redAccent),
         focusedErrorBorder: _border(Colors.redAccent, 2),
+        errorMaxLines: 3,
         errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 12),
       ),
     );
