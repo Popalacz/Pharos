@@ -797,4 +797,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewCommentLabel => 'Review text';
+
+  @override
+  String get categoriesLoadFailed => 'Could not load categories.';
+
+  @override
+  String get categoriesEmpty => 'No categories to display.';
+
+  @override
+  String get regionalSettingsEmpty =>
+      'No languages or currencies are configured in the store.';
+
+  @override
+  String get reviewLoginRequired => 'Log in to add a review.';
+
+  @override
+  String get profileGuestPrompt =>
+      'Log in to track orders and use the full app.';
 }

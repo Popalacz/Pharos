@@ -1567,6 +1567,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review text'**
   String get reviewCommentLabel;
+
+  /// No description provided for @categoriesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load categories.'**
+  String get categoriesLoadFailed;
+
+  /// No description provided for @categoriesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories to display.'**
+  String get categoriesEmpty;
+
+  /// No description provided for @regionalSettingsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No languages or currencies are configured in the store.'**
+  String get regionalSettingsEmpty;
+
+  /// No description provided for @reviewLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to add a review.'**
+  String get reviewLoginRequired;
+
+  /// No description provided for @profileGuestPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to track orders and use the full app.'**
+  String get profileGuestPrompt;
 }
 
 class _AppLocalizationsDelegate

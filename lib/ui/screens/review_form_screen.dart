@@ -152,7 +152,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
   void _submitReview() async {
     final userProvider = context.read<UserProvider>();
     if (!userProvider.isLoggedIn) {
-      showValidationSnackBar(context, 'Zaloguj się, aby dodać opinię.');
+      showValidationSnackBar(context, AppLocalizations.of(context)!.reviewLoginRequired);
       return;
     }
 

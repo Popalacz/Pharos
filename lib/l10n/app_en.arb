@@ -333,5 +333,10 @@
   "validationPhoneDigits": "{field} must contain at least 9 digits",
   "@validationPhoneDigits": {"placeholders": {"field": {"type": "String"}}},
   "addressAliasLabel": "Address name",
-  "reviewCommentLabel": "Review text"
+  "reviewCommentLabel": "Review text",
+  "categoriesLoadFailed": "Could not load categories.",
+  "categoriesEmpty": "No categories to display.",
+  "regionalSettingsEmpty": "No languages or currencies are configured in the store.",
+  "reviewLoginRequired": "Log in to add a review.",
+  "profileGuestPrompt": "Log in to track orders and use the full app."
 }

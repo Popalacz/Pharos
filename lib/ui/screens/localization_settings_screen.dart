@@ -26,7 +26,7 @@ class LocalizationSettingsScreen extends StatelessWidget {
           ? const Padding(padding: EdgeInsets.all(20), child: ListShimmer(itemCount: 4))
           : locProvider.languages.isEmpty && locProvider.currencies.isEmpty
               ? NetworkErrorState(
-                  message: 'Brak skonfigurowanych języków lub walut w sklepie.',
+                  message: AppLocalizations.of(context)!.regionalSettingsEmpty,
                   onRetry: () => locProvider.reload(),
                 )
               : SingleChildScrollView(

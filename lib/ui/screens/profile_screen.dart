@@ -69,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.s12),
             Text(
-              'Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.',
+              AppLocalizations.of(context)!.profileGuestPrompt,
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.text.withOpacity(0.4), fontSize: 15, height: 1.5),
             ),

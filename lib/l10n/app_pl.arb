@@ -326,5 +326,10 @@
   "validationPhoneFormat": "{field} ma nieprawidłowy format",
   "validationPhoneDigits": "{field} musi zawierać co najmniej 9 cyfr",
   "addressAliasLabel": "Nazwa adresu",
-  "reviewCommentLabel": "Treść opinii"
+  "reviewCommentLabel": "Treść opinii",
+  "categoriesLoadFailed": "Nie udało się pobrać kategorii.",
+  "categoriesEmpty": "Brak kategorii do wyświetlenia.",
+  "regionalSettingsEmpty": "Brak skonfigurowanych języków lub walut w sklepie.",
+  "reviewLoginRequired": "Zaloguj się, aby dodać opinię.",
+  "profileGuestPrompt": "Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji."
 }

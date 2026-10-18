@@ -57,7 +57,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
           if (snapshot.hasError || !snapshot.hasData) {
             return NetworkErrorState(
-              message: 'Nie udało się pobrać kategorii.',
+              message: AppLocalizations.of(context)!.categoriesLoadFailed,
               onRetry: () => setState(_loadCategories),
             );
           }
@@ -69,10 +69,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             ),
             (categories) {
               if (categories.isEmpty) {
-                return const Center(
+                return Center(
                   child: Text(
-                    'Brak kategorii do wyświetlenia.',
-                    style: TextStyle(color: AppColors.textDisabled),
+                    AppLocalizations.of(context)!.categoriesEmpty,
+                    style: const TextStyle(color: AppColors.textDisabled),
                   ),
                 );
               }

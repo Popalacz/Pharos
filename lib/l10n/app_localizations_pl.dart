@@ -799,4 +799,21 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get reviewCommentLabel => 'Treść opinii';
+
+  @override
+  String get categoriesLoadFailed => 'Nie udało się pobrać kategorii.';
+
+  @override
+  String get categoriesEmpty => 'Brak kategorii do wyświetlenia.';
+
+  @override
+  String get regionalSettingsEmpty =>
+      'Brak skonfigurowanych języków lub walut w sklepie.';
+
+  @override
+  String get reviewLoginRequired => 'Zaloguj się, aby dodać opinię.';
+
+  @override
+  String get profileGuestPrompt =>
+      'Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.';
 }

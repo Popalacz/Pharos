@@ -74,4 +74,4 @@ Skala: 4, 8, 12, 16, 24, 32, 40, 48 (stałe `AppSpacing.s4` ... `s48`).
 | Napisy 9 do 11 sp | 21 | 0 |
 | `SizedBox` ze stałą liczbą | 165 | 15 (reszta przez `AppSpacing`) |
 
-Pomiar z 18.10.2026 poleceniami `grep` z pliku 08. Kryterium E5 ("0 tekstów na sztywno") nie jest w pełni spełnione: zostało 20 trafień do ręcznego przeglądu.
+Pomiar z 18.10.2026 poleceniami `grep` z pliku 08. Kryterium E5 ("0 tekstów na sztywno") nie jest w pełni spełnione: zostało 20 trafień do ręcznego przeglądu. Po kolejnej partii (walidatory i 5 komunikatów ekranów) przeniesiono do ARB część z nich; pozostają komunikaty w providerach (`cart_provider`, `checkout_notifier`, `user_provider`), błędy w `home_screen.dart` i okno płatności testowej w `payment_service.dart`, które nie mają dostępu do kontekstu.
