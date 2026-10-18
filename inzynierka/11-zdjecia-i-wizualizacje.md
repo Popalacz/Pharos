@@ -11,6 +11,19 @@
 
 Diagramy Mermaid są w plikach 02, 06, 07 i 09 (eksport opisany w README).
 
+## Renderowane z kodu (gotowe, w `images/`)
+
+Generuje je `tool/render_screens_test.dart` (`flutter test tool/render_screens_test.dart`): prawdziwe widżety checkoutu w motywie Pharos, czcionka Roboto. To **render widżetów, nie zrzuty z urządzenia**, więc opisz je w pracy jako "widok komponentu". Nie zastępują zrzutów A..C poniżej.
+
+| Plik | Co pokazuje |
+|------|-------------|
+| `render-pasek-krok1.png`, `-krok2.png`, `-krok3.png` | pasek kroków: bieżący, ukończony (ptaszek), do wykonania, z podpisami |
+| `render-formularz-pusty.png` | formularz gościa, siedem pól z ikonami |
+| `render-formularz-bledy.png` | błędy walidacji tekstem pod polami. Widać, że w kolumnach komunikaty są ucięte (`Imię jest wymaga…`), poprawka w osobnym PR |
+
+![Pasek kroku 2](images/render-pasek-krok2.png)
+![Formularz z błędami](images/render-formularz-bledy.png)
+
 ## Zrzuty do wykonania (nie istnieją jeszcze)
 
 Zrzuty z emulatora lub telefonu. Nazwy plików do `inzynierka/images/`. Android: `adb exec-out screencap -p > nazwa.png`, albo przycisk aparatu w emulatorze.
