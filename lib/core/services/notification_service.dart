@@ -1,7 +1,8 @@
 
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:pharos/core/network/http_client.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/main.dart';
 import 'package:pharos/core/providers/orders_provider.dart';
@@ -35,7 +36,7 @@ class NotificationService {
       }
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('Foreground notification: ${message.notification?.title}');
+        AppLog.d('Foreground notification: ${message.notification?.title}');
         _handleOrderUpdateNotification(message, openTrackingScreen: false);
       });
 
@@ -46,7 +47,7 @@ class NotificationService {
         _handleMessage(initialMessage);
       }
     } catch (e) {
-      debugPrint('Notification Init Error: $e');
+      AppLog.e('Notification Init Error: $e');
     }
   }
 
@@ -113,9 +114,7 @@ class NotificationService {
   }) async {
     try {
       _cachedToken = token;
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConfig.originUrl,
-      ));
+      final dio = createHttpClient(baseUrl: ApiConfig.originUrl);
       final authToken = ApiService.authToken;
       if (authToken != null) {
         dio.options.headers['Authorization'] = 'Bearer $authToken';
@@ -130,9 +129,9 @@ class NotificationService {
         'id_customer': customerId,
         'id_lang': languageId,
       });
-      debugPrint('FCM: Token synchronized for customer $customerId (lang: $languageId)');
+      AppLog.d('FCM: Token synchronized for customer $customerId (lang: $languageId)');
     } catch (e) {
-      debugPrint('FCM: Failed to sync token: $e');
+      AppLog.e('FCM: Failed to sync token: $e');
     }
   }
 

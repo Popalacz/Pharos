@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/data/models/localization_models.dart';
 import '../network/api_service.dart';
@@ -84,7 +85,7 @@ class LocalizationProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint('Localization Load Error: $e');
+      AppLog.e('Localization Load Error: $e');
     }
 
     _isLoading = false;
@@ -92,7 +93,7 @@ class LocalizationProvider extends ChangeNotifier {
   }
 
   Future<void> setLanguage(LanguageModel lang) async {
-    debugPrint('Switching language to: ${lang.name} (${lang.languageCode})');
+    AppLog.d('Switching language to: ${lang.name} (${lang.languageCode})');
     _currentLanguage = lang;
     ApiService.defaultLanguageId = lang.id;
     notifyListeners();

@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +87,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     final result = await _orderRepository.getOrderDetails(_currentOrder.id);
     
     result.fold(
-      (failure) => debugPrint('Refresh Order Error: $failure'),
+      (failure) => AppLog.e('Refresh Order Error: $failure'),
       (updatedOrder) {
         if (mounted) {
           setState(() {

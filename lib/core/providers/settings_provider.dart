@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
@@ -40,7 +41,7 @@ class SettingsProvider extends ChangeNotifier {
     } catch (e) {
       final result = await _systemRepository.getConfiguration('PS_SHOP_NAME');
       result.fold(
-        (failure) => debugPrint('Settings Load Failure: $failure'),
+        (failure) => AppLog.e('Settings Load Failure: $failure'),
         (shopName) {
           if (shopName != null) {
             _settings = _settings.copyWith(storeName: shopName);
@@ -72,7 +73,7 @@ class SettingsProvider extends ChangeNotifier {
     ]);
 
     result.fold(
-      (failure) => debugPrint('Contact fallback failure: $failure'),
+      (failure) => AppLog.e('Contact fallback failure: $failure'),
       (configs) {
         final addressParts = <String>[
           if (_hasText(configs['PS_SHOP_ADDR1'])) configs['PS_SHOP_ADDR1']!,

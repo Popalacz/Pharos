@@ -1,5 +1,5 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
 
 /// Checkout funnel events. Every funnel event carries the checkout variant (`A` or `B`).
 class AnalyticsService {
@@ -27,7 +27,7 @@ class AnalyticsService {
     try {
       await _analytics?.logEvent(name: name, parameters: _withVariant(params));
     } catch (e) {
-      debugPrint('Analytics event $name failed: $e');
+      AppLog.e('Analytics event $name failed: $e');
     }
   }
 

@@ -55,6 +55,7 @@ class MockCartRepository implements ICartRepository {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late CartProvider cartProvider;
   late MockCartRepository mockRepository;
 

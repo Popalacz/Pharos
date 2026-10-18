@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gapi;
@@ -38,7 +39,7 @@ class GoogleCalendarService {
       _currentUser = await _googleSignIn.authenticate(scopeHint: _scopes);
       return _currentUser;
     } catch (error) {
-      debugPrint('Google Sign-In Error: $error');
+      AppLog.e('Google Sign-In Error: $error');
       return null;
     }
   }
@@ -102,7 +103,7 @@ class GoogleCalendarService {
 
       await calendarApi.events.insert(event, 'primary');
     } catch (e) {
-      debugPrint('Calendar API Error: $e');
+      AppLog.e('Calendar API Error: $e');
       rethrow;
     }
   }

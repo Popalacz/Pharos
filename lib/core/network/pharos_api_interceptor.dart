@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -16,7 +17,7 @@ class PharosApiInterceptor extends Interceptor {
     }
 
     if (kDebugMode) {
-      debugPrint('API → ${options.baseUrl}${options.path}');
+      AppLog.d('API → ${options.baseUrl}${options.path}');
     }
 
     if (options.path.contains('/api/')) {
@@ -66,7 +67,7 @@ class PharosApiInterceptor extends Interceptor {
         try {
           response.data = ApiService.decodeJson(rawData.substring(start));
         } catch (e) {
-          debugPrint('API JSON Clean Error: $e');
+          AppLog.e('API JSON Clean Error: $e');
         }
       }
     }
@@ -86,18 +87,18 @@ class PharosApiInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    debugPrint('--- API ERROR ---');
-    debugPrint('Path: ${err.requestOptions.path}');
-    debugPrint('Type: ${err.type}');
-    debugPrint('Message: ${err.message}');
+    AppLog.d('--- API ERROR ---');
+    AppLog.d('Path: ${err.requestOptions.path}');
+    AppLog.d('Type: ${err.type}');
+    AppLog.d('Message: ${err.message}');
 
     final statusCode = err.response?.statusCode;
     if (statusCode == 401 && ApiService.authToken != null && err.requestOptions.path.contains('index.php')) {
       ApiService.setAuthToken(null);
     }
     if (statusCode != null) {
-      debugPrint('Status Code: $statusCode');
-      debugPrint('Data: ${err.response?.data}');
+      AppLog.d('Status Code: $statusCode');
+      AppLog.d('Data: ${err.response?.data}');
     }
 
     if (statusCode == 401 || statusCode == 403 || statusCode == 500) {
