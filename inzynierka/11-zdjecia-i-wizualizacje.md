@@ -91,6 +91,24 @@ Wykonaj na starszej wersji (`git checkout 1b9235f` w osobnym katalogu), żeby po
 
 Fotografie lub zrzuty stanowiska badania (bez twarzy uczestników), formularz SUS, wykres wyników.
 
+## Pełne ekrany checkoutu (render z kodu, rozmiar telefonu)
+
+Rendery prawdziwego `CheckoutScreen` na danych mock, 390x844 pt przy 2x, kod PR #12 i #13 razem. To nie są zrzuty z urządzenia (brak telefonu i emulatora w środowisku, API niedostępne). Skrypt: `tool/screens_test.dart`.
+
+| Plik | Co pokazuje |
+|------|-------------|
+| `images/ekran-checkout-single-1-pusty.png` | Wariant A, pusty formularz, pasek kroków bez wyróżnienia |
+| `images/ekran-checkout-single-3-caly-formularz.png` | Wariant A, po „Uzupełnij dane”: baner braków i pełne komunikaty pod polami (zawijane, nieucięte) |
+| `images/ekran-checkout-stepped-1-pusty.png` | Wariant B, krok 1 wyróżniony |
+| `images/ekran-checkout-stepped-2-bledy.png` | Wariant B, baner braków |
+
+Obserwacje UX z renderów:
+- Podpowiedź „Kod pocz…” jest ucięta w połówkowym polu. Do poprawy: krótsza etykieta lub etykieta nad polem.
+- Komunikaty pod polami w połówkowych kolumnach zawijają się do 2 linii, bez ucięcia (efekt `errorMaxLines: 3` z PR #12). Bez tej poprawki były ucinane.
+- Baner braków i komunikaty pod polami powtarzają tę samą informację, co jest akceptowalne, ale warto sprawdzić w teście z użytkownikami.
+- Przyklejony przycisk na dole zasłania początek następnej sekcji, przy przewijaniu to normalne.
+- Czerwony blok w rendererze to artefakt testowej czcionki (komunikat SnackBar), nie błąd aplikacji.
+
 ## Wskazówki
 
 - Jedno urządzenie i rozmiar ekranu do wszystkich zrzutów (np. 1080 × 2400), motyw ciemny.
