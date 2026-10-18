@@ -28,6 +28,7 @@ import 'package:pharos/ui/screens/address_selection_screen.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/core/utils/validation_feedback.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key, this.variant});
@@ -40,7 +41,8 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  static const _stepLabels = ['Adres', 'Dostawa', 'Płatność'];
+  AppLocalizations get _l10n => AppLocalizations.of(context)!;
+  List<String> get _stepLabels => [_l10n.address, _l10n.delivery, _l10n.payment];
   static const _lastStep = 2;
 
   CarrierModel? _selectedCarrier;
@@ -190,12 +192,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Finalizacja zamówienia', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          title: Text(_l10n.checkoutScreenTitle, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            tooltip: 'Wstecz',
+            tooltip: _l10n.a11yBack,
             icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white),
             onPressed: _handleBackButton,
           ),
@@ -229,15 +231,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             if (_isProcessing)
               Container(
                 color: Colors.black.withOpacity(0.85),
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(color: AppColors.accentText),
                       SizedBox(height: AppSpacing.s24),
-                      Text('Przetwarzanie zamówienia...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                      Text(_l10n.processingOrder, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                       SizedBox(height: AppSpacing.s8),
-                      Text('Proszę nie zamykać aplikacji', style: TextStyle(color: Colors.white60, fontSize: 14)),
+                      Text(_l10n.doNotCloseApp, style: TextStyle(color: Colors.white60, fontSize: 14)),
                     ],
                   ),
                 ),
@@ -254,7 +256,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   List<Widget> _addressSection(UserProvider userProvider) {
     return [
-      const CheckoutSectionHeader(title: 'Adres dostawy', icon: Icons.location_on_rounded),
+      CheckoutSectionHeader(title: _l10n.deliveryAddressHeader, icon: Icons.location_on_rounded),
       _buildAnimatedAddressSection(userProvider),
       const SizedBox(height: AppSpacing.s32),
     ];
@@ -264,9 +266,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final noOptions = _carriers != null && _carriers!.isEmpty && !_carriersError;
     if (!_isStepped && !_carriersError && !(_carriers?.isNotEmpty ?? false)) return const [];
     return [
-      const CheckoutSectionHeader(title: 'Metoda dostawy', icon: Icons.local_shipping_rounded),
+      CheckoutSectionHeader(title: _l10n.deliveryMethodHeader, icon: Icons.local_shipping_rounded),
       if (noOptions)
-        const Text('Brak metod dostawy dla tego koszyka.', style: TextStyle(color: Colors.white70, fontSize: 14))
+        Text(_l10n.noDeliveryMethods, style: TextStyle(color: Colors.white70, fontSize: 14))
       else
         CheckoutCarrierList(
           carriers: _carriers,
@@ -288,9 +290,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final noOptions = _payments != null && _payments!.isEmpty && !_paymentsError;
     return [
       if (!noOptions || _isStepped) ...[
-        const CheckoutSectionHeader(title: 'Płatność', icon: Icons.account_balance_wallet_rounded),
+        CheckoutSectionHeader(title: _l10n.payment, icon: Icons.account_balance_wallet_rounded),
         if (noOptions)
-          const Text('Brak metod płatności dla tego koszyka.', style: TextStyle(color: Colors.white70, fontSize: 14))
+          Text(_l10n.noPaymentMethods, style: TextStyle(color: Colors.white70, fontSize: 14))
         else
           CheckoutPaymentList(
             payments: _payments,
@@ -368,9 +370,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   List<String> _stepMissingLabels(int step, bool isGuest) {
     switch (step) {
       case 0:
-        return isGuest ? _guest.missingLabels() : (_selectedAddress == null ? ['adresu dostawy'] : []);
+        return isGuest ? _guest.missingLabels(_l10n) : (_selectedAddress == null ? [_l10n.missingDeliveryAddress] : []);
       case 1:
-        return _hasCarrierOptions && _selectedCarrier == null ? ['metody dostawy'] : [];
+        return _hasCarrierOptions && _selectedCarrier == null ? [_l10n.missingDeliveryMethod] : [];
       default:
         return [];
     }
@@ -380,7 +382,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final missing = _stepMissingLabels(_step, isGuest);
     if (missing.isNotEmpty) {
       if (isGuest && _step == 0) _guestFormKey.currentState?.validate();
-      final message = FormValidation.formatMissingFields(missing);
+      final message = _l10n.missingFieldsMessage(missing.join(', '));
       _analytics.logCheckoutValidationError('missing_fields', fieldCount: missing.length);
       setState(() => _validationMessage = message);
       showValidationSnackBar(context, message);
@@ -442,20 +444,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Masz już konto?',
+          Text(
+            _l10n.haveAccountQuestion,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 6),
           Text(
-            'Zaloguj się, aby użyć zapisanych adresów i szybciej dokończyć zamówienie.',
+            _l10n.loginForSavedAddresses,
             style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: AppSpacing.s16),
           OutlinedButton.icon(
             onPressed: _openLoginFromCheckout,
             icon: const Icon(Icons.login_rounded, size: 18),
-            label: const Text('ZALOGUJ SIĘ'),
+            label: Text(_l10n.loginButton),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.accentText,
               side: BorderSide(color: AppColors.accent.withOpacity(0.6)),
@@ -470,7 +472,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  'LUB KONTYNUUJ JAKO GOŚĆ',
+                  _l10n.orContinueAsGuest,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.35),
                     fontSize: 12,
@@ -567,9 +569,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Gdzie mamy wysłać paczkę?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(_l10n.whereToShip, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                         const SizedBox(height: AppSpacing.s4),
-                        Text(hasAddresses ? 'Kliknij, aby wybrać adres' : 'Kliknij, aby dodać dane do wysyłki', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
+                        Text(hasAddresses ? _l10n.tapToChooseAddress : _l10n.tapToAddShippingData, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
                       ],
                     ),
             ),
@@ -584,12 +586,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _applyVoucher() async {
     final code = _voucherController.text.trim();
     if (code.isEmpty) {
-      showValidationSnackBar(context, 'Wpisz kod rabatowy.');
+      showValidationSnackBar(context, _l10n.enterVoucherCode);
       return;
     }
 
     if (context.read<CartProvider>().idCart == null) {
-      showValidationSnackBar(context, 'Dodaj produkty do koszyka, zanim użyjesz kodu rabatowego.');
+      showValidationSnackBar(context, _l10n.addProductsBeforeVoucher);
       return;
     }
 
@@ -605,7 +607,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       } else {
         _voucherController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kod rabatowy został pomyślnie naliczony!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(_l10n.voucherAppliedSuccess), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -709,42 +711,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   String _nextButtonText(bool isGuest) {
     if (_step == 0) {
-      if (!isGuest && _selectedAddress == null) return 'WYBIERZ ADRES';
-      if (isGuest && !_guest.isValid) return 'UZUPEŁNIJ DANE';
-      return 'DALEJ: DOSTAWA';
+      if (!isGuest && _selectedAddress == null) return _l10n.chooseAddressCta;
+      if (isGuest && !_guest.isValid) return _l10n.completeDetailsCta;
+      return _l10n.nextDelivery;
     }
-    if (_hasCarrierOptions && _selectedCarrier == null) return 'WYBIERZ DOSTAWĘ';
-    return 'DALEJ: PŁATNOŚĆ';
+    if (_hasCarrierOptions && _selectedCarrier == null) return _l10n.chooseDeliveryCta;
+    return _l10n.nextPayment;
   }
 
   String _finalButtonText(CartProvider cart, bool isGuest, String formattedTotal) {
-    if (!isGuest && _selectedAddress == null) return 'WYBIERZ ADRES';
-    if (isGuest && _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart).isNotEmpty) return 'UZUPEŁNIJ DANE';
-    if (_hasCarrierOptions && _selectedCarrier == null) return 'WYBIERZ DOSTAWĘ';
-    if (_hasPaymentOptions && _selectedPayment == null) return 'WYBIERZ PŁATNOŚĆ';
-    return 'ZAPŁAĆ $formattedTotal';
+    if (!isGuest && _selectedAddress == null) return _l10n.chooseAddressCta;
+    if (isGuest && _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart).isNotEmpty) return _l10n.completeDetailsCta;
+    if (_hasCarrierOptions && _selectedCarrier == null) return _l10n.chooseDeliveryCta;
+    if (_hasPaymentOptions && _selectedPayment == null) return _l10n.choosePaymentCta;
+    return _l10n.payAmount(formattedTotal);
   }
 
   List<String> _collectCheckoutMissingLabels({required bool isGuest, required CartProvider cart}) {
     final missingLabels = <String>[];
 
     if (cart.items.isEmpty) {
-      missingLabels.add('produktów w koszyku');
+      missingLabels.add(_l10n.missingCartItems);
     } else if (cart.idCart == null) {
-      missingLabels.add('zsynchronizowanego koszyka');
+      missingLabels.add(_l10n.missingSyncedCart);
     }
 
     if (isGuest) {
-      missingLabels.addAll(_guest.missingLabels());
+      missingLabels.addAll(_guest.missingLabels(_l10n));
     } else if (_selectedAddress == null) {
-      missingLabels.add('adresu dostawy');
+      missingLabels.add(_l10n.missingDeliveryAddress);
     }
 
     if (_hasCarrierOptions && _selectedCarrier == null) {
-      missingLabels.add('metody dostawy');
+      missingLabels.add(_l10n.missingDeliveryMethod);
     }
     if (_hasPaymentOptions && _selectedPayment == null) {
-      missingLabels.add('metody płatności');
+      missingLabels.add(_l10n.missingPaymentMethod);
     }
 
     return missingLabels;
@@ -757,7 +759,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final missingLabels = _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart);
     if (missingLabels.isNotEmpty) {
-      final validationMessage = FormValidation.formatMissingFields(missingLabels);
+      final validationMessage = _l10n.missingFieldsMessage(missingLabels.join(', '));
       _analytics.logCheckoutValidationError('missing_fields', fieldCount: missingLabels.length);
       setState(() => _validationMessage = validationMessage);
       showValidationSnackBar(context, validationMessage);
@@ -780,7 +782,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final authenticated = await context.read<UserProvider>().authenticateBiometrically();
         if (!authenticated) {
           setState(() => _isProcessing = false);
-          showValidationSnackBar(context, 'Anulowano weryfikację tożsamości. Zamówienie nie zostało złożone.');
+          showValidationSnackBar(context, _l10n.biometricCancelled);
           return;
         }
       }
@@ -799,11 +801,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
 
       if (prepared == null) {
-        throw Exception(_checkoutNotifier.errorMessage ?? 'Nie udało się zweryfikować koszyka.');
+        throw Exception(_checkoutNotifier.errorMessage ?? _l10n.cartVerifyFailed);
       }
 
       if (cart.idCart == null) {
-        throw Exception('Koszyk nie został zsynchronizowany z serwerem.');
+        throw Exception(_l10n.cartNotSynced);
       }
 
       final orderPayload = <String, dynamic>{
@@ -848,7 +850,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                   builder: (context) => OrderConfirmationScreen(
-                    orderReference: data['reference'] ?? 'Zamówienie',
+                    orderReference: data['reference'] ?? _l10n.orderFallbackRef,
                     totalAmount: totalAmount,
                   ),
                 ),
@@ -856,7 +858,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               );
             }
           } else {
-            throw Exception(data['message'] ?? 'Serwer odrzucił zamówienie.');
+            throw Exception(data['message'] ?? _l10n.orderRejected);
           }
         },
       );

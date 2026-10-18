@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/data/models/checkout_models.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 import 'package:pharos/ui/screens/checkout/checkout_guest_form.dart';
 import 'package:pharos/ui/screens/checkout/checkout_option_cards.dart';
 import 'package:pharos/ui/screens/checkout/checkout_step_indicator.dart';
 import 'package:pharos/ui/screens/checkout/checkout_variant.dart';
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child)));
+Widget _wrap(Widget child) => MaterialApp(
+      locale: const Locale('pl'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: SingleChildScrollView(child: child)));
 
 void _fillValid(GuestFormController c) {
   c.email.text = 'jan.kowalski@example.com';
@@ -70,7 +75,7 @@ void main() {
   group('GuestFormController', () {
     test('empty form reports every field as missing', () {
       final c = GuestFormController();
-      expect(c.missingLabels().length, 7);
+      expect(c.missingLabels(lookupAppLocalizations(const Locale('pl'))).length, 7);
       expect(c.isValid, isFalse);
       c.dispose();
     });
@@ -78,7 +83,7 @@ void main() {
     test('valid data passes and builds payload', () {
       final c = GuestFormController();
       _fillValid(c);
-      expect(c.missingLabels(), isEmpty);
+      expect(c.missingLabels(lookupAppLocalizations(const Locale('pl'))), isEmpty);
       expect(c.isValid, isTrue);
       final payload = c.toPayload(createAccount: true);
       expect(payload['email'], 'jan.kowalski@example.com');
@@ -90,7 +95,7 @@ void main() {
       final c = GuestFormController();
       _fillValid(c);
       c.email.text = 'nie-email';
-      expect(c.missingLabels(), contains('adres e-mail'));
+      expect(c.missingLabels(lookupAppLocalizations(const Locale('pl'))), contains('adres e-mail'));
       c.dispose();
     });
   });

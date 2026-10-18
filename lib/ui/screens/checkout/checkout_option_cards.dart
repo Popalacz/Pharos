@@ -8,6 +8,7 @@ import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:pharos/data/models/checkout_models.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class CheckoutCarrierList extends StatelessWidget {
   const CheckoutCarrierList({
@@ -31,9 +32,10 @@ class CheckoutCarrierList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final list = carriers;
     if (list == null) return const ListShimmer(itemCount: 2);
-    if (hasError) return NetworkErrorState(message: 'Nie udało się pobrać metod dostawy.', onRetry: onRetry);
+    if (hasError) return NetworkErrorState(message: l10n.carriersLoadFailed, onRetry: onRetry);
     if (list.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -59,7 +61,7 @@ class CheckoutCarrierList extends StatelessWidget {
                   Text(carrier.delay, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
                   const SizedBox(height: AppSpacing.s4),
                   Text(
-                    carrier.price == 0 ? 'GRATIS' : loc.formatPrice(isSelected ? selectedShippingCost : carrier.price),
+                    carrier.price == 0 ? l10n.shippingFree : loc.formatPrice(isSelected ? selectedShippingCost : carrier.price),
                     style: TextStyle(fontWeight: FontWeight.w900, color: carrier.price == 0 ? Colors.green : Colors.white, fontSize: 14),
                   ),
                 ],
@@ -107,9 +109,10 @@ class CheckoutPaymentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final list = payments;
     if (list == null) return const ListShimmer(itemCount: 2);
-    if (hasError) return NetworkErrorState(message: 'Nie udało się pobrać metod płatności.', onRetry: onRetry);
+    if (hasError) return NetworkErrorState(message: l10n.paymentsLoadFailed, onRetry: onRetry);
     if (list.isEmpty) return const SizedBox.shrink();
 
     return Column(

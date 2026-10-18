@@ -589,4 +589,162 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get reviewTitle => 'Opinia';
+
+  @override
+  String get checkoutScreenTitle => 'Finalizacja zamówienia';
+
+  @override
+  String get processingOrder => 'Przetwarzanie zamówienia...';
+
+  @override
+  String get doNotCloseApp => 'Proszę nie zamykać aplikacji';
+
+  @override
+  String get deliveryAddressHeader => 'Adres dostawy';
+
+  @override
+  String get deliveryMethodHeader => 'Metoda dostawy';
+
+  @override
+  String get noDeliveryMethods => 'Brak metod dostawy dla tego koszyka.';
+
+  @override
+  String get noPaymentMethods => 'Brak metod płatności dla tego koszyka.';
+
+  @override
+  String get haveAccountQuestion => 'Masz już konto?';
+
+  @override
+  String get loginForSavedAddresses =>
+      'Zaloguj się, aby użyć zapisanych adresów i szybciej dokończyć zamówienie.';
+
+  @override
+  String get orContinueAsGuest => 'LUB KONTYNUUJ JAKO GOŚĆ';
+
+  @override
+  String get whereToShip => 'Gdzie mamy wysłać paczkę?';
+
+  @override
+  String get tapToChooseAddress => 'Kliknij, aby wybrać adres';
+
+  @override
+  String get tapToAddShippingData => 'Kliknij, aby dodać dane do wysyłki';
+
+  @override
+  String get enterVoucherCode => 'Wpisz kod rabatowy.';
+
+  @override
+  String get addProductsBeforeVoucher =>
+      'Dodaj produkty do koszyka, zanim użyjesz kodu rabatowego.';
+
+  @override
+  String get voucherAppliedSuccess =>
+      'Kod rabatowy został pomyślnie naliczony!';
+
+  @override
+  String get nextDelivery => 'DALEJ: DOSTAWA';
+
+  @override
+  String get nextPayment => 'DALEJ: PŁATNOŚĆ';
+
+  @override
+  String get chooseAddressCta => 'WYBIERZ ADRES';
+
+  @override
+  String get completeDetailsCta => 'UZUPEŁNIJ DANE';
+
+  @override
+  String get chooseDeliveryCta => 'WYBIERZ DOSTAWĘ';
+
+  @override
+  String get choosePaymentCta => 'WYBIERZ PŁATNOŚĆ';
+
+  @override
+  String get missingCartItems => 'produktów w koszyku';
+
+  @override
+  String get missingSyncedCart => 'zsynchronizowanego koszyka';
+
+  @override
+  String get missingDeliveryAddress => 'adresu dostawy';
+
+  @override
+  String get missingDeliveryMethod => 'metody dostawy';
+
+  @override
+  String get missingPaymentMethod => 'metody płatności';
+
+  @override
+  String get biometricCancelled =>
+      'Anulowano weryfikację tożsamości. Zamówienie nie zostało złożone.';
+
+  @override
+  String get cartVerifyFailed => 'Nie udało się zweryfikować koszyka.';
+
+  @override
+  String get cartNotSynced => 'Koszyk nie został zsynchronizowany z serwerem.';
+
+  @override
+  String get orderRejected => 'Serwer odrzucił zamówienie.';
+
+  @override
+  String get orderFallbackRef => 'Zamówienie';
+
+  @override
+  String get guestEmailLabel => 'Adres e-mail';
+
+  @override
+  String get guestStreetLabel => 'Ulica i numer';
+
+  @override
+  String get guestPostcodeLabel => 'Kod pocztowy';
+
+  @override
+  String get guestCityLabel => 'Miasto';
+
+  @override
+  String get guestPhoneLabel => 'Numer telefonu';
+
+  @override
+  String get createAccountForFaster =>
+      'Chcę założyć konto dla szybszych zakupów';
+
+  @override
+  String get shippingFree => 'GRATIS';
+
+  @override
+  String get carriersLoadFailed => 'Nie udało się pobrać metod dostawy.';
+
+  @override
+  String get paymentsLoadFailed => 'Nie udało się pobrać metod płatności.';
+
+  @override
+  String get stepDone => 'ukończony';
+
+  @override
+  String get stepCurrent => 'bieżący';
+
+  @override
+  String get stepTodo => 'do wykonania';
+
+  @override
+  String get voucherHint => 'Wpisz kod...';
+
+  @override
+  String get voucherUseButton => 'UŻYJ';
+
+  @override
+  String payAmount(String amount) {
+    return 'ZAPŁAĆ $amount';
+  }
+
+  @override
+  String missingFieldsMessage(String fields) {
+    return 'Brakuje: $fields.';
+  }
+
+  @override
+  String stepSemanticsLabel(int index, int total, String label, String state) {
+    return 'Krok $index z $total: $label, $state';
+  }
 }

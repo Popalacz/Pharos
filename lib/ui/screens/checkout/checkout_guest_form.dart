@@ -3,6 +3,7 @@ import 'package:pharos/core/constants/pharos_layout.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:pharos/core/utils/form_validation.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 /// Kontrolery i walidacja formularza gościa, bez zależności od widgetów.
 class GuestFormController {
@@ -17,19 +18,27 @@ class GuestFormController {
   bool get hasEmail => email.text.isNotEmpty;
 
   /// Etykiety pól do poprawy, w kolejności formularza.
-  List<String> missingLabels() {
+  List<String> missingLabels(AppLocalizations l10n) {
     return FormValidation.collectMissingLabels({
-      'adres e-mail': FormValidation.emailField(email.text),
-      'imię': FormValidation.nameField(firstname.text, 'Imię'),
-      'nazwisko': FormValidation.nameField(lastname.text, 'Nazwisko'),
-      'ulica i numer': FormValidation.addressField(address.text),
-      'kod pocztowy': FormValidation.postcodeField(postcode.text),
-      'miasto': FormValidation.cityField(city.text),
-      'numer telefonu': FormValidation.phoneField(phone.text),
+      l10n.guestEmailLabel.toLowerCase(): FormValidation.emailField(email.text),
+      l10n.firstName.toLowerCase(): FormValidation.nameField(firstname.text, l10n.firstName),
+      l10n.lastName.toLowerCase(): FormValidation.nameField(lastname.text, l10n.lastName),
+      l10n.guestStreetLabel.toLowerCase(): FormValidation.addressField(address.text),
+      l10n.guestPostcodeLabel.toLowerCase(): FormValidation.postcodeField(postcode.text),
+      l10n.guestCityLabel.toLowerCase(): FormValidation.cityField(city.text),
+      l10n.guestPhoneLabel.toLowerCase(): FormValidation.phoneField(phone.text),
     });
   }
 
-  bool get isValid => missingLabels().isEmpty;
+  bool get isValid => [
+        FormValidation.emailField(email.text),
+        FormValidation.nameField(firstname.text, ''),
+        FormValidation.nameField(lastname.text, ''),
+        FormValidation.addressField(address.text),
+        FormValidation.postcodeField(postcode.text),
+        FormValidation.cityField(city.text),
+        FormValidation.phoneField(phone.text),
+      ].every((error) => error == null);
 
   Map<String, dynamic> toPayload({required bool createAccount}) => {
         'email': email.text,
@@ -75,6 +84,7 @@ class CheckoutGuestForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -91,7 +101,7 @@ class CheckoutGuestForm extends StatelessWidget {
             children: [
               _GuestField(
                 controller: controller.email,
-                label: 'Adres e-mail',
+                label: l10n.guestEmailLabel,
                 icon: Icons.alternate_email_rounded,
                 autofillHints: const [AutofillHints.email],
                 keyboardType: TextInputType.emailAddress,
@@ -105,11 +115,11 @@ class CheckoutGuestForm extends StatelessWidget {
                   Expanded(
                     child: _GuestField(
                       controller: controller.firstname,
-                      label: 'Imię',
+                      label: l10n.firstName,
                       icon: Icons.person_outline_rounded,
                       autofillHints: const [AutofillHints.givenName],
                       textCapitalization: TextCapitalization.words,
-                      validator: (value) => FormValidation.nameField(value, 'Imię'),
+                      validator: (value) => FormValidation.nameField(value, l10n.firstName),
                       onChanged: (_) => onFieldChanged(),
                     ),
                   ),
@@ -117,11 +127,11 @@ class CheckoutGuestForm extends StatelessWidget {
                   Expanded(
                     child: _GuestField(
                       controller: controller.lastname,
-                      label: 'Nazwisko',
+                      label: l10n.lastName,
                       icon: Icons.person_outline_rounded,
                       autofillHints: const [AutofillHints.familyName],
                       textCapitalization: TextCapitalization.words,
-                      validator: (value) => FormValidation.nameField(value, 'Nazwisko'),
+                      validator: (value) => FormValidation.nameField(value, l10n.lastName),
                       onChanged: (_) => onFieldChanged(),
                     ),
                   ),
@@ -130,7 +140,7 @@ class CheckoutGuestForm extends StatelessWidget {
               const SizedBox(height: AppSpacing.s12),
               _GuestField(
                 controller: controller.address,
-                label: 'Ulica i numer',
+                label: l10n.guestStreetLabel,
                 icon: Icons.home_work_outlined,
                 autofillHints: const [AutofillHints.streetAddressLine1],
                 textCapitalization: TextCapitalization.words,
@@ -147,7 +157,7 @@ class CheckoutGuestForm extends StatelessWidget {
                   Expanded(
                     child: _GuestField(
                       controller: controller.postcode,
-                      label: 'Kod pocztowy',
+                      label: l10n.guestPostcodeLabel,
                       icon: Icons.map_outlined,
                       autofillHints: const [AutofillHints.postalCode],
                       keyboardType: TextInputType.number,
@@ -159,7 +169,7 @@ class CheckoutGuestForm extends StatelessWidget {
                   Expanded(
                     child: _GuestField(
                       controller: controller.city,
-                      label: 'Miasto',
+                      label: l10n.guestCityLabel,
                       icon: Icons.location_city_rounded,
                       autofillHints: const [AutofillHints.addressCity],
                       textCapitalization: TextCapitalization.words,
@@ -172,7 +182,7 @@ class CheckoutGuestForm extends StatelessWidget {
               const SizedBox(height: AppSpacing.s12),
               _GuestField(
                 controller: controller.phone,
-                label: 'Numer telefonu',
+                label: l10n.guestPhoneLabel,
                 icon: Icons.phone_android_rounded,
                 autofillHints: const [AutofillHints.telephoneNumber],
                 keyboardType: TextInputType.phone,
@@ -188,7 +198,7 @@ class CheckoutGuestForm extends StatelessWidget {
                   child: CheckboxListTile(
                     value: createAccount,
                     onChanged: (val) => onCreateAccountChanged(val ?? false),
-                    title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    title: Text(l10n.createAccountForFaster, style: TextStyle(color: Colors.white70, fontSize: 13)),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.accentText,

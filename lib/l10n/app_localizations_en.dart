@@ -590,4 +590,161 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviewTitle => 'Review';
+
+  @override
+  String get checkoutScreenTitle => 'Order checkout';
+
+  @override
+  String get processingOrder => 'Processing your order...';
+
+  @override
+  String get doNotCloseApp => 'Please do not close the app';
+
+  @override
+  String get deliveryAddressHeader => 'Delivery address';
+
+  @override
+  String get deliveryMethodHeader => 'Delivery method';
+
+  @override
+  String get noDeliveryMethods => 'No delivery methods for this cart.';
+
+  @override
+  String get noPaymentMethods => 'No payment methods for this cart.';
+
+  @override
+  String get haveAccountQuestion => 'Already have an account?';
+
+  @override
+  String get loginForSavedAddresses =>
+      'Log in to use your saved addresses and finish your order faster.';
+
+  @override
+  String get orContinueAsGuest => 'OR CONTINUE AS A GUEST';
+
+  @override
+  String get whereToShip => 'Where should we send your parcel?';
+
+  @override
+  String get tapToChooseAddress => 'Tap to choose an address';
+
+  @override
+  String get tapToAddShippingData => 'Tap to add shipping details';
+
+  @override
+  String get enterVoucherCode => 'Enter a discount code.';
+
+  @override
+  String get addProductsBeforeVoucher =>
+      'Add products to your cart before using a discount code.';
+
+  @override
+  String get voucherAppliedSuccess => 'Discount code applied successfully!';
+
+  @override
+  String get nextDelivery => 'NEXT: DELIVERY';
+
+  @override
+  String get nextPayment => 'NEXT: PAYMENT';
+
+  @override
+  String get chooseAddressCta => 'CHOOSE ADDRESS';
+
+  @override
+  String get completeDetailsCta => 'COMPLETE YOUR DETAILS';
+
+  @override
+  String get chooseDeliveryCta => 'CHOOSE DELIVERY';
+
+  @override
+  String get choosePaymentCta => 'CHOOSE PAYMENT';
+
+  @override
+  String get missingCartItems => 'products in the cart';
+
+  @override
+  String get missingSyncedCart => 'a synced cart';
+
+  @override
+  String get missingDeliveryAddress => 'a delivery address';
+
+  @override
+  String get missingDeliveryMethod => 'a delivery method';
+
+  @override
+  String get missingPaymentMethod => 'a payment method';
+
+  @override
+  String get biometricCancelled =>
+      'Identity verification cancelled. The order was not placed.';
+
+  @override
+  String get cartVerifyFailed => 'Could not verify the cart.';
+
+  @override
+  String get cartNotSynced => 'The cart was not synced with the server.';
+
+  @override
+  String get orderRejected => 'The server rejected the order.';
+
+  @override
+  String get orderFallbackRef => 'Order';
+
+  @override
+  String get guestEmailLabel => 'Email address';
+
+  @override
+  String get guestStreetLabel => 'Street and number';
+
+  @override
+  String get guestPostcodeLabel => 'Postal code';
+
+  @override
+  String get guestCityLabel => 'City';
+
+  @override
+  String get guestPhoneLabel => 'Phone number';
+
+  @override
+  String get createAccountForFaster =>
+      'I want to create an account for faster shopping';
+
+  @override
+  String get shippingFree => 'FREE';
+
+  @override
+  String get carriersLoadFailed => 'Could not load delivery methods.';
+
+  @override
+  String get paymentsLoadFailed => 'Could not load payment methods.';
+
+  @override
+  String get stepDone => 'completed';
+
+  @override
+  String get stepCurrent => 'current';
+
+  @override
+  String get stepTodo => 'to do';
+
+  @override
+  String get voucherHint => 'Enter code...';
+
+  @override
+  String get voucherUseButton => 'APPLY';
+
+  @override
+  String payAmount(String amount) {
+    return 'PAY $amount';
+  }
+
+  @override
+  String missingFieldsMessage(String fields) {
+    return 'Missing: $fields.';
+  }
+
+  @override
+  String stepSemanticsLabel(int index, int total, String label, String state) {
+    return 'Step $index of $total: $label, $state';
+  }
 }

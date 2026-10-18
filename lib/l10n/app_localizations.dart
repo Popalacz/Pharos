@@ -1213,6 +1213,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review'**
   String get reviewTitle;
+
+  /// No description provided for @checkoutScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order checkout'**
+  String get checkoutScreenTitle;
+
+  /// No description provided for @processingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing your order...'**
+  String get processingOrder;
+
+  /// No description provided for @doNotCloseApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Please do not close the app'**
+  String get doNotCloseApp;
+
+  /// No description provided for @deliveryAddressHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery address'**
+  String get deliveryAddressHeader;
+
+  /// No description provided for @deliveryMethodHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery method'**
+  String get deliveryMethodHeader;
+
+  /// No description provided for @noDeliveryMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'No delivery methods for this cart.'**
+  String get noDeliveryMethods;
+
+  /// No description provided for @noPaymentMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'No payment methods for this cart.'**
+  String get noPaymentMethods;
+
+  /// No description provided for @haveAccountQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get haveAccountQuestion;
+
+  /// No description provided for @loginForSavedAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to use your saved addresses and finish your order faster.'**
+  String get loginForSavedAddresses;
+
+  /// No description provided for @orContinueAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'OR CONTINUE AS A GUEST'**
+  String get orContinueAsGuest;
+
+  /// No description provided for @whereToShip.
+  ///
+  /// In en, this message translates to:
+  /// **'Where should we send your parcel?'**
+  String get whereToShip;
+
+  /// No description provided for @tapToChooseAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to choose an address'**
+  String get tapToChooseAddress;
+
+  /// No description provided for @tapToAddShippingData.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add shipping details'**
+  String get tapToAddShippingData;
+
+  /// No description provided for @enterVoucherCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a discount code.'**
+  String get enterVoucherCode;
+
+  /// No description provided for @addProductsBeforeVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Add products to your cart before using a discount code.'**
+  String get addProductsBeforeVoucher;
+
+  /// No description provided for @voucherAppliedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount code applied successfully!'**
+  String get voucherAppliedSuccess;
+
+  /// No description provided for @nextDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT: DELIVERY'**
+  String get nextDelivery;
+
+  /// No description provided for @nextPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT: PAYMENT'**
+  String get nextPayment;
+
+  /// No description provided for @chooseAddressCta.
+  ///
+  /// In en, this message translates to:
+  /// **'CHOOSE ADDRESS'**
+  String get chooseAddressCta;
+
+  /// No description provided for @completeDetailsCta.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETE YOUR DETAILS'**
+  String get completeDetailsCta;
+
+  /// No description provided for @chooseDeliveryCta.
+  ///
+  /// In en, this message translates to:
+  /// **'CHOOSE DELIVERY'**
+  String get chooseDeliveryCta;
+
+  /// No description provided for @choosePaymentCta.
+  ///
+  /// In en, this message translates to:
+  /// **'CHOOSE PAYMENT'**
+  String get choosePaymentCta;
+
+  /// No description provided for @missingCartItems.
+  ///
+  /// In en, this message translates to:
+  /// **'products in the cart'**
+  String get missingCartItems;
+
+  /// No description provided for @missingSyncedCart.
+  ///
+  /// In en, this message translates to:
+  /// **'a synced cart'**
+  String get missingSyncedCart;
+
+  /// No description provided for @missingDeliveryAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'a delivery address'**
+  String get missingDeliveryAddress;
+
+  /// No description provided for @missingDeliveryMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'a delivery method'**
+  String get missingDeliveryMethod;
+
+  /// No description provided for @missingPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'a payment method'**
+  String get missingPaymentMethod;
+
+  /// No description provided for @biometricCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification cancelled. The order was not placed.'**
+  String get biometricCancelled;
+
+  /// No description provided for @cartVerifyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not verify the cart.'**
+  String get cartVerifyFailed;
+
+  /// No description provided for @cartNotSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'The cart was not synced with the server.'**
+  String get cartNotSynced;
+
+  /// No description provided for @orderRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The server rejected the order.'**
+  String get orderRejected;
+
+  /// No description provided for @orderFallbackRef.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get orderFallbackRef;
+
+  /// No description provided for @guestEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get guestEmailLabel;
+
+  /// No description provided for @guestStreetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Street and number'**
+  String get guestStreetLabel;
+
+  /// No description provided for @guestPostcodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Postal code'**
+  String get guestPostcodeLabel;
+
+  /// No description provided for @guestCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get guestCityLabel;
+
+  /// No description provided for @guestPhoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get guestPhoneLabel;
+
+  /// No description provided for @createAccountForFaster.
+  ///
+  /// In en, this message translates to:
+  /// **'I want to create an account for faster shopping'**
+  String get createAccountForFaster;
+
+  /// No description provided for @shippingFree.
+  ///
+  /// In en, this message translates to:
+  /// **'FREE'**
+  String get shippingFree;
+
+  /// No description provided for @carriersLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load delivery methods.'**
+  String get carriersLoadFailed;
+
+  /// No description provided for @paymentsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load payment methods.'**
+  String get paymentsLoadFailed;
+
+  /// No description provided for @stepDone.
+  ///
+  /// In en, this message translates to:
+  /// **'completed'**
+  String get stepDone;
+
+  /// No description provided for @stepCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'current'**
+  String get stepCurrent;
+
+  /// No description provided for @stepTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'to do'**
+  String get stepTodo;
+
+  /// No description provided for @voucherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter code...'**
+  String get voucherHint;
+
+  /// No description provided for @voucherUseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'APPLY'**
+  String get voucherUseButton;
+
+  /// No description provided for @payAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'PAY {amount}'**
+  String payAmount(String amount);
+
+  /// No description provided for @missingFieldsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing: {fields}.'**
+  String missingFieldsMessage(String fields);
+
+  /// No description provided for @stepSemanticsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {index} of {total}: {label}, {state}'**
+  String stepSemanticsLabel(int index, int total, String label, String state);
 }
 
 class _AppLocalizationsDelegate

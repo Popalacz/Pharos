@@ -19,6 +19,7 @@ class CheckoutVoucherSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -29,7 +30,7 @@ class CheckoutVoucherSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('KOD RABATOWY', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
+          Text(l10n.voucherLabel.toUpperCase(), style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
           const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
@@ -42,7 +43,7 @@ class CheckoutVoucherSection extends StatelessWidget {
                   onSubmitted: (_) => onApply(),
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Wpisz kod...',
+                    hintText: l10n.voucherHint,
                     hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
                     filled: true,
                     fillColor: Colors.black.withOpacity(0.1),
@@ -62,7 +63,7 @@ class CheckoutVoucherSection extends StatelessWidget {
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('UŻYJ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(l10n.voucherUseButton, style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
             ],
           ),
@@ -103,7 +104,7 @@ class CheckoutOrderSummary extends StatelessWidget {
         children: [
           _row(l10n.productsTotal, loc.formatPrice(subtotal)),
           const SizedBox(height: AppSpacing.s12),
-          _row(l10n.shipping, shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
+          _row(l10n.shipping, shipping == 0 ? l10n.shippingFree : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
           if (discount > 0.05) ...[
             const SizedBox(height: AppSpacing.s12),
             _row(l10n.discount, '- ${loc.formatPrice(discount)}', color: Colors.green),

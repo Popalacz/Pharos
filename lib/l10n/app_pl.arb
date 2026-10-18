@@ -237,5 +237,84 @@
   "reviewsLoadError": "Błąd podczas ładowania opinii.",
   "reviewsFetchFailed": "Nie udało się pobrać opinii.",
   "noReviews": "Brak opinii o tym produkcie.",
-  "reviewTitle": "Opinia"
+  "reviewTitle": "Opinia",
+  "checkoutScreenTitle": "Finalizacja zamówienia",
+  "processingOrder": "Przetwarzanie zamówienia...",
+  "doNotCloseApp": "Proszę nie zamykać aplikacji",
+  "deliveryAddressHeader": "Adres dostawy",
+  "deliveryMethodHeader": "Metoda dostawy",
+  "noDeliveryMethods": "Brak metod dostawy dla tego koszyka.",
+  "noPaymentMethods": "Brak metod płatności dla tego koszyka.",
+  "haveAccountQuestion": "Masz już konto?",
+  "loginForSavedAddresses": "Zaloguj się, aby użyć zapisanych adresów i szybciej dokończyć zamówienie.",
+  "orContinueAsGuest": "LUB KONTYNUUJ JAKO GOŚĆ",
+  "whereToShip": "Gdzie mamy wysłać paczkę?",
+  "tapToChooseAddress": "Kliknij, aby wybrać adres",
+  "tapToAddShippingData": "Kliknij, aby dodać dane do wysyłki",
+  "enterVoucherCode": "Wpisz kod rabatowy.",
+  "addProductsBeforeVoucher": "Dodaj produkty do koszyka, zanim użyjesz kodu rabatowego.",
+  "voucherAppliedSuccess": "Kod rabatowy został pomyślnie naliczony!",
+  "nextDelivery": "DALEJ: DOSTAWA",
+  "nextPayment": "DALEJ: PŁATNOŚĆ",
+  "chooseAddressCta": "WYBIERZ ADRES",
+  "completeDetailsCta": "UZUPEŁNIJ DANE",
+  "chooseDeliveryCta": "WYBIERZ DOSTAWĘ",
+  "choosePaymentCta": "WYBIERZ PŁATNOŚĆ",
+  "missingCartItems": "produktów w koszyku",
+  "missingSyncedCart": "zsynchronizowanego koszyka",
+  "missingDeliveryAddress": "adresu dostawy",
+  "missingDeliveryMethod": "metody dostawy",
+  "missingPaymentMethod": "metody płatności",
+  "biometricCancelled": "Anulowano weryfikację tożsamości. Zamówienie nie zostało złożone.",
+  "cartVerifyFailed": "Nie udało się zweryfikować koszyka.",
+  "cartNotSynced": "Koszyk nie został zsynchronizowany z serwerem.",
+  "orderRejected": "Serwer odrzucił zamówienie.",
+  "orderFallbackRef": "Zamówienie",
+  "guestEmailLabel": "Adres e-mail",
+  "guestStreetLabel": "Ulica i numer",
+  "guestPostcodeLabel": "Kod pocztowy",
+  "guestCityLabel": "Miasto",
+  "guestPhoneLabel": "Numer telefonu",
+  "createAccountForFaster": "Chcę założyć konto dla szybszych zakupów",
+  "shippingFree": "GRATIS",
+  "carriersLoadFailed": "Nie udało się pobrać metod dostawy.",
+  "paymentsLoadFailed": "Nie udało się pobrać metod płatności.",
+  "stepDone": "ukończony",
+  "stepCurrent": "bieżący",
+  "stepTodo": "do wykonania",
+  "voucherHint": "Wpisz kod...",
+  "voucherUseButton": "UŻYJ",
+  "payAmount": "ZAPŁAĆ {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "missingFieldsMessage": "Brakuje: {fields}.",
+  "@missingFieldsMessage": {
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "stepSemanticsLabel": "Krok {index} z {total}: {label}, {state}",
+  "@stepSemanticsLabel": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  }
 }

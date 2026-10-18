@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 /// Pasek kroków z podpisami. Kroki ukończone pokazują ptaszek, bieżący jest wyróżniony.
 class CheckoutStepIndicator extends StatelessWidget {
@@ -25,7 +26,7 @@ class CheckoutStepIndicator extends StatelessWidget {
     final children = <Widget>[];
     for (var i = 0; i < labels.length; i++) {
       if (i > 0) children.add(_line(completed[i - 1]));
-      children.add(_node(i));
+      children.add(_node(context, i));
     }
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: children);
   }
@@ -42,14 +43,19 @@ class CheckoutStepIndicator extends StatelessWidget {
     );
   }
 
-  Widget _node(int index) {
+  Widget _node(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context)!;
     final done = completed[index];
     final current = currentIndex == index;
     final highlighted = done || current;
 
     return Semantics(
-      label: 'Krok ${index + 1} z ${labels.length}: ${labels[index]}, '
-          '${done ? 'ukończony' : current ? 'bieżący' : 'do wykonania'}',
+      label: l10n.stepSemanticsLabel(
+        index + 1,
+        labels.length,
+        labels[index],
+        done ? l10n.stepDone : current ? l10n.stepCurrent : l10n.stepTodo,
+      ),
       excludeSemantics: true,
       child: SizedBox(
         width: _nodeWidth,

@@ -237,5 +237,84 @@
   "reviewsLoadError": "Error while loading reviews.",
   "reviewsFetchFailed": "Could not load reviews.",
   "noReviews": "No reviews for this product yet.",
-  "reviewTitle": "Review"
+  "reviewTitle": "Review",
+  "checkoutScreenTitle": "Order checkout",
+  "processingOrder": "Processing your order...",
+  "doNotCloseApp": "Please do not close the app",
+  "deliveryAddressHeader": "Delivery address",
+  "deliveryMethodHeader": "Delivery method",
+  "noDeliveryMethods": "No delivery methods for this cart.",
+  "noPaymentMethods": "No payment methods for this cart.",
+  "haveAccountQuestion": "Already have an account?",
+  "loginForSavedAddresses": "Log in to use your saved addresses and finish your order faster.",
+  "orContinueAsGuest": "OR CONTINUE AS A GUEST",
+  "whereToShip": "Where should we send your parcel?",
+  "tapToChooseAddress": "Tap to choose an address",
+  "tapToAddShippingData": "Tap to add shipping details",
+  "enterVoucherCode": "Enter a discount code.",
+  "addProductsBeforeVoucher": "Add products to your cart before using a discount code.",
+  "voucherAppliedSuccess": "Discount code applied successfully!",
+  "nextDelivery": "NEXT: DELIVERY",
+  "nextPayment": "NEXT: PAYMENT",
+  "chooseAddressCta": "CHOOSE ADDRESS",
+  "completeDetailsCta": "COMPLETE YOUR DETAILS",
+  "chooseDeliveryCta": "CHOOSE DELIVERY",
+  "choosePaymentCta": "CHOOSE PAYMENT",
+  "missingCartItems": "products in the cart",
+  "missingSyncedCart": "a synced cart",
+  "missingDeliveryAddress": "a delivery address",
+  "missingDeliveryMethod": "a delivery method",
+  "missingPaymentMethod": "a payment method",
+  "biometricCancelled": "Identity verification cancelled. The order was not placed.",
+  "cartVerifyFailed": "Could not verify the cart.",
+  "cartNotSynced": "The cart was not synced with the server.",
+  "orderRejected": "The server rejected the order.",
+  "orderFallbackRef": "Order",
+  "guestEmailLabel": "Email address",
+  "guestStreetLabel": "Street and number",
+  "guestPostcodeLabel": "Postal code",
+  "guestCityLabel": "City",
+  "guestPhoneLabel": "Phone number",
+  "createAccountForFaster": "I want to create an account for faster shopping",
+  "shippingFree": "FREE",
+  "carriersLoadFailed": "Could not load delivery methods.",
+  "paymentsLoadFailed": "Could not load payment methods.",
+  "stepDone": "completed",
+  "stepCurrent": "current",
+  "stepTodo": "to do",
+  "voucherHint": "Enter code...",
+  "voucherUseButton": "APPLY",
+  "payAmount": "PAY {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "missingFieldsMessage": "Missing: {fields}.",
+  "@missingFieldsMessage": {
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "stepSemanticsLabel": "Step {index} of {total}: {label}, {state}",
+  "@stepSemanticsLabel": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  }
 }
