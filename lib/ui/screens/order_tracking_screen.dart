@@ -144,7 +144,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             tooltip: AppLocalizations.of(context)!.a11yRefresh,
             icon: _isRefreshing 
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText))
-                : const Icon(Icons.refresh_rounded, color: Colors.white),
+                : const Icon(Icons.refresh_rounded, color: AppColors.text),
             onPressed: _isRefreshing ? null : _refreshOrder,
           )
         ],
@@ -204,8 +204,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 15, offset: const Offset(0, 8))],
+        border: Border.all(color: AppColors.text.withOpacity(0.05)),
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.5), blurRadius: 15, offset: const Offset(0, 8))],
       ),
       child: GoogleMap(
         initialCameraPosition: const CameraPosition(target: _courierLoc, zoom: 14),
@@ -227,11 +227,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       children: [
         Text(
           AppLocalizations.of(context)!.fulfillmentHistory,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white24),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: AppColors.border),
         ),
         Text(
           'DZIŚ, ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-          style: const TextStyle(fontSize: 12, color: Colors.white10),
+          style: const TextStyle(fontSize: 12, color: AppColors.divider),
         ),
       ],
     );
@@ -243,7 +243,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: AppColors.text.withOpacity(0.05)),
       ),
       child: Column(
         children: [
@@ -253,9 +253,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(AppLocalizations.of(context)!.referenceLabel, style: TextStyle(color: Colors.white24, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Text(AppLocalizations.of(context)!.referenceLabel, style: TextStyle(color: AppColors.border, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   const SizedBox(height: AppSpacing.s4),
-                  Text(_currentOrder.reference, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                  Text(_currentOrder.reference, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w900, fontSize: 18)),
                 ],
               ),
               Container(
@@ -271,7 +271,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
             ],
           ),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider(color: Colors.white10, height: 1)),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider(color: AppColors.divider, height: 1)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -289,9 +289,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white24, fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: AppColors.border, fontSize: 12, fontWeight: FontWeight.bold)),
         const SizedBox(height: AppSpacing.s4),
-        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+        Text(value, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 12)),
       ],
     );
   }
@@ -302,20 +302,20 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.05),
+        color: AppColors.success.withOpacity(0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.green.withOpacity(0.2)),
+        border: Border.all(color: AppColors.success.withOpacity(0.2)),
       ),
       child: Column(
         children: [
-          const Icon(Icons.star_rounded, color: Colors.green, size: 40),
+          const Icon(Icons.star_rounded, color: AppColors.success, size: 40),
           const SizedBox(height: AppSpacing.s12),
           Text(AppLocalizations.of(context)!.rateProductsQuestion, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 14)),
           const SizedBox(height: AppSpacing.s8),
           const Text(
             'Twoja opinia pomaga nam budować Pharos.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -325,7 +325,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ReviewFormScreen(orderId: _currentOrder.id, title: AppLocalizations.of(context)!.reviewTitle)));
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.success, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               child: Text(AppLocalizations.of(context)!.addReviewButton, style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           )
@@ -408,7 +408,7 @@ class _OrderTimelineTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = state == _TimelineState.completed ? Colors.green : (state == _TimelineState.active ? AppColors.accent : Colors.white.withOpacity(0.05));
+    final color = state == _TimelineState.completed ? AppColors.success : (state == _TimelineState.active ? AppColors.accent : AppColors.text.withOpacity(0.05));
     return IntrinsicHeight(
       child: Row(
         children: [
@@ -428,9 +428,9 @@ class _OrderTimelineTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: AppSpacing.s4),
-                Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: state == _TimelineState.pending ? Colors.white10 : Colors.white)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: state == _TimelineState.pending ? AppColors.divider : AppColors.text)),
                 const SizedBox(height: AppSpacing.s4),
-                Text(description, style: TextStyle(fontSize: 12, color: state == _TimelineState.pending ? Colors.white.withOpacity(0.02) : Colors.white54)),
+                Text(description, style: TextStyle(fontSize: 12, color: state == _TimelineState.pending ? AppColors.text.withOpacity(0.02) : AppColors.textSecondary)),
                 const SizedBox(height: AppSpacing.s24),
               ],
             ),

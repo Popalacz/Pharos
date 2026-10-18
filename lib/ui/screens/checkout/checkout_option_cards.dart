@@ -54,15 +54,15 @@ class CheckoutCarrierList extends StatelessWidget {
               groupValue: selected,
               activeColor: AppColors.accentText,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              title: Text(carrier.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              title: Text(carrier.name, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(carrier.delay, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                  Text(carrier.delay, style: TextStyle(color: AppColors.text.withOpacity(0.5), fontSize: 12)),
                   const SizedBox(height: AppSpacing.s4),
                   Text(
                     carrier.price == 0 ? l10n.shippingFree : loc.formatPrice(isSelected ? selectedShippingCost : carrier.price),
-                    style: TextStyle(fontWeight: FontWeight.w900, color: carrier.price == 0 ? Colors.green : Colors.white, fontSize: 14),
+                    style: TextStyle(fontWeight: FontWeight.w900, color: carrier.price == 0 ? AppColors.success : AppColors.text, fontSize: 14),
                   ),
                 ],
               ),
@@ -71,14 +71,14 @@ class CheckoutCarrierList extends StatelessWidget {
                       width: 48,
                       height: 48,
                       padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(color: AppColors.text, borderRadius: BorderRadius.circular(8)),
                       child: CachedNetworkImage(
                         imageUrl: carrier.imageUrl!,
                         fit: BoxFit.contain,
-                        errorWidget: (context, url, error) => const Icon(Icons.local_shipping_rounded, color: Colors.grey),
+                        errorWidget: (context, url, error) => const Icon(Icons.local_shipping_rounded, color: AppColors.textMuted),
                       ),
                     )
-                  : const Icon(Icons.local_shipping_rounded, color: Colors.white24, size: 28),
+                  : const Icon(Icons.local_shipping_rounded, color: AppColors.border, size: 28),
               onChanged: (val) {
                 HapticFeedback.selectionClick();
                 onSelect(val);
@@ -120,7 +120,7 @@ class CheckoutPaymentList extends StatelessWidget {
         final isSelected = selected?.id == method.id;
         final fallbackIcon = Icon(
           method.id.contains('blik') ? Icons.phonelink_ring_rounded : Icons.credit_card_rounded,
-          color: isSelected ? AppColors.accentText : Colors.white24,
+          color: isSelected ? AppColors.accentText : AppColors.border,
           size: 20,
         );
         return AnimatedContainer(
@@ -137,7 +137,7 @@ class CheckoutPaymentList extends StatelessWidget {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent.withOpacity(0.1) : Colors.white.withOpacity(0.03),
+                  color: isSelected ? AppColors.accent.withOpacity(0.1) : AppColors.text.withOpacity(0.03),
                   shape: BoxShape.circle,
                 ),
                 child: method.iconUrl != null
@@ -149,11 +149,11 @@ class CheckoutPaymentList extends StatelessWidget {
                       )
                     : fallbackIcon,
               ),
-              title: Text(method.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: Text(method.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+              title: Text(method.name, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
+              subtitle: Text(method.description ?? '', style: TextStyle(color: AppColors.text.withOpacity(0.5), fontSize: 12)),
               trailing: isSelected
                   ? const Icon(Icons.check_circle_rounded, color: AppColors.accentText, size: 22)
-                  : Icon(Icons.circle_outlined, color: Colors.white.withOpacity(0.1), size: 22),
+                  : Icon(Icons.circle_outlined, color: AppColors.text.withOpacity(0.1), size: 22),
               onTap: () {
                 HapticFeedback.selectionClick();
                 onSelect(method);
@@ -170,7 +170,7 @@ BoxDecoration _cardDecoration(bool isSelected) {
   return BoxDecoration(
     color: const Color(0xFF1A1A1A),
     borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-    border: Border.all(color: isSelected ? AppColors.accent : Colors.white.withOpacity(0.05), width: isSelected ? 2 : 1),
+    border: Border.all(color: isSelected ? AppColors.accent : AppColors.text.withOpacity(0.05), width: isSelected ? 2 : 1),
     boxShadow: isSelected ? [BoxShadow(color: AppColors.accent.withOpacity(0.15), blurRadius: 12, spreadRadius: 2)] : null,
   );
 }

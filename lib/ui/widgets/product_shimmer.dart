@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -7,8 +8,8 @@ class ProductShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withOpacity(0.05),
-      highlightColor: Colors.white.withOpacity(0.1),
+      baseColor: AppColors.text.withOpacity(0.05),
+      highlightColor: AppColors.text.withOpacity(0.1),
       child: GridView.builder(
         padding: const EdgeInsets.all(16),
         shrinkWrap: true,
@@ -22,7 +23,7 @@ class ProductShimmer extends StatelessWidget {
         itemCount: 6,
         itemBuilder: (context, index) => Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.text,
             borderRadius: BorderRadius.circular(12),
           ),
         ),

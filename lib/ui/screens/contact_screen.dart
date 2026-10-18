@@ -78,7 +78,7 @@ class ContactScreen extends StatelessWidget {
               Text(
                 l10n.openingHours,
                 style: const TextStyle(
-                  color: Colors.white24,
+                  color: AppColors.border,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                   letterSpacing: 1.5,
@@ -97,7 +97,7 @@ class ContactScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 24),
                 child: Text(
                   l10n.contactUnavailable,
-                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  style: TextStyle(color: AppColors.text.withOpacity(0.5)),
                 ),
               ),
           ],
@@ -127,12 +127,12 @@ class ContactScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.s16),
           Text(
             settings.storeName,
-            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900),
+            style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: AppSpacing.s4),
           Text(
             l10n.officialMobileApp,
-            style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 14),
+            style: TextStyle(color: AppColors.text.withOpacity(0.3), fontSize: 14),
           ),
         ],
       ),
@@ -167,7 +167,7 @@ class ContactScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: AppColors.text.withOpacity(0.05)),
         ),
         child: Row(
           children: [
@@ -187,7 +187,7 @@ class ContactScreen extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.3),
+                      color: AppColors.text.withOpacity(0.3),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
@@ -196,13 +196,13 @@ class ContactScreen extends StatelessWidget {
                   const SizedBox(height: AppSpacing.s4),
                   Text(
                     value,
-                    style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                    style: const TextStyle(color: AppColors.text, fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
             if (onTap != null)
-              const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white12),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.divider),
           ],
         ),
       ),
@@ -219,7 +219,7 @@ class ContactScreen extends StatelessWidget {
         Text(
           l10n.followUs,
           style: const TextStyle(
-            color: Colors.white24,
+            color: AppColors.border,
             fontWeight: FontWeight.bold,
             fontSize: 12,
             letterSpacing: 1.5,
@@ -249,10 +249,10 @@ class ContactScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: AppColors.text.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Colors.white70, size: 24),
+          child: Icon(icon, color: AppColors.textSecondary, size: 24),
         ),
       ),
     );
@@ -274,11 +274,11 @@ class ContactScreen extends StatelessWidget {
               children: [
                 Text(
                   entry.day,
-                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                  style: TextStyle(color: AppColors.text.withOpacity(0.6), fontSize: 13),
                 ),
                 Text(
                   entry.time,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ],
             ),

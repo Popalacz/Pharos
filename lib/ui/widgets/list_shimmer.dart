@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -8,8 +9,8 @@ class ListShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.white.withOpacity(0.05),
-      highlightColor: Colors.white.withOpacity(0.1),
+      baseColor: AppColors.text.withOpacity(0.05),
+      highlightColor: AppColors.text.withOpacity(0.1),
       child: ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -18,7 +19,7 @@ class ListShimmer extends StatelessWidget {
           height: 70,
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.text,
             borderRadius: BorderRadius.circular(12),
           ),
         ),

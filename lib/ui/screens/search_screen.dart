@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -84,9 +85,9 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           children: [
             const SizedBox(height: AppSpacing.s12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(2))),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
             const Spacer(),
-            Text(AppLocalizations.of(context)!.listening, style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 16)),
+            Text(AppLocalizations.of(context)!.listening, style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 16)),
             const SizedBox(height: AppSpacing.s24),
             Stack(
               alignment: Alignment.center,
@@ -96,13 +97,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   height: 120,
                   repeat: true,
                 ),
-                const Icon(Icons.mic, color: Colors.orange, size: 40),
+                const Icon(Icons.mic, color: AppColors.accentText, size: 40),
               ],
             ),
             const Spacer(),
             TextButton(
               onPressed: _stopListening,
-              child: Text(AppLocalizations.of(context)!.cancelButton, style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context)!.cancelButton, style: TextStyle(color: AppColors.border, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 20),
           ],
@@ -130,7 +131,7 @@ class _SearchScreenState extends State<SearchScreen> {
           controller: _controller,
           autofocus: true,
           textInputAction: TextInputAction.search,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.text),
           onChanged: (val) => context.read<SearchProvider>().onQueryChanged(val),
           onSubmitted: (_) => context.read<SearchProvider>().performFullSearch(),
           decoration: InputDecoration(
@@ -138,14 +139,14 @@ class _SearchScreenState extends State<SearchScreen> {
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+            hintStyle: TextStyle(color: AppColors.text.withOpacity(0.3)),
             filled: false,
           ),
         ),
         actions: [
           IconButton(
             tooltip: AppLocalizations.of(context)!.a11yVoiceSearch,
-            icon: const Icon(Icons.mic_none_rounded, color: Colors.orange),
+            icon: const Icon(Icons.mic_none_rounded, color: AppColors.accentText),
             onPressed: _startListening,
           ),
           IconButton(
@@ -216,22 +217,22 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               Text(
                 AppLocalizations.of(context)!.recentSearches,
-                style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
+                style: TextStyle(color: AppColors.border, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
               ),
               TextButton(
                 onPressed: () => searchProvider.clearRecentSearches(),
                 style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                child: Text(AppLocalizations.of(context)!.clearLabel, style: TextStyle(color: Colors.orange, fontSize: 12)),
+                child: Text(AppLocalizations.of(context)!.clearLabel, style: TextStyle(color: AppColors.accentText, fontSize: 12)),
               ),
             ],
           ),
         ),
         ...searchProvider.recentSearches.map((query) => ListTile(
-          leading: const Icon(Icons.history, color: Colors.white24, size: 20),
-          title: Text(query, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          leading: const Icon(Icons.history, color: AppColors.border, size: 20),
+          title: Text(query, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
           trailing: IconButton(
             tooltip: AppLocalizations.of(context)!.a11yClose,
-            icon: const Icon(Icons.close, size: 16, color: Colors.white24),
+            icon: const Icon(Icons.close, size: 16, color: AppColors.border),
             onPressed: () => searchProvider.removeRecentSearch(query),
           ),
           onTap: () {
@@ -248,23 +249,23 @@ class _SearchScreenState extends State<SearchScreen> {
     return ListView(
       children: [
         if (searchProvider.isSuggesting)
-          const LinearProgressIndicator(minHeight: 2, color: Colors.orange, backgroundColor: Colors.transparent),
+          const LinearProgressIndicator(minHeight: 2, color: AppColors.accentText, backgroundColor: Colors.transparent),
         
         Padding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: Text(AppLocalizations.of(context)!.suggestions, style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
+          child: Text(AppLocalizations.of(context)!.suggestions, style: TextStyle(color: AppColors.border, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
         ),
         
         ...searchProvider.suggestions.map((product) => ListTile(
           leading: Container(
             width: 40, height: 40,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white10),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.divider),
             clipBehavior: Clip.antiAlias,
             child: CachedNetworkImage(imageUrl: product.imageUrl, fit: BoxFit.cover),
           ),
-          title: Text(product.name, style: const TextStyle(color: Colors.white, fontSize: 14)),
-          subtitle: Text(product.manufacturerName, style: const TextStyle(color: Colors.white38, fontSize: 12)),
-          trailing: const Icon(Icons.north_west, size: 16, color: Colors.white24),
+          title: Text(product.name, style: const TextStyle(color: AppColors.text, fontSize: 14)),
+          subtitle: Text(product.manufacturerName, style: const TextStyle(color: AppColors.textDisabled, fontSize: 12)),
+          trailing: const Icon(Icons.north_west, size: 16, color: AppColors.border),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product)));
           },
@@ -277,7 +278,7 @@ class _SearchScreenState extends State<SearchScreen> {
               onPressed: () => searchProvider.performFullSearch(),
               icon: const Icon(Icons.search, size: 18),
               label: Text(AppLocalizations.of(context)!.searchFor(searchProvider.query), style: const TextStyle(fontWeight: FontWeight.bold)),
-              style: TextButton.styleFrom(foregroundColor: Colors.orange, alignment: Alignment.centerLeft),
+              style: TextButton.styleFrom(foregroundColor: AppColors.accentText, alignment: Alignment.centerLeft),
             ),
           ),
       ],
@@ -295,13 +296,13 @@ class _SearchScreenState extends State<SearchScreen> {
               'https://assets9.lottiefiles.com/private_files/lf30_cg9qtpre.json',
               height: 180,
               repeat: true,
-              errorBuilder: (context, error, stackTrace) => Icon(icon, size: 80, color: Colors.white.withOpacity(0.05)),
+              errorBuilder: (context, error, stackTrace) => Icon(icon, size: 80, color: AppColors.text.withOpacity(0.05)),
             ),
             const SizedBox(height: AppSpacing.s24),
             Text(
               message.toUpperCase(),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+              style: TextStyle(color: AppColors.text.withOpacity(0.5), fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5),
             ),
           ],
         ),

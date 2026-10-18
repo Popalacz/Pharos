@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -28,12 +29,12 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(l10n.myProfile, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
+        title: Text(l10n.myProfile, style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: AppColors.text)),
         actions: [
           if (userProvider.isLoggedIn)
             IconButton(
               tooltip: AppLocalizations.of(context)!.a11yLogout,
-              icon: const Icon(Icons.logout, color: Colors.white70),
+              icon: const Icon(Icons.logout, color: AppColors.textSecondary),
               onPressed: () => userProvider.signOut(),
             )
         ],
@@ -41,7 +42,7 @@ class ProfileScreen extends StatelessWidget {
       body: userProvider.isLoggedIn
           ? RefreshIndicator(
               onRefresh: () => context.read<OrdersProvider>().fetchOrders(),
-              color: Colors.orange,
+              color: AppColors.accentText,
               backgroundColor: const Color(0xFF1A1A1A),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
@@ -60,17 +61,17 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.account_circle_outlined, size: 100, color: Colors.white.withOpacity(0.05)),
+            Icon(Icons.account_circle_outlined, size: 100, color: AppColors.text.withOpacity(0.05)),
             const SizedBox(height: AppSpacing.s24),
             Text(
               AppLocalizations.of(context)!.profileHeading,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.text, letterSpacing: 1),
             ),
             const SizedBox(height: AppSpacing.s12),
             Text(
               'Zaloguj się, aby śledzić zamówienia i korzystać z pełnej funkcjonalności aplikacji.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5),
+              style: TextStyle(color: AppColors.text.withOpacity(0.4), fontSize: 15, height: 1.5),
             ),
             const SizedBox(height: AppSpacing.s40),
             PharosButton(
@@ -99,24 +100,24 @@ class _LoggedInProfileContent extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: AppColors.text.withOpacity(0.05)),
           ),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 35,
-                backgroundColor: Colors.orange.withOpacity(0.1),
+                backgroundColor: AppColors.accentText.withOpacity(0.1),
                 backgroundImage: user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
-                child: user.photoUrl == null ? const Icon(Icons.person, color: Colors.orange, size: 35) : null,
+                child: user.photoUrl == null ? const Icon(Icons.person, color: AppColors.accentText, size: 35) : null,
               ),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user.displayName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(user.displayName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.text)),
                     const SizedBox(height: 2),
-                    Text(user.email, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
+                    Text(user.email, style: TextStyle(color: AppColors.text.withOpacity(0.4), fontSize: 14)),
                   ],
                 ),
               )
@@ -124,11 +125,11 @@ class _LoggedInProfileContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s40),
-        Text(AppLocalizations.of(context)!.orderHistory, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
+        Text(AppLocalizations.of(context)!.orderHistory, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.accentText, letterSpacing: 1.5)),
         const SizedBox(height: AppSpacing.s16),
         const _OrderHistorySection(),
         const SizedBox(height: AppSpacing.s40),
-        Text(AppLocalizations.of(context)!.accountSettings, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.orange, letterSpacing: 1.5)),
+        Text(AppLocalizations.of(context)!.accountSettings, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.accentText, letterSpacing: 1.5)),
         const SizedBox(height: AppSpacing.s16),
         _ProfileMenuTile(
           icon: Icons.language_outlined,
@@ -206,24 +207,24 @@ class _OrderTile extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Icon(Icons.shopping_bag_outlined, color: Colors.orange, size: 20),
+                  decoration: BoxDecoration(color: AppColors.accentText.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                  child: const Icon(Icons.shopping_bag_outlined, color: AppColors.accentText, size: 20),
                 ),
                 const SizedBox(width: AppSpacing.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(AppLocalizations.of(context)!.orderNumber(order.reference), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                      Text(order.date, style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 12)),
+                      Text(AppLocalizations.of(context)!.orderNumber(order.reference), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
+                      Text(order.date, style: TextStyle(color: AppColors.text.withOpacity(0.3), fontSize: 12)),
                     ],
                   ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
-                    Text(order.status.toUpperCase(), style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text('${order.totalPaid.toStringAsFixed(2)} PLN', style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.text)),
+                    Text(order.status.toUpperCase(), style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 )
               ],
@@ -254,13 +255,13 @@ class _StatusCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isError ? Colors.red.withOpacity(0.1) : Colors.white.withOpacity(0.05)),
+        border: Border.all(color: isError ? AppColors.error.withOpacity(0.1) : AppColors.text.withOpacity(0.05)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: isError ? Colors.red : Colors.white24, size: 32),
+          Icon(icon, color: isError ? AppColors.error : AppColors.border, size: 32),
           const SizedBox(height: AppSpacing.s12),
-          Text(message, style: TextStyle(color: isError ? Colors.red : Colors.white30, fontWeight: FontWeight.w500)),
+          Text(message, style: TextStyle(color: isError ? AppColors.error : AppColors.textDisabled, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -292,10 +293,10 @@ class _ProfileMenuTile extends StatelessWidget {
           onTap: onTap,
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            leading: Icon(icon, color: Colors.orange, size: 24),
-            title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-            subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.4))),
-            trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.white24),
+            leading: Icon(icon, color: AppColors.accentText, size: 24),
+            title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
+            subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.text.withOpacity(0.4))),
+            trailing: const Icon(Icons.chevron_right, size: 20, color: AppColors.border),
           ),
         ),
       ),

@@ -37,7 +37,7 @@ class CheckoutStepIndicator extends StatelessWidget {
         padding: const EdgeInsets.only(top: 17),
         child: Container(
           height: 2,
-          color: active ? AppColors.accent.withOpacity(0.5) : Colors.white.withOpacity(0.12),
+          color: active ? AppColors.accent.withOpacity(0.5) : AppColors.text.withOpacity(0.12),
         ),
       ),
     );
@@ -69,19 +69,19 @@ class CheckoutStepIndicator extends StatelessWidget {
                 color: done ? AppColors.accent : Colors.transparent,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: highlighted ? AppColors.accent : Colors.white.withOpacity(0.24),
+                  color: highlighted ? AppColors.accent : AppColors.text.withOpacity(0.24),
                   width: 2,
                 ),
               ),
               alignment: Alignment.center,
               child: done
-                  ? const Icon(Icons.check_rounded, size: 18, color: Colors.white)
+                  ? const Icon(Icons.check_rounded, size: 18, color: AppColors.text)
                   : Text(
                       '${index + 1}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: current ? AppColors.accentText : Colors.white54,
+                        color: current ? AppColors.accentText : AppColors.textSecondary,
                       ),
                     ),
             ),
@@ -94,7 +94,7 @@ class CheckoutStepIndicator extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: highlighted ? FontWeight.bold : FontWeight.normal,
-                color: highlighted ? Colors.white : Colors.white60,
+                color: highlighted ? AppColors.text : AppColors.textSecondary,
               ),
             ),
           ],

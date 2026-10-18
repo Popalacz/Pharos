@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -49,7 +50,7 @@ class _CartScreenState extends State<CartScreen> {
               padding: EdgeInsets.only(right: 16),
               child: SizedBox(
                 width: 20, height: 20, 
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText)
               ),
             )
         ],
@@ -86,7 +87,7 @@ class _CartScreenState extends State<CartScreen> {
               'https://assets5.lottiefiles.com/packages/lf20_qh5z2fdq.json', 
               height: 200,
               repeat: true,
-              errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_basket_outlined, size: 100, color: Colors.grey),
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_basket_outlined, size: 100, color: AppColors.textMuted),
             ),
             const SizedBox(height: AppSpacing.s24),
             Text(l10n.cartEmpty, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -94,7 +95,7 @@ class _CartScreenState extends State<CartScreen> {
             Text(
               l10n.cartEmptyMessage,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: AppColors.textMuted),
             ),
             const SizedBox(height: AppSpacing.s32),
             PharosButton(
@@ -135,7 +136,7 @@ class _CartScreenState extends State<CartScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, -10))],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, -10))],
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -151,7 +152,7 @@ class _CartScreenState extends State<CartScreen> {
                   Row(
                     children: [
                       Icon(Icons.local_shipping_outlined,
-                          color: progress >= 1.0 ? Colors.green : Colors.orange, size: 20),
+                          color: progress >= 1.0 ? AppColors.success : AppColors.accentText, size: 20),
                       const SizedBox(width: AppSpacing.s8),
                       Expanded(
                         child: Text(
@@ -160,7 +161,7 @@ class _CartScreenState extends State<CartScreen> {
                               : l10n.freeShippingMissing(loc.formatPrice(remaining)),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: progress >= 1.0 ? Colors.green : Colors.white,
+                            color: progress >= 1.0 ? AppColors.success : AppColors.text,
                             fontSize: 13,
                           ),
                         ),
@@ -172,9 +173,9 @@ class _CartScreenState extends State<CartScreen> {
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: progress,
-                      backgroundColor: Colors.white.withOpacity(0.05),
+                      backgroundColor: AppColors.text.withOpacity(0.05),
                       valueColor: AlwaysStoppedAnimation<Color>(
-                          progress >= 1.0 ? Colors.green : Colors.orange),
+                          progress >= 1.0 ? AppColors.success : AppColors.accentText),
                       minHeight: 8,
                     ),
                   ),
@@ -185,7 +186,7 @@ class _CartScreenState extends State<CartScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.subtotal, style: const TextStyle(color: Colors.grey)),
+                Text(l10n.subtotal, style: const TextStyle(color: AppColors.textMuted)),
                 Text(loc.formatPrice(cart.subtotalAmount), style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
@@ -193,15 +194,15 @@ class _CartScreenState extends State<CartScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.shipping, style: const TextStyle(color: Colors.grey)),
+                Text(l10n.shipping, style: const TextStyle(color: AppColors.textMuted)),
                 Text(
                   (showFreeShipping && cart.subtotalAmount >= threshold!) || cart.shippingAmount == 0
                       ? 'GRATIS'
                       : loc.formatPrice(cart.shippingAmount),
                   style: TextStyle(
                     color: (showFreeShipping && cart.subtotalAmount >= threshold!) || cart.shippingAmount == 0
-                        ? Colors.green
-                        : Colors.grey,
+                        ? AppColors.success
+                        : AppColors.textMuted,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -213,7 +214,7 @@ class _CartScreenState extends State<CartScreen> {
               children: [
                 Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text(loc.formatPrice(cart.totalAmount),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.orange)),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.accentText)),
               ],
             ),
             const SizedBox(height: AppSpacing.s24),
@@ -245,14 +246,14 @@ class _CartItemTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: AppColors.text.withOpacity(0.05)),
       ),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: item.product.imageUrl.isEmpty
-                ? Container(width: 80, height: 80, color: Colors.white.withOpacity(0.05))
+                ? Container(width: 80, height: 80, color: AppColors.text.withOpacity(0.05))
                 : CachedNetworkImage(
               imageUrl: item.product.imageUrl,
               width: 80, height: 80, fit: BoxFit.cover,
@@ -263,7 +264,7 @@ class _CartItemTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1),
+                Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text), maxLines: 1),
                 const SizedBox(height: AppSpacing.s4),
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -271,14 +272,14 @@ class _CartItemTile extends StatelessWidget {
                   children: [
                     Text(
                       context.read<LocalizationProvider>().formatPrice(item.product.price), 
-                      style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)
+                      style: const TextStyle(color: AppColors.accentText, fontWeight: FontWeight.bold)
                     ),
                     if (item.product.hasDiscount && item.product.priceOld != null)
                       Text(
                         context.read<LocalizationProvider>().formatPrice(item.product.priceOld!),
                         style: TextStyle(
                           fontSize: 12, 
-                          color: Colors.white.withOpacity(0.3),
+                          color: AppColors.text.withOpacity(0.3),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -293,7 +294,7 @@ class _CartItemTile extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
                     ),
                     _QtyBtn(
                       icon: Icons.add, 
@@ -306,7 +307,7 @@ class _CartItemTile extends StatelessWidget {
           ),
           IconButton(
             tooltip: AppLocalizations.of(context)!.a11yRemove,
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            icon: const Icon(Icons.delete_outline, color: AppColors.error),
             onPressed: () {
               context.read<CartProvider>().removeItem(item.key);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -336,10 +337,10 @@ class _QtyBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: AppColors.text.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Icon(icon, size: 16, color: Colors.white),
+        child: Icon(icon, size: 16, color: AppColors.text),
       ),
     );
   }
@@ -372,7 +373,7 @@ class _VoucherInputState extends State<_VoucherInput> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(error ?? l10n.voucherApplied),
-        backgroundColor: error == null ? Colors.green : Colors.red,
+        backgroundColor: error == null ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -392,7 +393,7 @@ class _VoucherInputState extends State<_VoucherInput> {
               decoration: InputDecoration(
                 hintText: l10n.voucherLabel,
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: AppColors.text.withOpacity(0.05),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
@@ -403,7 +404,7 @@ class _VoucherInputState extends State<_VoucherInput> {
               : IconButton(
                 tooltip: AppLocalizations.of(context)!.a11yApplyVoucher,
                   onPressed: _apply,
-                  icon: const Icon(Icons.check_circle_outline, color: Colors.orange),
+                  icon: const Icon(Icons.check_circle_outline, color: AppColors.accentText),
                 ),
         ],
       ),

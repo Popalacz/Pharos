@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class LocalizationSelector extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: AppColors.text.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -33,7 +34,7 @@ class LocalizationSelector extends StatelessWidget {
             children: [
               if (showLang) _buildLanguagePicker(context, loc),
               if (showLang && showCurr)
-                Container(width: 1, height: 20, color: Colors.white10, margin: const EdgeInsets.symmetric(horizontal: 12)),
+                Container(width: 1, height: 20, color: AppColors.divider, margin: const EdgeInsets.symmetric(horizontal: 12)),
               if (showCurr) _buildCurrencyPicker(context, loc),
             ],
           ),
@@ -47,7 +48,7 @@ class LocalizationSelector extends StatelessWidget {
       onTap: () => _showLanguageDialog(context, loc),
       child: Row(
         children: [
-          const Icon(Icons.language, size: 16, color: Colors.orange),
+          const Icon(Icons.language, size: 16, color: AppColors.accentText),
           const SizedBox(width: AppSpacing.s8),
           Text(
             loc.currentLanguage?.isoCode.toUpperCase() ?? '--',
@@ -63,7 +64,7 @@ class LocalizationSelector extends StatelessWidget {
       onTap: () => _showCurrencyDialog(context, loc),
       child: Row(
         children: [
-          const Icon(Icons.payments_outlined, size: 16, color: Colors.orange),
+          const Icon(Icons.payments_outlined, size: 16, color: AppColors.accentText),
           const SizedBox(width: AppSpacing.s8),
           Text(
             loc.currentCurrency?.isoCode ?? '--',
@@ -88,8 +89,8 @@ class LocalizationSelector extends StatelessWidget {
             itemBuilder: (context, index) {
               final lang = loc.languages[index];
               return ListTile(
-                title: Text(lang.name, style: const TextStyle(color: Colors.white)),
-                trailing: loc.currentLanguage?.id == lang.id ? const Icon(Icons.check, color: Colors.orange) : null,
+                title: Text(lang.name, style: const TextStyle(color: AppColors.text)),
+                trailing: loc.currentLanguage?.id == lang.id ? const Icon(Icons.check, color: AppColors.accentText) : null,
                 onTap: () {
                   loc.setLanguage(lang);
                   Navigator.pop(context);
@@ -116,8 +117,8 @@ class LocalizationSelector extends StatelessWidget {
             itemBuilder: (context, index) {
               final curr = loc.currencies[index];
               return ListTile(
-                title: Text('${curr.name} (${curr.symbol})', style: const TextStyle(color: Colors.white)),
-                trailing: loc.currentCurrency?.id == curr.id ? const Icon(Icons.check, color: Colors.orange) : null,
+                title: Text('${curr.name} (${curr.symbol})', style: const TextStyle(color: AppColors.text)),
+                trailing: loc.currentCurrency?.id == curr.id ? const Icon(Icons.check, color: AppColors.accentText) : null,
                 onTap: () {
                   loc.setCurrency(curr);
                   Navigator.pop(context);

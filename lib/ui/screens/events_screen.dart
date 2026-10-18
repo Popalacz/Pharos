@@ -76,12 +76,12 @@ class _EventsScreenState extends State<EventsScreen> {
 
   Widget _buildLoadingState() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade800,
-      highlightColor: Colors.grey.shade700,
+      baseColor: AppColors.surface,
+      highlightColor: Color.alphaBlend(AppColors.divider, AppColors.surface),
       child: Container(
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.text,
           borderRadius: BorderRadius.circular(20),
         ),
       ),

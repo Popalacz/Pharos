@@ -107,7 +107,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                         height: 280,
                         repeat: false,
                         errorBuilder: (context, error, stackTrace) => 
-                          const Icon(Icons.check_circle_rounded, size: 100, color: Colors.green),
+                          const Icon(Icons.check_circle_rounded, size: 100, color: AppColors.success),
                       ),
                     ],
                   ),
@@ -124,7 +124,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 4,
-                            color: Colors.white,
+                            color: AppColors.text,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.s8),
@@ -142,7 +142,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withOpacity(0.7),
+                            color: AppColors.text.withOpacity(0.7),
                             height: 1.5,
                             fontWeight: FontWeight.w500,
                           ),
@@ -153,7 +153,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.4),
+                            color: AppColors.text.withOpacity(0.4),
                           ),
                         ),
                       ],
@@ -170,10 +170,10 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                       decoration: BoxDecoration(
                         color: const Color(0xFF1A1A1A),
                         borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-                        border: Border.all(color: Colors.white.withOpacity(0.05)),
+                        border: Border.all(color: AppColors.text.withOpacity(0.05)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: AppColors.black.withOpacity(0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -187,13 +187,13 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                               Text(
                                 AppLocalizations.of(context)!.orderValue, 
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.3), 
+                                  color: AppColors.text.withOpacity(0.3), 
                                   fontWeight: FontWeight.w800, 
                                   fontSize: 12, 
                                   letterSpacing: 1.2
                                 )
                               ),
-                              const Icon(Icons.receipt_long_rounded, size: 16, color: Colors.white24),
+                              const Icon(Icons.receipt_long_rounded, size: 16, color: AppColors.border),
                             ],
                           ),
                           const SizedBox(height: AppSpacing.s8),
@@ -215,7 +215,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                                 child: Text(
                                   AppLocalizations.of(context)!.paidBadge,
                                   style: TextStyle(
-                                    color: Colors.green,
+                                    color: AppColors.success,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                   ),
@@ -244,7 +244,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.text,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
                         ),

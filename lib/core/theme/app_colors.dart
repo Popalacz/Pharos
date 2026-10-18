@@ -10,4 +10,19 @@ abstract final class AppColors {
   /// Accent for text and icons (>= 4.5:1 on background and surface). `accent` stays a fill colour.
   static const Color accentText = Color(0xFFF0B07A);
   static const Color black = Color(0xFF000000);
+
+  /// Text on dark surfaces: secondary (white 70%), muted, disabled.
+  static const Color textSecondary = Color(0xB3FFFFFF);
+  static const Color textMuted = Color(0xFF9E9E9E);
+  static const Color textDisabled = Color(0x62FFFFFF);
+
+  /// Outlines and dividers (white 24% and 10%).
+  static const Color border = Color(0x3DFFFFFF);
+  static const Color divider = Color(0x1AFFFFFF);
+
+  /// Status colours, all >= 4.5:1 on background.
+  static const Color success = Color(0xFF4CAF50);
+  static const Color error = Color(0xFFFF5252);
+  static const Color warning = Color(0xFFFFC107);
+  static const Color info = Color(0xFF64B5F6);
 }

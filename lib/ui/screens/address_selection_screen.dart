@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
@@ -20,21 +21,21 @@ class AddressSelectionScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.chooseAddress, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.chooseAddress, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Stack(
         children: [
           userProvider.isLoadingAddresses && addresses.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: Colors.orange))
+            ? const Center(child: CircularProgressIndicator(color: AppColors.accentText))
             : Column(
                 children: [
                   if (userProvider.isLoadingAddresses)
-                    const LinearProgressIndicator(backgroundColor: Colors.transparent, color: Colors.orange, minHeight: 2),
+                    const LinearProgressIndicator(backgroundColor: Colors.transparent, color: AppColors.accentText, minHeight: 2),
                   Expanded(
                     child: addresses.isEmpty
-                      ? Center(child: Text(AppLocalizations.of(context)!.noSavedAddressesDot, style: TextStyle(color: Colors.grey)))
+                      ? Center(child: Text(AppLocalizations.of(context)!.noSavedAddressesDot, style: TextStyle(color: AppColors.textMuted)))
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                           itemCount: addresses.length,
@@ -56,7 +57,7 @@ class AddressSelectionScreen extends StatelessWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: isSelected ? Colors.orange : Colors.white.withOpacity(0.05)),
+                                      border: Border.all(color: isSelected ? AppColors.accentText : AppColors.text.withOpacity(0.05)),
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Row(
@@ -67,15 +68,15 @@ class AddressSelectionScreen extends StatelessWidget {
                                             children: [
                                               Row(
                                                 children: [
-                                                  Text(address.alias.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, fontSize: 12)),
+                                                  Text(address.alias.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accentText, fontSize: 12)),
                                                   const Spacer(),
-                                                  if (isSelected) const Icon(Icons.check_circle, color: Colors.orange, size: 20),
+                                                  if (isSelected) const Icon(Icons.check_circle, color: AppColors.accentText, size: 20),
                                                 ],
                                               ),
                                               const SizedBox(height: AppSpacing.s8),
-                                              Text('${address.firstname} ${address.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
-                                              Text(address.address1, style: TextStyle(color: Colors.white.withOpacity(0.6))),
-                                              Text('${address.postcode} ${address.city}', style: TextStyle(color: Colors.white.withOpacity(0.6))),
+                                              Text('${address.firstname} ${address.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text, fontSize: 16)),
+                                              Text(address.address1, style: TextStyle(color: AppColors.text.withOpacity(0.6))),
+                                              Text('${address.postcode} ${address.city}', style: TextStyle(color: AppColors.text.withOpacity(0.6))),
                                             ],
                                           ),
                                         ),
@@ -110,8 +111,8 @@ class AddressSelectionScreen extends StatelessWidget {
                     }
                   });
                 },
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.text,
                 label: Text(AppLocalizations.of(context)!.addNewAddressButton, style: TextStyle(fontWeight: FontWeight.bold)),
                 icon: const Icon(Icons.add),
               ),

@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:provider/provider.dart';
@@ -43,7 +44,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         elevation: 0,
         title: Text(
           AppLocalizations.of(context)!.categoriesTitle,
-          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: AppColors.text),
         ),
         centerTitle: true,
       ),
@@ -71,14 +72,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 return const Center(
                   child: Text(
                     'Brak kategorii do wyświetlenia.',
-                    style: TextStyle(color: Colors.white30),
+                    style: TextStyle(color: AppColors.textDisabled),
                   ),
                 );
               }
 
               return RefreshIndicator(
                 onRefresh: () async => setState(_loadCategories),
-                color: Colors.orange,
+                color: AppColors.accentText,
                 backgroundColor: const Color(0xFF1A1A1A),
                 child: GridView.builder(
                   padding: const EdgeInsets.all(16),
@@ -109,7 +110,7 @@ class _CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.05),
+      color: AppColors.text.withValues(alpha: 0.05),
       borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -132,8 +133,8 @@ class _CategoryCard extends StatelessWidget {
                 imageUrl: category.imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => ColoredBox(
-                  color: Colors.white.withValues(alpha: 0.04),
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange)),
+                  color: AppColors.text.withValues(alpha: 0.04),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText)),
                 ),
                 errorWidget: (context, url, error) => _buildPlaceholder(),
               )
@@ -145,8 +146,8 @@ class _CategoryCard extends StatelessWidget {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.85),
-                    Colors.black.withValues(alpha: 0.15),
+                    AppColors.black.withValues(alpha: 0.85),
+                    AppColors.black.withValues(alpha: 0.15),
                   ],
                 ),
               ),
@@ -160,7 +161,7 @@ class _CategoryCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.text,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1,
                     fontSize: 13,
@@ -176,9 +177,9 @@ class _CategoryCard extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return ColoredBox(
-      color: Colors.white.withValues(alpha: 0.04),
+      color: AppColors.text.withValues(alpha: 0.04),
       child: Center(
-        child: Icon(Icons.category_outlined, size: 48, color: Colors.white.withValues(alpha: 0.15)),
+        child: Icon(Icons.category_outlined, size: 48, color: AppColors.text.withValues(alpha: 0.15)),
       ),
     );
   }
