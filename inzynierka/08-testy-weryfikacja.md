@@ -1,6 +1,6 @@
 # 08. Testy i weryfikacja
 
-## Zestaw testów (stan 18.10.2026)
+## Zestaw testów (stan 18.10.2026, po E6)
 
 | Plik | Typ | Przypadki | Co sprawdza |
 |------|-----|-----------|-------------|
@@ -12,17 +12,17 @@
 | `integration_test/purchase_flow_test.dart` | integracyjny | 1 | ścieżka od strony głównej do potwierdzenia |
 | moduł: `tests/` (PHPUnit) | jednostkowy | 4 | bramka bearer, źródło `id_customer` |
 
-Razem po stronie aplikacji 25 przypadków według liczenia wzorców `test(` i `testWidgets(` (dokładną liczbę podaje `flutter test`).
+Razem `flutter test` uruchamia 24 przypadki (test integracyjny uruchamia się osobno, na urządzeniu).
 
 ## Wyniki ostatnich przebiegów
 
 - `checkout_widgets_test` i `l10n_arb_test`: 15 z 15 zielonych.
-- Pełny `flutter test`: niezaliczone tylko stare przypadki (`cart_provider_test`, 4 przypadki, oraz `widget_test.dart`, błąd ładowania). Nie są związane ze zmianami E4 i E5.
-- `dart analyze`: brak błędów w plikach checkoutu, 44 uwagi (ostrzeżenia i informacje, głównie stare). Cały projekt: ok. 205 uwag.
+- Pełny `flutter test` po E6: **24 z 24 zielone**. Naprawiono `cart_provider_test` (brak inicjalizacji bindingu przy haptyce w `addItem`) i usunięto szablonowy `widget_test.dart` (licznik z generatora, nie dotyczył aplikacji).
+- `dart analyze` (lib/core, lib/services, lib/ui/sdui, test, integration_test): 0 błędów, 17 ostrzeżeń i informacji, głównie starych (nieużywane importy). Cały projekt: ok. 205 uwag przed E6.
 
 ## Czego nie ma (uczciwie)
 
-- Test integracyjny pełnej ścieżki zakupu (TEST-3) istnieje, ale zależy od sieci i prawdziwego backendu i nie był uruchomiony w CI. Do poprawy w E6.
+- Test integracyjny ścieżki zakupu (TEST-3) zależy od sieci i prawdziwego backendu. W E6 przy błędzie API kończy się niepowodzeniem (wcześniej cicho się zaliczał). **Nie był uruchomiony** (brak urządzenia), a jego teksty (np. `DODAJ DO KOSZYKA`) mogą być nieaktualne po lokalizacji.
 - Test PHPUnit na prawdziwej instalacji PrestaShop (TEST-2).
 - Weryfikacja zdarzeń w Firebase DebugView (E3).
 - Testy na urządzeniu fizycznym i czytnikiem ekranu (TalkBack).

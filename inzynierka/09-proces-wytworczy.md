@@ -15,7 +15,8 @@ Każdy etap to osobna gałąź z `main` i osobny pull request. Na `main` nie tra
 | E4 | Checkout w dwóch wariantach | `feat/app/checkout-variants` | #7 | scalony |
 | E5 | Dostępność i lokalizacja ekranów | `fix/app/a11y-l10n` | #8 | scalony |
 | E5b | Lokalizacja i dostępność checkoutu | `fix/app/a11y-l10n-checkout` | #9 | otwarty |
-| E6 | Testy, porządek, dokumentacja | `chore/app/tests-docs` | - | w toku |
+| docs | Materiały do pracy (ten folder) | `docs/app/inzynierka` | #10 | otwarty |
+| E6 | Testy, porządek, dokumentacja | `chore/app/tests-docs` | #11 | otwarty |
 | E7 | Eksperyment i opis w pracy | poza kodem | - | przed |
 
 ```mermaid

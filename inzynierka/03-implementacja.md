@@ -45,3 +45,10 @@ Interceptor `pharos_api_interceptor.dart` czyści odpowiedzi JSON (obsługa śmi
 ## Dla pracy
 
 Wstaw: tabelę stosu, tabelę endpointów (skrócona), diagram sekwencji z pliku 02. Zrzuty ekranów: plik 11 (sekcje A i B).
+
+## Porządki techniczne (E6)
+
+- **Logowanie:** `lib/core/utils/app_logger.dart` (`AppLog.d`, `.w`, `.e`) zastąpiło 44 wywołania `debugPrint`. Wypisuje tylko w trybie debug, przez `dart:developer`. `debugPrint` w wydaniu nadal drukuje, więc wcześniej logi trafiały do wersji produkcyjnej.
+- **Klient HTTP:** `createHttpClient` w `lib/core/network/http_client.dart` to jedno miejsce konfiguracji (limity 15 s). Korzystają z niego `ApiService`, `GooglePlacesService` i `NotificationService`. Klient Google Places celowo nie ma interceptora Pharos, żeby nie wysyłać tokenu sesji do innej domeny.
+- **Puste katalogi** `lib/app`, `models`, `navigation`, `providers` usunięte (nie były w git).
+- **Dokumentacja:** README zgodne z kodem (provider zamiast BLoC, token sesji zamiast JWT, bez warstwy `domain/`, moduł jako osobne repozytorium).

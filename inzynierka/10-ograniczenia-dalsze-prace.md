@@ -9,7 +9,7 @@
 5. **Walidatory `FormValidation`** zwracają teksty po polsku (współdzielone przez 6 ekranów). Dotyczy też `formatMissingFields` poza checkoutem i części błędów w `home_screen.dart`.
 6. **Tłumaczenia angielskie robocze**, bez korekty native speakera.
 7. **Moduł nietestowany na prawdziwej instalacji PrestaShop** (TEST-2). Test integracyjny aplikacji zależy od sieci.
-8. **Stare testy niezaliczone**: `cart_provider_test` (4 przypadki), `widget_test.dart`.
+8. ~~Stare testy niezaliczone~~ naprawione w E6 (24 z 24 zielone). Test integracyjny nadal nieuruchomiony.
 9. **Brak CI** w repozytorium aplikacji.
 10. **Ryzyka wdrożeniowe E1** opisane w pliku 06 (Authorization w Apache, status płatności, rotacja kluczy).
 
@@ -22,7 +22,7 @@
 | Lokalizacja | Walidatory i pozostałe komunikaty do ARB, korekta tłumaczeń |
 | Testy | CI (analiza i testy na każdym PR), testy na urządzeniu i z TalkBack |
 | Bezpieczeństwo | Rotacja kluczy, test PHPUnit na instalacji, zabezpieczenie koszyka gościa |
-| Architektura | Uporządkować puste katalogi (`app`, `models`, `navigation`, `providers`), jeden klient HTTP (KOD-4) |
+| Architektura | Zrobione w E6: logger `AppLog`, fabryka klienta HTTP, usunięte puste katalogi. Do zrobienia: podział `checkout_screen.dart` (874 linie) |
 | Funkcje | Motyw jasny, tryb offline, publikacja w sklepach z aplikacjami |
 
 ## Wnioski do rozwinięcia w pracy
