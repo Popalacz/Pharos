@@ -1,6 +1,6 @@
 // Generuje PNG widżetów checkoutu z prawdziwego kodu (motyw ciemny Pharos).
 // Uruchom: flutter test tool/render_screens_test.dart
-// Wynik: inzynierka/images/render-*.png. To nie test aplikacji i nie jest częścią `flutter test`.
+// Wynik: inzynierka/images/<PREFIX>-*.png (PREFIX z env RENDER_PREFIX, domyślnie render). To nie test aplikacji i nie jest częścią `flutter test`.
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -11,9 +11,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/core/theme/app_theme.dart';
 import 'package:pharos/ui/screens/checkout/checkout_guest_form.dart';
+import 'package:pharos/data/models/checkout_models.dart';
+import 'package:pharos/ui/screens/checkout/checkout_option_cards.dart';
 import 'package:pharos/ui/screens/checkout/checkout_step_indicator.dart';
+import 'package:pharos/ui/widgets/pharos_button.dart';
 
 const _out = 'inzynierka/images';
+final _prefix = Platform.environment['RENDER_PREFIX'] ?? 'render';
 const _fonts = '/home/patka/flutter/bin/cache/artifacts/material_fonts';
 
 Future<void> _loadFonts() async {
@@ -57,7 +61,7 @@ Future<void> _shot(WidgetTester tester, String name, Widget child, {double w = 3
     final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 2);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    await File('$_out/$name.png').writeAsBytes(bytes!.buffer.asUint8List());
+    await File('$_out/${name.replaceFirst('render', _prefix)}.png').writeAsBytes(bytes!.buffer.asUint8List());
   });
 }
 
@@ -76,6 +80,29 @@ Widget _form(GuestFormController c, GlobalKey<FormState> k) => CheckoutGuestForm
       onAddressChanged: (_) {},
     );
 
+Widget _buttons() => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final st in PharosButtonStyle.values) ...[
+          PharosButton(label: st.name.toUpperCase(), style: st, onPressed: () {}),
+          const SizedBox(height: 12),
+        ],
+        const PharosButton(label: 'WYŁĄCZONY'),
+      ],
+    );
+
+Widget _payments(PaymentMethodModel? sel) => CheckoutPaymentList(
+      payments: [
+        PaymentMethodModel(id: 'blik', name: 'BLIK'),
+        PaymentMethodModel(id: 'card', name: 'Karta płatnicza'),
+        PaymentMethodModel(id: 'transfer', name: 'Przelew online'),
+      ],
+      hasError: false,
+      selected: sel,
+      onSelect: (_) {},
+      onRetry: () {},
+    );
+
 void main() {
   setUpAll(_loadFonts);
 
@@ -90,5 +117,8 @@ void main() {
     final key = GlobalKey<FormState>();
     final bad = GuestFormController()..email.text = 'nie-email';
     await _shot(tester, 'render-formularz-bledy', _form(bad, key), h: 540, after: () => key.currentState!.validate());
+    await _shot(tester, 'render-przyciski', _buttons(), h: 560);
+    await _shot(tester, 'render-platnosc-wybrana',
+        _payments(PaymentMethodModel(id: 'card', name: 'Karta płatnicza')), h: 300);
   });
 }

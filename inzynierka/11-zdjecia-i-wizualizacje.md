@@ -11,18 +11,22 @@
 
 Diagramy Mermaid są w plikach 02, 06, 07 i 09 (eksport opisany w README).
 
-## Renderowane z kodu (gotowe, w `images/`)
+## Renderowane z kodu: przed i po (gotowe, w `images/`)
 
-Generuje je `tool/render_screens_test.dart` (`flutter test tool/render_screens_test.dart`): prawdziwe widżety checkoutu w motywie Pharos, czcionka Roboto. To **render widżetów, nie zrzuty z urządzenia**, więc opisz je w pracy jako "widok komponentu". Nie zastępują zrzutów A..C poniżej.
+Generuje je `tool/render_screens_test.dart`: prawdziwe widżety checkoutu i przyciski w motywie Pharos, czcionka Roboto, rozdzielczość 2x. Zmienna `RENDER_PREFIX` ustawia przedrostek pliku. Pliki `przed-*` powstały z `main` sprzed PR #12 i #13, pliki `po-*` z kodu z tymi PR. To **render widżetów, nie zrzuty z urządzenia**, więc w pracy opisz je jako "widok komponentu". Nie zastępują zrzutów A..C poniżej. Skrypt używa kodu aplikacji, więc po zmianach w UI uruchom go ponownie.
 
-| Plik | Co pokazuje |
-|------|-------------|
-| `render-pasek-krok1.png`, `-krok2.png`, `-krok3.png` | pasek kroków: bieżący, ukończony (ptaszek), do wykonania, z podpisami |
-| `render-formularz-pusty.png` | formularz gościa, siedem pól z ikonami |
-| `render-formularz-bledy.png` | błędy walidacji tekstem pod polami. Widać, że w kolumnach komunikaty są ucięte (`Imię jest wymaga…`), poprawka w osobnym PR |
+| Plik (przed i po) | Co pokazuje | Co się zmieniło |
+|-------------------|-------------|-----------------|
+| `przed-przyciski.png`, `po-przyciski.png` | pięć stylów `PharosButton` i stan wyłączony | tło głównego przycisku z pomarańczowego `#FF9800` na akcent `#80410E` (biały tekst ok. 8:1, wcześniej ok. 2:1), obrys i tekst `outline` na `accentText` |
+| `przed-pasek-krok1.png` do `-krok3.png`, `po-pasek-krok1.png` do `-krok3.png` | pasek kroków (bieżący, ukończony z ptaszkiem, do wykonania) | bez zmian wizualnych, pokazuje stany z podpisami |
+| `przed-formularz-pusty.png`, `po-formularz-pusty.png` | formularz gościa | ujednolicone kolory z tokenów |
+| `przed-formularz-bledy.png`, `po-formularz-bledy.png` | błędy walidacji pod polami | przed: komunikaty w kolumnach ucięte (`Imię jest wymaga…`), po: pełny tekst (`errorMaxLines: 3`), jeden kolor błędu `#FF5252` |
+| `przed-platnosc-wybrana.png`, `po-platnosc-wybrana.png` | lista metod płatności z wybraną kartą | akcent z tokenów |
 
-![Pasek kroku 2](images/render-pasek-krok2.png)
-![Formularz z błędami](images/render-formularz-bledy.png)
+![Przyciski przed](images/przed-przyciski.png) ![Przyciski po](images/po-przyciski.png)
+![Błędy przed](images/przed-formularz-bledy.png) ![Błędy po](images/po-formularz-bledy.png)
+
+**Znalezisko z renderu (do opisania jako ograniczenie):** biały tekst na przycisku `danger` (`#FF5252`) ma kontrast ok. 3:1, poniżej progu 4,5:1 dla zwykłego tekstu. Do poprawy (ciemniejsze tło przycisku, np. `#C62828`).
 
 ## Zrzuty do wykonania (nie istnieją jeszcze)
 
