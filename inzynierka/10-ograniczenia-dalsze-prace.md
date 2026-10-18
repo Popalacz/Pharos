@@ -5,7 +5,7 @@
 1. **Eksperyment A/B nie został przeprowadzony.** Hipotezy i narzędzia są gotowe, brak danych.
 2. **Przełącznik wariantu bez Remote Config.** Wariant ustawia się w kodzie (domyślnie A).
 3. **Audyt statyczny.** Liczby pochodzą z kodu, nie z użycia. Zrzuty z emulatora i test z czytnikiem ekranu nie zostały wykonane.
-4. **Kolory poza tokenami (UI-6).** `Colors.*` w `lib/ui`: 524 przed, 529 po E5. PR #13 zamienia 467 użyć na `AppColors` (zostaje 22 `Colors.transparent`), po scaleniu licznik wynosi 22. Do poprawy: przycisk `danger` (biały tekst na `#FF5252`, ok. 3:1).
+4. **Kolory poza tokenami (UI-6).** `Colors.*` w `lib/ui`: 524 przed, 529 po E5. PR #13 zamienia 467 użyć na `AppColors` (zostaje 22 `Colors.transparent`), po scaleniu licznik wynosi 22. Przycisk `danger` poprawiony: tło `AppColors.errorFill` (`#C62828`), biały tekst ok. 5,6:1 (wcześniej `#FF5252`, ok. 3:1).
 5. **Walidatory `FormValidation`** zwracają teksty po polsku (współdzielone przez 6 ekranów). Dotyczy też `formatMissingFields` poza checkoutem i części błędów w `home_screen.dart`.
 6. **Tłumaczenia angielskie robocze**, bez korekty native speakera.
 7. **Moduł nietestowany na prawdziwej instalacji PrestaShop** (TEST-2). Test integracyjny aplikacji zależy od sieci.

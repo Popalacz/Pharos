@@ -26,7 +26,7 @@ Generuje je `tool/render_screens_test.dart`: prawdziwe widżety checkoutu i przy
 ![Przyciski przed](images/przed-przyciski.png) ![Przyciski po](images/po-przyciski.png)
 ![Błędy przed](images/przed-formularz-bledy.png) ![Błędy po](images/po-formularz-bledy.png)
 
-**Znalezisko z renderu (do opisania jako ograniczenie):** biały tekst na przycisku `danger` (`#FF5252`) ma kontrast ok. 3:1, poniżej progu 4,5:1 dla zwykłego tekstu. Do poprawy (ciemniejsze tło przycisku, np. `#C62828`).
+**Znalezisko z renderu (do opisania jako ograniczenie):** biały tekst na przycisku `danger` (`#FF5252`) ma kontrast ok. 3:1, poniżej progu 4,5:1 dla zwykłego tekstu. Poprawione: tło przycisku `AppColors.errorFill` (`#C62828`), ok. 5,6:1.
 
 ## Zrzuty do wykonania (nie istnieją jeszcze)
 
@@ -103,7 +103,7 @@ Rendery prawdziwego `CheckoutScreen` na danych mock, 390x844 pt przy 2x, kod PR 
 | `images/ekran-checkout-stepped-2-bledy.png` | Wariant B, baner braków |
 
 Obserwacje UX z renderów:
-- Podpowiedź „Kod pocz…” jest ucięta w połówkowym polu. Do poprawy: krótsza etykieta lub etykieta nad polem.
+- Etykieta „Kod pocz…” była ucięta w połówkowym polu. Poprawione: pole kodu ma szerokość 3/5 wiersza, miasto 2/5, etykieta „Kod pocztowy” mieści się w całości (obrazy w tej sekcji pokazują stan po poprawce).
 - Komunikaty pod polami w połówkowych kolumnach zawijają się do 2 linii, bez ucięcia (efekt `errorMaxLines: 3` z PR #12). Bez tej poprawki były ucinane.
 - Baner braków i komunikaty pod polami powtarzają tę samą informację, co jest akceptowalne, ale warto sprawdzić w teście z użytkownikami.
 - Przyklejony przycisk na dole zasłania początek następnej sekcji, przy przewijaniu to normalne.

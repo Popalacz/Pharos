@@ -155,6 +155,7 @@ class CheckoutGuestForm extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
+                    flex: 3,
                     child: _GuestField(
                       controller: controller.postcode,
                       label: l10n.guestPostcodeLabel,
@@ -167,6 +168,7 @@ class CheckoutGuestForm extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.s12),
                   Expanded(
+                    flex: 2,
                     child: _GuestField(
                       controller: controller.city,
                       label: l10n.guestCityLabel,

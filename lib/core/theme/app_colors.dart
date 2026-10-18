@@ -23,6 +23,9 @@ abstract final class AppColors {
   /// Status colours, all >= 4.5:1 on background.
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Color(0xFFFF5252);
+
+  /// Fill for destructive buttons (white text >= 4.5:1). Use `error` for text, icons and borders.
+  static const Color errorFill = Color(0xFFC62828);
   static const Color warning = Color(0xFFFFC107);
   static const Color info = Color(0xFF64B5F6);
 }

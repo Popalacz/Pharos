@@ -122,7 +122,7 @@ class PharosButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: wrappedOnPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.error,
+            backgroundColor: AppColors.errorFill,
             foregroundColor: AppColors.text,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
