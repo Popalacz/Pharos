@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -45,14 +46,14 @@ void main() async {
     await Firebase.initializeApp();
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
     if (!GoogleConfig.hasServerClientId) {
-      debugPrint(
+      AppLog.w(
         'Google Sign-In: brak GOOGLE_SERVER_CLIENT_ID. '
         'Dodaj SHA-1 w Firebase, pobierz google-services.json '
         'i uruchom z --dart-define=GOOGLE_SERVER_CLIENT_ID=...',
       );
     }
   } catch (e) {
-    debugPrint('Firebase Init Error: $e');
+    AppLog.e('Firebase Init Error: $e');
   }
 
   final apiService = ApiService();
@@ -227,7 +228,7 @@ class _UpdateCheckWrapperState extends State<UpdateCheckWrapper> {
         return;
       }
     } catch (e) {
-      debugPrint('Update check error: $e');
+      AppLog.e('Update check error: $e');
     }
 
     setState(() => _isChecking = false);

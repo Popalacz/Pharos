@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,7 +73,7 @@ class WishlistProvider extends ChangeNotifier {
     
     // Tutaj można by dodać pętlę toggle dla każdego produktu z _wishlistProducts, 
     // który nie jest jeszcze na serwerze (Premium Sync).
-    debugPrint('WISHLIST: Guest data synced with user ${_userProvider!.user!.id}');
+    AppLog.d('WISHLIST: Guest data synced with user ${_userProvider!.user!.id}');
   }
 
   Future<void> fetchWishlist() async {
@@ -87,7 +88,7 @@ class WishlistProvider extends ChangeNotifier {
     final result = await _repository.getWishlist(_userProvider!.user!.id);
     
     result.fold(
-      (failure) => debugPrint('Wishlist Fetch Error: $failure'),
+      (failure) => AppLog.e('Wishlist Fetch Error: $failure'),
       (products) {
         _wishlistProducts = products;
         _wishlistIds.clear();

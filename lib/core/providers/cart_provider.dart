@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:pharos/core/services/analytics_service.dart';
@@ -171,7 +172,7 @@ class CartProvider extends ChangeNotifier {
 
     final isSuccessful = result.fold(
       (failure) {
-        debugPrint('CART SYNC FAILURE: $failure');
+        AppLog.e('CART SYNC FAILURE: $failure');
         return false;
       },
       (data) {

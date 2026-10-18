@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class DeepLinkService {
   }
 
   void _handleDeepLink(Uri uri, BuildContext context) async {
-    debugPrint('Deep Link received: $uri');
+    AppLog.d('Deep Link received: $uri');
 
     if (uri.host == 'payment' || uri.pathSegments.contains('payment')) {
       await handlePaymentReturn(uri: uri);
@@ -44,7 +45,7 @@ class DeepLinkService {
         final result = await repository.getProductDetails(productId);
         
         result.fold(
-          (failure) => debugPrint('Deep Link Error: $failure'),
+          (failure) => AppLog.e('Deep Link Error: $failure'),
           (ProductModel product) {
             navigatorKey.currentState?.push(
               MaterialPageRoute(builder: (_) => ProductDetailsScreen(product: product)),
@@ -56,10 +57,10 @@ class DeepLinkService {
   }
 
   Future<void> handlePaymentReturn({required Uri uri}) async {
-    debugPrint('Payment deep link: $uri');
+    AppLog.d('Payment deep link: $uri');
     final status = uri.queryParameters['status'] ?? 'unknown';
     final orderReference = uri.queryParameters['order'] ?? '';
-    debugPrint('BLIK payment status=$status order=$orderReference');
+    AppLog.d('BLIK payment status=$status order=$orderReference');
   }
 
   void dispose() {

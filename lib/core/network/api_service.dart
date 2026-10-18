@@ -1,5 +1,7 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:pharos/core/network/http_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import '../api/api_config.dart';
@@ -34,19 +36,17 @@ class ApiService {
   static dynamic decodeJson(String source) => jsonDecode(source);
 
   ApiService() {
-    dio = Dio(BaseOptions(
+    dio = createHttpClient(
       baseUrl: ApiConfig.originUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
       headers: {
         'Accept': 'application/json',
         'X-Pharos-Platform': 'mobile-flutter',
       },
-    ));
+    );
 
     if (kDebugMode) {
-      debugPrint('Pharos API origin: ${ApiConfig.originUrl}');
-      debugPrint('Pharos API webservice: ${ApiConfig.baseUrl}');
+      AppLog.d('Pharos API origin: ${ApiConfig.originUrl}');
+      AppLog.d('Pharos API webservice: ${ApiConfig.baseUrl}');
     }
 
     _apiInterceptor = PharosApiInterceptor();

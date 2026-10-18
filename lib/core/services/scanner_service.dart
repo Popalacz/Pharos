@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/data/repositories/product_repository.dart';
 import 'package:pharos/ui/screens/product_details_screen.dart';
@@ -12,7 +13,7 @@ class ScannerService {
     final result = await ProductRepository(apiService: apiService, useMockData: true).getProducts();
     
     result.fold(
-      (failure) => debugPrint('Scanner Search Failure: $failure'),
+      (failure) => AppLog.e('Scanner Search Failure: $failure'),
       (products) {
         if (products.isNotEmpty) {
           if (context.mounted) {

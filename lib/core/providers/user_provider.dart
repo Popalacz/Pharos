@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -128,7 +129,7 @@ class UserProvider extends ChangeNotifier {
           (failure) async {
             // Jeśli API PrestaShop nie odpowiada, logujemy lokalnie jako fallback
             // ale informujemy o błędzie synchronizacji jeśli to istotne
-            debugPrint('PrestaShop Google Login Error: ${failure.message}');
+            AppLog.e('PrestaShop Google Login Error: ${failure.message}');
             _user = UserModel(
               id: 0, 
               email: googleUser.email, 
@@ -147,7 +148,7 @@ class UserProvider extends ChangeNotifier {
         _authError = 'Logowanie Google zostało przerwane lub wystąpił błąd konfiguracji.';
       }
     } catch (e) {
-      debugPrint('Google Sign-In Exception: $e');
+      AppLog.e('Google Sign-In Exception: $e');
       _authError = 'Wystąpił nieoczekiwany błąd podczas logowania przez Google.';
     }
 
@@ -171,7 +172,7 @@ class UserProvider extends ChangeNotifier {
     final result = await _addressRepository.getAddresses(_user!.id);
     
     result.fold(
-      (failure) => debugPrint('Error fetching addresses: $failure'),
+      (failure) => AppLog.e('Error fetching addresses: $failure'),
       (addresses) {
         _addresses = addresses;
       },
@@ -281,7 +282,7 @@ class UserProvider extends ChangeNotifier {
         items: ['Zamówienie z aplikacji mobilnej'],
       );
     } catch (e) {
-      debugPrint('Logistics Automation Error: $e');
+      AppLog.e('Logistics Automation Error: $e');
     }
   }
 
@@ -300,7 +301,7 @@ class UserProvider extends ChangeNotifier {
         ),
       );
     } catch (e) {
-      debugPrint('Biometric Error: $e');
+      AppLog.e('Biometric Error: $e');
       return false;
     }
   }
@@ -317,7 +318,7 @@ class UserProvider extends ChangeNotifier {
         );
       }
     } catch (e) {
-      debugPrint('Error syncing FCM token: $e');
+      AppLog.e('Error syncing FCM token: $e');
     }
   }
 }

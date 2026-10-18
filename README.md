@@ -1,82 +1,57 @@
-# Pharos Project - Headless E-commerce Solution
+# Pharos
 
-Pharos is a premium, high-performance headless e-commerce ecosystem integrating **Flutter** with **PrestaShop 8/9**. It is designed for maximum stability, scalability, and conversion.
+Aplikacja mobilna Flutter dla sklepu PrestaShop (headless commerce), rozwijana jako praca inżynierska. Backend to moduł `pharosapi` w osobnym repozytorium (`Popalacz/Pharos-Api`). Katalog `prestashop_module/` w tym repozytorium jest ignorowany przez git i służy tylko jako lokalna kopia robocza.
 
-## 🚀 Key Features
+## Funkcje
 
-*   **Headless Commerce:** PrestaShop acts as the powerful backend engine, while Flutter provides a smooth 60+ FPS frontend experience.
-*   **Server-Driven UI (SDUI):** Dynamic home screen layouts manageable via the PrestaShop admin panel without requiring app updates.
-*   **Guest Checkout:** Seamless shopping experience without mandatory registration, significantly increasing conversion rates.
-*   **Automatic Registration:** Optional one-click account creation during the guest checkout process.
-*   **Omnichannel Integration:** Real-time inventory, pricing, and unified order history.
-*   **Google Ecosystem:** 
-    *   **Google Calendar API:** Automated logistics events for new orders.
-    *   **Firebase FCM:** Push notifications for order status and marketing.
-    *   **Google Pay:** Integrated fast payments.
-*   **Multilingual & Multicurrency:** Full support for global markets with automatic price conversion.
+* **Server-Driven UI:** układ ekranu głównego pochodzi z JSON-a z modułu, z lokalnym zapasowym układem.
+* **Zakup jako gość** z opcjonalnym założeniem konta po zakupie.
+* **Checkout w dwóch wariantach** (A: jedna strona, B: kroki Adres, Dostawa, Płatność) do eksperymentu A/B.
+* **Analityka lejka** (Firebase Analytics): `view_cart`, `begin_checkout`, `checkout_step_complete`, `checkout_validation_error`, `purchase`, `account_created_after_purchase`, każde z parametrem `checkout_variant`.
+* **Logowanie** e-mailem i przez Google, powiadomienia FCM, lista życzeń, opinie, skaner kodów.
+* **Lokalizacja** en i pl (gen-l10n, pliki ARB w `lib/l10n/`).
+* **System designu:** tokeny kolorów i odstępów w `lib/core/theme/`, kontrast zgodny z WCAG AA dla tekstu.
 
-## 🛠 Tech Stack
+## Stos technologiczny
 
-### Frontend (Flutter)
-*   **Architecture:** Clean Architecture (Data, Domain, Presentation).
-*   **State Management:** Flutter BLoC / Provider.
-*   **Networking:** Dio with custom interceptors for API security and logging.
-*   **Models:** Type-safe data handling with `freezed` and `json_serializable`.
-*   **UI Components:** Shimmer effects for loading states, responsive layouts with `LayoutBuilder`.
+* Flutter i Dart, stan: `provider` (`ChangeNotifier`), bez BLoC.
+* Sieć: `dio` z jedną fabryką klienta (`lib/core/network/http_client.dart`) i interceptorem Pharos.
+* Modele: `freezed` i `json_serializable`. Błędy: `Either` z `fpdart`.
+* Logowanie: `AppLog` (`lib/core/utils/app_logger.dart`), w wydaniu wyłączone.
+* Backend: moduł PHP `pharosapi`. Uwierzytelnianie klienta tokenem sesji (`Authorization: Bearer`), klucz API i token nie są w kodzie aplikacji.
 
-### Backend (PrestaShop)
-*   **Module:** `pharosapi` - Custom PHP module extending PrestaShop Webservice.
-*   **Standards:** PSR-12, PrestaShop 8/9 core compatibility.
-*   **Security:** Secure API Key authentication and JWT session handling.
-
-## 📦 Project Structure
+## Struktura
 
 ```text
-Pharos/
-├── lib/
-│   ├── core/          # API config, network, providers, services
-│   ├── data/          # Models, repositories, DTOs
-│   ├── domain/        # Entities, business logic
-│   └── ui/            # Screens, widgets, themes
-├── test/              # Unit and widget tests
-├── assets/            # Mock data, images, fonts
-├── prestashop_module/ # Custom 'pharosapi' module for PrestaShop
-└── README.md          # Project documentation
+lib/
+├── core/      # konfiguracja API, sieć, providery, serwisy, motyw, narzędzia
+├── data/      # modele i repozytoria
+├── l10n/      # tłumaczenia (ARB)
+├── services/  # integracja z Google Calendar
+└── ui/        # ekrany, widżety, sekcje SDUI
+test/          # testy jednostkowe i widżetowe
+integration_test/  # test ścieżki zakupu (wymaga urządzenia i backendu)
+inzynierka/    # materiały do pracy dyplomowej
 ```
 
-## 🧪 Testing
+## Uruchomienie
 
-The project includes unit tests for core business logic:
-*   **Cart Tests:** Validation of real-time synchronization, server response handling, and item management in `test/unit/cart_provider_test.dart`.
-*   **Repository Tests:** API endpoint verification and data mapping in `test/unit/cart_repository_test.dart`.
+1. `flutter pub get`
+2. Skonfiguruj adres sklepu i klucz w `lib/core/api/api_config.dart` oraz `GOOGLE_SERVER_CLIENT_ID` przez `--dart-define` (dodaj SHA-1 w Firebase).
+3. `flutter run`
 
-Run tests using:
+Moduł `pharosapi` w wersji 1.0.2 lub nowszej musi być wdrożony **przed** aplikacją, bo aplikacja zakłada uwierzytelnianie tokenem po stronie serwera.
+
+## Testy
+
 ```bash
-flutter test
+flutter test                 # jednostkowe i widżetowe
+flutter test integration_test # wymaga urządzenia i działającego backendu
+dart analyze lib test
 ```
 
-## ⚙️ Configuration
+Test ścieżki zakupu wymaga sieci i prawdziwych danych sklepu. Przy błędzie połączenia kończy się niepowodzeniem, a nie cichym zaliczeniem.
 
-### PrestaShop Setup
-1. Install the `pharosapi` module located in the `prestashop_module/` directory.
-2. Configure your API Key in the PrestaShop Webservice settings.
-3. Enable the `pharosapi` endpoints in the module configuration.
+## Dokumentacja
 
-### Flutter Setup
-1. Update `lib/core/api/api_config.dart` with your PrestaShop `baseUrl` and `apiKey`.
-2. Run `flutter pub get` to install dependencies.
-3. Use `flutter run` to launch the application.
-
-## 🛡 Stability Policy
-Pharos implements a **Zero-Crash Policy**:
-*   Defensive JSON parsing with custom converters.
-*   Functional error handling (Result/Either pattern).
-*   Mandatory fallback mechanisms for network failures and SDUI corruption.
-*   Haptic feedback and micro-animations for an intuitive "Native Feel".
-
----
-*Developed with Passion by Patrycja*
-
-## Moduł PrestaShop
-
-Katalog `prestashop_module/pharosapi` jest osobnym repozytorium git (własny `.git`) i nie jest śledzony przez repozytorium aplikacji (wpis w `.gitignore`). Historia zmian modułu żyje w jego repozytorium. Katalog `prestashop_module/_extracted/pharosapi` to rozjechana kopia modułu (pliki kontrolerów się różnią), nieużywana przez aplikację.
+`PHAROS_ARCHITECTURE_GUIDE.md`, `PHAROS_PRESTASHOP_INTEGRATION.md`, `PHAROS_BACKOFFICE_CONFIG.md`, `PHAROS_MODULE_GUIDELINES.md`, `PHAROS_SALES_SETUP.md`, `PHAROS_TEST_CHECKLIST.md`.

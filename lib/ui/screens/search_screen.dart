@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       await _speech.initialize();
     } catch (e) {
-      debugPrint('Speech init error: $e');
+      AppLog.e('Speech init error: $e');
     }
   }
 

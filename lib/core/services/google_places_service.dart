@@ -1,8 +1,9 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:pharos/core/network/http_client.dart';
 
 class GooglePlacesService {
-  final Dio _dio = Dio();
+  final Dio _dio = createHttpClient();
   final String _apiKey;
 
   GooglePlacesService(this._apiKey);
@@ -27,7 +28,7 @@ class GooglePlacesService {
       }
       return [];
     } catch (e) {
-      debugPrint('Places API Error: $e');
+      AppLog.e('Places API Error: $e');
       return [];
     }
   }
@@ -49,7 +50,7 @@ class GooglePlacesService {
       }
       return null;
     } catch (e) {
-      debugPrint('Place Details Error: $e');
+      AppLog.e('Place Details Error: $e');
       return null;
     }
   }

@@ -1,3 +1,4 @@
+import 'package:pharos/core/utils/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/data/models/category_model.dart';
@@ -13,7 +14,7 @@ List<ProductModel> _parseProductItems(List items) {
       products.add(ProductModel.fromJson(Map<String, dynamic>.from(item)));
     } catch (error, stackTrace) {
       if (kDebugMode) {
-        debugPrint('ProductGridSection: skip invalid product item: $error\n$stackTrace');
+        AppLog.e('ProductGridSection: skip invalid product item: $error\n$stackTrace');
       }
     }
   }
