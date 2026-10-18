@@ -157,7 +157,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
     }
 
     final missingLabels = FormValidation.collectMissingLabels({
-      'treść opinii': FormValidation.commentField(_commentController.text),
+      AppLocalizations.of(context)!.reviewCommentLabel.toLowerCase(): FormValidation.commentField(_commentController.text),
     });
     if (missingLabels.isNotEmpty) {
       showValidationSnackBar(context, FormValidation.formatMissingFields(missingLabels));

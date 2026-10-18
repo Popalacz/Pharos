@@ -316,5 +316,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "validationRequired": "{field} jest wymagane",
+  "validationEmailInvalid": "Wprowadź poprawny adres e-mail",
+  "validationMinChars": "{count, plural, one{{field} musi mieć co najmniej {count} znak} few{{field} musi mieć co najmniej {count} znaki} many{{field} musi mieć co najmniej {count} znaków} other{{field} musi mieć co najmniej {count} znaków}}",
+  "validationInvalidChars": "{field} zawiera niedozwolone znaki",
+  "validationTooShort": "{field} jest za krótkie",
+  "validationPostcodeFormat": "{field} musi być w formacie 00-000",
+  "validationPhoneFormat": "{field} ma nieprawidłowy format",
+  "validationPhoneDigits": "{field} musi zawierać co najmniej 9 cyfr",
+  "addressAliasLabel": "Nazwa adresu",
+  "reviewCommentLabel": "Treść opinii"
 }

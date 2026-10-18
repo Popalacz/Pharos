@@ -123,9 +123,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _handleSave() async {
     final missingLabels = FormValidation.collectMissingLabels({
-      'imię': FormValidation.nameField(_firstnameController.text, AppLocalizations.of(context)!.firstName),
-      'nazwisko': FormValidation.nameField(_lastnameController.text, AppLocalizations.of(context)!.lastName),
-      'adres e-mail': FormValidation.emailField(_emailController.text),
+      AppLocalizations.of(context)!.firstName.toLowerCase(): FormValidation.nameField(_firstnameController.text, AppLocalizations.of(context)!.firstName),
+      AppLocalizations.of(context)!.lastName.toLowerCase(): FormValidation.nameField(_lastnameController.text, AppLocalizations.of(context)!.lastName),
+      AppLocalizations.of(context)!.guestEmailLabel.toLowerCase(): FormValidation.emailField(_emailController.text),
     });
 
     if (missingLabels.isNotEmpty) {

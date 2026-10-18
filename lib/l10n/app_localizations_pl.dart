@@ -747,4 +747,56 @@ class AppLocalizationsPl extends AppLocalizations {
   String stepSemanticsLabel(int index, int total, String label, String state) {
     return 'Krok $index z $total: $label, $state';
   }
+
+  @override
+  String validationRequired(String field) {
+    return '$field jest wymagane';
+  }
+
+  @override
+  String get validationEmailInvalid => 'Wprowadź poprawny adres e-mail';
+
+  @override
+  String validationMinChars(String field, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$field musi mieć co najmniej $count znaków',
+      many: '$field musi mieć co najmniej $count znaków',
+      few: '$field musi mieć co najmniej $count znaki',
+      one: '$field musi mieć co najmniej $count znak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String validationInvalidChars(String field) {
+    return '$field zawiera niedozwolone znaki';
+  }
+
+  @override
+  String validationTooShort(String field) {
+    return '$field jest za krótkie';
+  }
+
+  @override
+  String validationPostcodeFormat(String field) {
+    return '$field musi być w formacie 00-000';
+  }
+
+  @override
+  String validationPhoneFormat(String field) {
+    return '$field ma nieprawidłowy format';
+  }
+
+  @override
+  String validationPhoneDigits(String field) {
+    return '$field musi zawierać co najmniej 9 cyfr';
+  }
+
+  @override
+  String get addressAliasLabel => 'Nazwa adresu';
+
+  @override
+  String get reviewCommentLabel => 'Treść opinii';
 }

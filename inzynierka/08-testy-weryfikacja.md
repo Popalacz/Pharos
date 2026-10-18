@@ -8,11 +8,12 @@
 | `test/unit/cart_repository_test.dart` | jednostkowy | 2 | endpointy i mapowanie danych |
 | `test/unit/analytics_service_test.dart` | jednostkowy | 2 | zdarzenia lejka z parametrem wariantu |
 | `test/unit/l10n_arb_test.dart` | jednostkowy | 4 | zgodność kluczy i placeholderów en i pl |
+| `test/unit/form_validation_test.dart` | jednostkowy | 4 | komunikaty walidacji po polsku i angielsku, liczba mnoga „znak/znaki/znaków” |
 | `test/widget/checkout_widgets_test.dart` | widżetowy | 11 | pasek kroków, formularz gościa, podsumowanie |
 | `integration_test/purchase_flow_test.dart` | integracyjny | 1 | ścieżka od strony głównej do potwierdzenia |
 | moduł: `tests/` (PHPUnit) | jednostkowy | 4 | bramka bearer, źródło `id_customer` |
 
-Razem `flutter test` uruchamia 24 przypadki (test integracyjny uruchamia się osobno, na urządzeniu).
+Razem `flutter test` uruchamia 28 przypadków (test integracyjny uruchamia się osobno, na urządzeniu).
 
 ## Wyniki ostatnich przebiegów
 

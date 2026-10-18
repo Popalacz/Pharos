@@ -37,6 +37,7 @@ import 'package:version/version.dart' as v;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:pharos/core/config/google_config.dart';
+import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 
 void main() async {
@@ -176,6 +177,10 @@ class PharosApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
+          builder: (context, child) {
+            FormValidation.l10n = AppLocalizations.of(context);
+            return child ?? const SizedBox.shrink();
+          },
           home: const UpdateCheckWrapper(child: MainNavigation()),
         );
       },

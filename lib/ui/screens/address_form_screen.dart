@@ -55,13 +55,13 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
 
   void _saveForm() async {
     final missingLabels = FormValidation.collectMissingLabels({
-      'nazwa adresu': FormValidation.requiredField(_aliasController.text, 'Nazwa adresu'),
-      'imię': FormValidation.nameField(_firstnameController.text, AppLocalizations.of(context)!.firstName),
-      'nazwisko': FormValidation.nameField(_lastnameController.text, AppLocalizations.of(context)!.lastName),
-      'ulica i numer': FormValidation.addressField(_address1Controller.text),
-      'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
-      'miasto': FormValidation.cityField(_cityController.text),
-      'numer telefonu': FormValidation.phoneField(_phoneController.text),
+      AppLocalizations.of(context)!.addressAliasLabel.toLowerCase(): FormValidation.requiredField(_aliasController.text, AppLocalizations.of(context)!.addressAliasLabel),
+      AppLocalizations.of(context)!.firstName.toLowerCase(): FormValidation.nameField(_firstnameController.text, AppLocalizations.of(context)!.firstName),
+      AppLocalizations.of(context)!.lastName.toLowerCase(): FormValidation.nameField(_lastnameController.text, AppLocalizations.of(context)!.lastName),
+      AppLocalizations.of(context)!.guestStreetLabel.toLowerCase(): FormValidation.addressField(_address1Controller.text),
+      AppLocalizations.of(context)!.guestPostcodeLabel.toLowerCase(): FormValidation.postcodeField(_postcodeController.text),
+      AppLocalizations.of(context)!.guestCityLabel.toLowerCase(): FormValidation.cityField(_cityController.text),
+      AppLocalizations.of(context)!.guestPhoneLabel.toLowerCase(): FormValidation.phoneField(_phoneController.text),
     });
 
     if (missingLabels.isNotEmpty) {
@@ -135,7 +135,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
           child: Column(
             children: [
               _buildField(_aliasController, 'Nazwa adresu (np. Dom, Praca)', Icons.label_outline,
-                validator: (value) => FormValidation.requiredField(value, 'Nazwa adresu')),
+                validator: (value) => FormValidation.requiredField(value, AppLocalizations.of(context)!.addressAliasLabel)),
               const SizedBox(height: AppSpacing.s16),
               Row(
                 children: [

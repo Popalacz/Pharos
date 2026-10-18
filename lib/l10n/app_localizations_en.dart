@@ -747,4 +747,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String stepSemanticsLabel(int index, int total, String label, String state) {
     return 'Step $index of $total: $label, $state';
   }
+
+  @override
+  String validationRequired(String field) {
+    return '$field is required';
+  }
+
+  @override
+  String get validationEmailInvalid => 'Enter a valid e-mail address';
+
+  @override
+  String validationMinChars(String field, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$field must have at least $count characters',
+      one: '$field must have at least $count character',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String validationInvalidChars(String field) {
+    return '$field contains invalid characters';
+  }
+
+  @override
+  String validationTooShort(String field) {
+    return '$field is too short';
+  }
+
+  @override
+  String validationPostcodeFormat(String field) {
+    return '$field must be in the format 00-000';
+  }
+
+  @override
+  String validationPhoneFormat(String field) {
+    return '$field has an invalid format';
+  }
+
+  @override
+  String validationPhoneDigits(String field) {
+    return '$field must contain at least 9 digits';
+  }
+
+  @override
+  String get addressAliasLabel => 'Address name';
+
+  @override
+  String get reviewCommentLabel => 'Review text';
 }

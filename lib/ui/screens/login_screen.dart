@@ -280,8 +280,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   void _handleLogin() async {
     final missingLabels = FormValidation.collectMissingLabels({
-      'adres e-mail': FormValidation.emailField(_loginEmailController.text),
-      'hasło': FormValidation.passwordField(_loginPasswordController.text),
+      AppLocalizations.of(context)!.guestEmailLabel.toLowerCase(): FormValidation.emailField(_loginEmailController.text),
+      AppLocalizations.of(context)!.password.toLowerCase(): FormValidation.passwordField(_loginPasswordController.text),
     });
 
     if (missingLabels.isNotEmpty) {
@@ -313,10 +313,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   void _handleRegister() async {
     final missingLabels = FormValidation.collectMissingLabels({
-      'imię': FormValidation.nameField(_regFirstnameController.text, AppLocalizations.of(context)!.firstName),
-      'nazwisko': FormValidation.nameField(_regLastnameController.text, AppLocalizations.of(context)!.lastName),
-      'adres e-mail': FormValidation.emailField(_regEmailController.text),
-      'hasło': FormValidation.passwordField(_regPasswordController.text),
+      AppLocalizations.of(context)!.firstName.toLowerCase(): FormValidation.nameField(_regFirstnameController.text, AppLocalizations.of(context)!.firstName),
+      AppLocalizations.of(context)!.lastName.toLowerCase(): FormValidation.nameField(_regLastnameController.text, AppLocalizations.of(context)!.lastName),
+      AppLocalizations.of(context)!.guestEmailLabel.toLowerCase(): FormValidation.emailField(_regEmailController.text),
+      AppLocalizations.of(context)!.password.toLowerCase(): FormValidation.passwordField(_regPasswordController.text),
     });
 
     if (missingLabels.isNotEmpty) {

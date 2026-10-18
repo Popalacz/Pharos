@@ -316,5 +316,22 @@
         "type": "String"
       }
     }
-  }
+  },
+  "validationRequired": "{field} is required",
+  "@validationRequired": {"placeholders": {"field": {"type": "String"}}},
+  "validationEmailInvalid": "Enter a valid e-mail address",
+  "validationMinChars": "{count, plural, one{{field} must have at least {count} character} other{{field} must have at least {count} characters}}",
+  "@validationMinChars": {"placeholders": {"field": {"type": "String"}, "count": {"type": "int"}}},
+  "validationInvalidChars": "{field} contains invalid characters",
+  "@validationInvalidChars": {"placeholders": {"field": {"type": "String"}}},
+  "validationTooShort": "{field} is too short",
+  "@validationTooShort": {"placeholders": {"field": {"type": "String"}}},
+  "validationPostcodeFormat": "{field} must be in the format 00-000",
+  "@validationPostcodeFormat": {"placeholders": {"field": {"type": "String"}}},
+  "validationPhoneFormat": "{field} has an invalid format",
+  "@validationPhoneFormat": {"placeholders": {"field": {"type": "String"}}},
+  "validationPhoneDigits": "{field} must contain at least 9 digits",
+  "@validationPhoneDigits": {"placeholders": {"field": {"type": "String"}}},
+  "addressAliasLabel": "Address name",
+  "reviewCommentLabel": "Review text"
 }

@@ -1507,6 +1507,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Step {index} of {total}: {label}, {state}'**
   String stepSemanticsLabel(int index, int total, String label, String state);
+
+  /// No description provided for @validationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String validationRequired(String field);
+
+  /// No description provided for @validationEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid e-mail address'**
+  String get validationEmailInvalid;
+
+  /// No description provided for @validationMinChars.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{field} must have at least {count} character} other{{field} must have at least {count} characters}}'**
+  String validationMinChars(String field, int count);
+
+  /// No description provided for @validationInvalidChars.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} contains invalid characters'**
+  String validationInvalidChars(String field);
+
+  /// No description provided for @validationTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is too short'**
+  String validationTooShort(String field);
+
+  /// No description provided for @validationPostcodeFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be in the format 00-000'**
+  String validationPostcodeFormat(String field);
+
+  /// No description provided for @validationPhoneFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} has an invalid format'**
+  String validationPhoneFormat(String field);
+
+  /// No description provided for @validationPhoneDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must contain at least 9 digits'**
+  String validationPhoneDigits(String field);
+
+  /// No description provided for @addressAliasLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address name'**
+  String get addressAliasLabel;
+
+  /// No description provided for @reviewCommentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Review text'**
+  String get reviewCommentLabel;
 }
 
 class _AppLocalizationsDelegate
