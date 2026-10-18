@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="190" viewBox="0 0 760 190" font-family="Arial,sans-serif">
+<rect width="760" height="190" fill="#ffffff"/>
+<text x="20" y="28" font-size="16" font-weight="bold">Paleta Pharos (motyw ciemny)</text>
+<rect x="20" y="45" width="130" height="80" rx="8" fill="#1B1B1B" stroke="#999"/>
+<text x="20" y="145" font-size="13" font-weight="bold">background</text><text x="20" y="162" font-size="12">#1B1B1B</text><text x="20" y="178" font-size="11" fill="#444">tło</text>
+<rect x="165" y="45" width="130" height="80" rx="8" fill="#484C50" stroke="#999"/>
+<text x="165" y="145" font-size="13" font-weight="bold">surface</text><text x="165" y="162" font-size="12">#484C50</text><text x="165" y="178" font-size="11" fill="#444">powierzchnia</text>
+<rect x="310" y="45" width="130" height="80" rx="8" fill="#80410E" stroke="#999"/>
+<text x="310" y="145" font-size="13" font-weight="bold">accent</text><text x="310" y="162" font-size="12">#80410E</text><text x="310" y="178" font-size="11" fill="#444">akcent (wypełnienie)</text>
+<rect x="455" y="45" width="130" height="80" rx="8" fill="#F0B07A" stroke="#999"/>
+<text x="455" y="145" font-size="13" font-weight="bold">accentText</text><text x="455" y="162" font-size="12">#F0B07A</text><text x="455" y="178" font-size="11" fill="#444">akcent (tekst, ikony)</text>
+<rect x="600" y="45" width="130" height="80" rx="8" fill="#FFFFFF" stroke="#999"/>
+<text x="600" y="145" font-size="13" font-weight="bold">text</text><text x="600" y="162" font-size="12">#FFFFFF</text><text x="600" y="178" font-size="11" fill="#444">tekst</text>
+</svg>

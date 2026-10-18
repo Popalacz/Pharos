@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="560" viewBox="0 0 300 560" font-family="Arial,sans-serif">
+<rect x="2" y="2" width="296" height="556" rx="22" fill="#1B1B1B" stroke="#666" stroke-width="2"/>
+<text x="20" y="40" font-size="16" font-weight="bold" fill="#fff">Zamówienie</text>
+<circle cx="30" cy="72" r="10" fill="none" stroke="#F0B07A" stroke-width="2"/><text x="30" y="76" font-size="11" fill="#F0B07A" text-anchor="middle">1</text><text x="46" y="76" font-size="12" fill="#F0B07A">Konto</text>
+<circle cx="118" cy="72" r="10" fill="none" stroke="#777" stroke-width="2"/><text x="118" y="76" font-size="11" fill="#777" text-anchor="middle">2</text><text x="134" y="76" font-size="12" fill="#777">Dostawa</text>
+<circle cx="206" cy="72" r="10" fill="none" stroke="#777" stroke-width="2"/><text x="206" y="76" font-size="11" fill="#777" text-anchor="middle">3</text><text x="222" y="76" font-size="12" fill="#777">Płatność</text>
+<text x="20" y="110" font-size="11" fill="#ccc">E-mail</text><rect x="20" y="115" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="137" font-size="12" fill="#fff">anna@example.com</text>
+<text x="20" y="170" font-size="11" fill="#ccc">Hasło</text><rect x="20" y="175" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="197" font-size="12" fill="#fff">••••••••</text>
+<text x="20" y="230" font-size="11" fill="#ccc">Powtórz hasło</text><rect x="20" y="235" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="257" font-size="12" fill="#fff">••••••••</text>
+<text x="20" y="290" font-size="11" fill="#ccc">Telefon</text><rect x="20" y="295" width="260" height="34" rx="6" fill="#484C50"/><text x="30" y="317" font-size="12" fill="#fff">600 100 200</text>
+<rect x="20" y="480" width="260" height="52" rx="26" fill="#80410E"/><text x="150" y="512" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">Załóż konto i dalej</text>
+<text x="150" y="470" font-size="11" fill="#F0B07A" text-anchor="middle">Dane adresowe dopiero w kroku 2</text></svg>
