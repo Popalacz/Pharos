@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pharos/core/api/api_config.dart';
 import 'package:pharos/core/theme/app_colors.dart';
+import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:pharos/core/providers/checkout_notifier.dart';
 import 'package:pharos/core/network/api_service.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
@@ -17,24 +16,33 @@ import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
 import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/core/services/google_places_service.dart';
+import 'package:pharos/ui/screens/checkout/checkout_chrome.dart';
+import 'package:pharos/ui/screens/checkout/checkout_guest_form.dart';
+import 'package:pharos/ui/screens/checkout/checkout_option_cards.dart';
+import 'package:pharos/ui/screens/checkout/checkout_step_indicator.dart';
+import 'package:pharos/ui/screens/checkout/checkout_summary.dart';
+import 'package:pharos/ui/screens/checkout/checkout_variant.dart';
 import 'package:pharos/ui/screens/login_screen.dart';
 import 'package:pharos/ui/screens/order_confirmation_screen.dart';
 import 'package:pharos/ui/screens/address_selection_screen.dart';
-import 'package:pharos/ui/widgets/list_shimmer.dart';
-import 'package:pharos/ui/widgets/network_error_state.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/core/utils/validation_feedback.dart';
-import 'package:pharos/l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({super.key});
+  const CheckoutScreen({super.key, this.variant});
+
+  /// Wymusza wariant (testy, eksperyment); domyślnie wariant z analityki.
+  final CheckoutVariant? variant;
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  static const _stepLabels = ['Adres', 'Dostawa', 'Płatność'];
+  static const _lastStep = 2;
+
   CarrierModel? _selectedCarrier;
   PaymentMethodModel? _selectedPayment;
   AddressModel? _selectedAddress;
@@ -44,14 +52,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final Set<String> _completedSteps = {};
   String? _validationMessage;
   final _guestFormKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
+  late final CheckoutVariant _variant;
+  int _step = 0;
 
-  final _emailController = TextEditingController();
-  final _firstnameController = TextEditingController();
-  final _lastnameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _postcodeController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _guest = GuestFormController();
   final _voucherController = TextEditingController();
 
   List<CarrierModel>? _carriers;
@@ -67,9 +72,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   List<dynamic> _addressSuggestions = [];
   Timer? _placesDebounce;
 
+  bool get _isStepped => _variant == CheckoutVariant.stepped;
+
   @override
   void initState() {
     super.initState();
+    _variant = widget.variant ?? CheckoutVariant.current;
+    AnalyticsService.checkoutVariant = _variant.code;
     _checkoutRepository = CheckoutRepository(
       apiService: context.read<ApiService>(),
       useMockData: ApiConfig.forceMockData,
@@ -96,17 +105,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _firstnameController.dispose();
-    _lastnameController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _postcodeController.dispose();
-    _phoneController.dispose();
+    _guest.dispose();
     _voucherController.dispose();
+    _scrollController.dispose();
     _placesDebounce?.cancel();
     super.dispose();
   }
+
 
   Future<void> _refreshCheckoutData() async {
     setState(() {
@@ -165,128 +170,165 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   double get _resolvedShippingCost => _shippingCost ?? _selectedCarrier?.price ?? 0.0;
-
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final loc = context.watch<LocalizationProvider>();
     final userProvider = context.watch<UserProvider>();
+    final isGuest = !userProvider.isLoggedIn;
 
     // Final total calculation: Trust the server combined total if available,
     // otherwise sum products total with current shipping cost.
     final double total = cart.totalAmount;
     final String formattedTotal = loc.formatPrice(total);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Finalizacja zamówienia', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: PharosLayout.spaceLg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: PharosLayout.spaceMd),
-                  _buildStepProgress(),
-                  const SizedBox(height: PharosLayout.spaceLg),
-                  if (_validationMessage != null) ...[
-                    _buildValidationBanner(_validationMessage!),
-                    const SizedBox(height: AppSpacing.s16),
-                  ],
-                  _buildSectionHeader('Adres dostawy', Icons.location_on_rounded),
-                  _buildAnimatedAddressSection(userProvider),
-                  const SizedBox(height: AppSpacing.s32),
-                  if (_carriersError || (_carriers?.isNotEmpty ?? false)) ...[
-                    _buildSectionHeader('Metoda dostawy', Icons.local_shipping_rounded),
-                    _buildCarrierList(loc),
-                    const SizedBox(height: AppSpacing.s32),
-                  ],
-                  if (_paymentsError || (_payments?.isNotEmpty ?? false)) ...[
-                    _buildSectionHeader('Płatność', Icons.account_balance_wallet_rounded),
-                    _buildPaymentList(),
-                    const SizedBox(height: AppSpacing.s32),
-                  ],
-                  _buildVoucherSection(),
-                  const SizedBox(height: AppSpacing.s24),
-                  _buildOrderSummary(cart, _resolvedShippingCost, total, loc),
-                  const SizedBox(height: 140),
-                ],
-              ),
-            ),
+    return PopScope(
+      canPop: !(_isStepped && _step > 0),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goBack();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Finalizacja zamówienia', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            tooltip: 'Wstecz',
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white),
+            onPressed: _handleBackButton,
           ),
-          if (_isProcessing)
-            Container(
-              color: Colors.black.withOpacity(0.85),
-              child: const Center(
+        ),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: PharosLayout.spaceLg),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircularProgressIndicator(color: AppColors.accentText),
-                    SizedBox(height: AppSpacing.s24),
-                    Text('Przetwarzanie zamówienia...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                    SizedBox(height: AppSpacing.s8),
-                    Text('Proszę nie zamykać aplikacji', style: TextStyle(color: Colors.white60, fontSize: 14)),
+                    const SizedBox(height: PharosLayout.spaceMd),
+                    _buildStepProgress(isGuest),
+                    const SizedBox(height: PharosLayout.spaceLg),
+                    if (_validationMessage != null) ...[
+                      CheckoutValidationBanner(message: _validationMessage!),
+                      const SizedBox(height: AppSpacing.s16),
+                    ],
+                    if (_showSection(0)) ..._addressSection(userProvider),
+                    if (_showSection(1)) ..._shippingSection(loc),
+                    if (_showSection(2)) ..._paymentSection(cart, loc, total),
+                    const SizedBox(height: 140),
                   ],
                 ),
               ),
             ),
-        ],
+            if (_isProcessing)
+              Container(
+                color: Colors.black.withOpacity(0.85),
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: AppColors.accentText),
+                      SizedBox(height: AppSpacing.s24),
+                      Text('Przetwarzanie zamówienia...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                      SizedBox(height: AppSpacing.s8),
+                      Text('Proszę nie zamykać aplikacji', style: TextStyle(color: Colors.white60, fontSize: 14)),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+        bottomNavigationBar: _buildBottomBar(cart, total, formattedTotal),
       ),
-      bottomNavigationBar: _buildBottomBar(cart, total, formattedTotal),
     );
   }
 
-  Widget _buildValidationBanner(String message) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-        border: Border.all(color: Colors.red.withOpacity(0.35)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.info_outline, color: Colors.redAccent, size: 20),
-          const SizedBox(width: AppSpacing.s12),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
-            ),
+  /// Wariant A pokazuje wszystkie sekcje, wariant B tylko bieżący krok.
+  bool _showSection(int step) => !_isStepped || _step == step;
+
+  List<Widget> _addressSection(UserProvider userProvider) {
+    return [
+      const CheckoutSectionHeader(title: 'Adres dostawy', icon: Icons.location_on_rounded),
+      _buildAnimatedAddressSection(userProvider),
+      const SizedBox(height: AppSpacing.s32),
+    ];
+  }
+
+  List<Widget> _shippingSection(LocalizationProvider loc) {
+    final noOptions = _carriers != null && _carriers!.isEmpty && !_carriersError;
+    if (!_isStepped && !_carriersError && !(_carriers?.isNotEmpty ?? false)) return const [];
+    return [
+      const CheckoutSectionHeader(title: 'Metoda dostawy', icon: Icons.local_shipping_rounded),
+      if (noOptions)
+        const Text('Brak metod dostawy dla tego koszyka.', style: TextStyle(color: Colors.white70, fontSize: 14))
+      else
+        CheckoutCarrierList(
+          carriers: _carriers,
+          hasError: _carriersError,
+          selected: _selectedCarrier,
+          selectedShippingCost: _resolvedShippingCost,
+          loc: loc,
+          onSelect: (carrier) {
+            setState(() => _selectedCarrier = carrier);
+            _updateShippingCost();
+          },
+          onRetry: _refreshCheckoutData,
+        ),
+      const SizedBox(height: AppSpacing.s32),
+    ];
+  }
+
+  List<Widget> _paymentSection(CartProvider cart, LocalizationProvider loc, double total) {
+    final noOptions = _payments != null && _payments!.isEmpty && !_paymentsError;
+    return [
+      if (!noOptions || _isStepped) ...[
+        const CheckoutSectionHeader(title: 'Płatność', icon: Icons.account_balance_wallet_rounded),
+        if (noOptions)
+          const Text('Brak metod płatności dla tego koszyka.', style: TextStyle(color: Colors.white70, fontSize: 14))
+        else
+          CheckoutPaymentList(
+            payments: _payments,
+            hasError: _paymentsError,
+            selected: _selectedPayment,
+            onSelect: (method) => setState(() => _selectedPayment = method),
+            onRetry: _refreshCheckoutData,
           ),
-        ],
+        const SizedBox(height: AppSpacing.s32),
+      ],
+      CheckoutVoucherSection(
+        controller: _voucherController,
+        isApplying: _isApplyingVoucher,
+        onApply: _applyVoucher,
       ),
-    );
+      const SizedBox(height: AppSpacing.s24),
+      CheckoutOrderSummary(
+        subtotal: cart.subtotalAmount,
+        shipping: _resolvedShippingCost,
+        total: total,
+        loc: loc,
+      ),
+    ];
   }
 
-  Widget _buildStepProgress() {
-    bool hasAddress = context.read<UserProvider>().isLoggedIn ? _selectedAddress != null : _emailController.text.isNotEmpty;
-    bool hasCarrier = _selectedCarrier != null;
-    bool hasPayment = _selectedPayment != null;
+  bool get _hasCarrierOptions => _carriers != null && _carriers!.isNotEmpty;
+  bool get _hasPaymentOptions => _payments != null && _payments!.isNotEmpty;
+
+  Widget _buildStepProgress(bool isGuest) {
+    final hasAddress = isGuest ? _guest.isValid : _selectedAddress != null;
+    final hasCarrier = _selectedCarrier != null;
+    final hasPayment = _selectedPayment != null;
     _trackStepCompletion(hasAddress, hasCarrier, hasPayment);
 
-    return Row(
-      children: [
-        _stepIcon(Icons.person_pin_circle_rounded, hasAddress),
-        _stepLine(hasAddress),
-        _stepIcon(Icons.local_shipping_rounded, hasCarrier),
-        _stepLine(hasCarrier),
-        _stepIcon(Icons.payment_rounded, hasPayment),
-      ],
+    return CheckoutStepIndicator(
+      labels: _stepLabels,
+      completed: [hasAddress, hasCarrier, hasPayment],
+      currentIndex: _isStepped ? _step : null,
     );
   }
 
@@ -303,45 +345,52 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  Widget _stepIcon(IconData icon, bool active) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: active ? AppColors.accent : Colors.white.withOpacity(0.05),
-        shape: BoxShape.circle,
-        boxShadow: active ? [BoxShadow(color: AppColors.accent.withOpacity(0.3), blurRadius: 10, spreadRadius: 1)] : null,
-      ),
-      child: Icon(icon, size: 18, color: active ? Colors.white : Colors.white24),
-    );
+  void _handleBackButton() {
+    if (_isStepped && _step > 0) {
+      _goBack();
+    } else {
+      Navigator.pop(context);
+    }
   }
 
-  Widget _stepLine(bool active) {
-    return Expanded(
-      child: Container(
-        height: 2,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        color: active ? AppColors.accent.withOpacity(0.5) : Colors.white.withOpacity(0.05),
-      ),
-    );
+  void _goBack() {
+    setState(() {
+      _validationMessage = null;
+      _step--;
+    });
+    _scrollToTop();
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 16, color: AppColors.accentText),
-          ),
-          const SizedBox(width: AppSpacing.s12),
-          Text(title.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2)),
-          const SizedBox(width: AppSpacing.s12),
-          Expanded(child: Divider(color: Colors.white.withOpacity(0.05), thickness: 1)),
-        ],
-      ),
-    );
+  void _scrollToTop() {
+    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+  }
+
+  List<String> _stepMissingLabels(int step, bool isGuest) {
+    switch (step) {
+      case 0:
+        return isGuest ? _guest.missingLabels() : (_selectedAddress == null ? ['adresu dostawy'] : []);
+      case 1:
+        return _hasCarrierOptions && _selectedCarrier == null ? ['metody dostawy'] : [];
+      default:
+        return [];
+    }
+  }
+
+  void _goToNextStep(bool isGuest) {
+    final missing = _stepMissingLabels(_step, isGuest);
+    if (missing.isNotEmpty) {
+      if (isGuest && _step == 0) _guestFormKey.currentState?.validate();
+      final message = FormValidation.formatMissingFields(missing);
+      _analytics.logCheckoutValidationError('missing_fields', fieldCount: missing.length);
+      setState(() => _validationMessage = message);
+      showValidationSnackBar(context, message);
+      return;
+    }
+    setState(() {
+      _validationMessage = null;
+      _step++;
+    });
+    _scrollToTop();
   }
 
   Widget _buildAnimatedAddressSection(UserProvider userProvider) {
@@ -367,6 +416,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         const SizedBox(height: AppSpacing.s16),
         _buildGuestForm(),
       ],
+    );
+  }
+
+  Widget _buildGuestForm() {
+    return CheckoutGuestForm(
+      formKey: _guestFormKey,
+      controller: _guest,
+      createAccount: _createAccount,
+      onCreateAccountChanged: (value) => setState(() => _createAccount = value),
+      onFieldChanged: () => setState(() {}),
+      onAddressChanged: _onAddressChanged,
+      addressSuggestions: _addressSuggestions.isNotEmpty ? _buildAddressSuggestions() : null,
     );
   }
 
@@ -461,6 +522,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
+
   Widget _buildAddressCard(BuildContext context, UserProvider userProvider) {
     final bool hasAddresses = userProvider.addresses.isNotEmpty;
 
@@ -518,54 +580,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildVoucherSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('KOD RABATOWY', style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
-          const SizedBox(height: AppSpacing.s12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _voucherController,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Wpisz kod...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.2)),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.1),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s12),
-              _isApplyingVoucher
-                  ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentText))
-                  : ElevatedButton(
-                      onPressed: _applyVoucher,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent.withOpacity(0.2),
-                        foregroundColor: AppColors.accentText,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text('UŻYJ', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _applyVoucher() async {
     final code = _voucherController.text.trim();
@@ -597,141 +611,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  Widget _buildGuestForm() {
-    return Form(
-      key: _guestFormKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: Container(
-        key: const ValueKey('guest_form'),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Column(
-          children: [
-            _guestField(
-              _emailController,
-              'Adres e-mail',
-              Icons.alternate_email_rounded,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) => FormValidation.emailField(value),
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            Row(
-              children: [
-                Expanded(
-                  child: _guestField(
-                    _firstnameController,
-                    'Imię',
-                    Icons.person_outline_rounded,
-                    validator: (value) => FormValidation.nameField(value, 'Imię'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                Expanded(
-                  child: _guestField(
-                    _lastnameController,
-                    'Nazwisko',
-                    Icons.person_outline_rounded,
-                    validator: (value) => FormValidation.nameField(value, 'Nazwisko'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            _guestField(
-              _addressController,
-              'Ulica i numer',
-              Icons.home_work_outlined,
-              onChanged: _onAddressChanged,
-              validator: (value) => FormValidation.addressField(value),
-            ),
-            if (_addressSuggestions.isNotEmpty) _buildAddressSuggestions(),
-            const SizedBox(height: AppSpacing.s12),
-            Row(
-              children: [
-                Expanded(
-                  child: _guestField(
-                    _postcodeController,
-                    'Kod pocztowy',
-                    Icons.map_outlined,
-                    validator: (value) => FormValidation.postcodeField(value),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                Expanded(
-                  child: _guestField(
-                    _cityController,
-                    'Miasto',
-                    Icons.location_city_rounded,
-                    validator: (value) => FormValidation.cityField(value),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s12),
-            _guestField(
-              _phoneController,
-              'Numer telefonu',
-              Icons.phone_android_rounded,
-              keyboardType: TextInputType.phone,
-              validator: (value) => FormValidation.phoneField(value),
-            ),
-            const SizedBox(height: AppSpacing.s16),
-            Theme(
-              data: ThemeData(unselectedWidgetColor: Colors.white24),
-              child: CheckboxListTile(
-                value: _createAccount,
-                onChanged: (val) => setState(() => _createAccount = val ?? false),
-                title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-                activeColor: AppColors.accentText,
-                dense: true,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _guestField(
-    TextEditingController controller,
-    String hint,
-    IconData icon, {
-    TextInputType? keyboardType,
-    ValueChanged<String>? onChanged,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
-      cursorColor: AppColors.accentText,
-      onChanged: (value) {
-        onChanged?.call(value);
-        setState(() {});
-      },
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.2)),
-        prefixIcon: Icon(icon, size: 18, color: AppColors.accent.withOpacity(0.5)),
-        filled: true,
-        fillColor: Colors.black.withOpacity(0.1),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: BorderSide(color: AppColors.accent.withOpacity(0.3))),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: const BorderSide(color: Colors.redAccent)),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(PharosLayout.radiusMd), borderSide: const BorderSide(color: Colors.redAccent, width: 2)),
-        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 12),
-      ),
-    );
-  }
 
   void _onAddressChanged(String query) {
     if (_placesDebounce?.isActive ?? false) _placesDebounce!.cancel();
@@ -770,7 +649,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (placeId == null) return;
 
     setState(() {
-      _addressController.text = suggestion['description']?.split(',').first ?? '';
+      _guest.address.text = suggestion['description']?.split(',').first ?? '';
       _addressSuggestions = [];
     });
 
@@ -792,196 +671,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       setState(() {
         if (street != null) {
-          _addressController.text = '$street ${houseNumber ?? ''}'.trim();
+          _guest.address.text = '$street ${houseNumber ?? ''}'.trim();
         }
-        if (city != null) _cityController.text = city;
-        if (postcode != null) _postcodeController.text = postcode;
+        if (city != null) _guest.city.text = city;
+        if (postcode != null) _guest.postcode.text = postcode;
       });
     }
-  }
-
-  Widget _buildCarrierList(LocalizationProvider loc) {
-    if (_carriers == null) return const ListShimmer(itemCount: 2);
-    if (_carriersError) return NetworkErrorState(message: 'Nie udało się pobrać metod dostawy.', onRetry: _refreshCheckoutData);
-    if (_carriers!.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      children: _carriers!.map((carrier) {
-        final isSelected = _selectedCarrier?.id == carrier.id;
-        return AnimatedContainer(
-          duration: PharosLayout.motionFast,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-            border: Border.all(color: isSelected ? AppColors.accent : Colors.white.withOpacity(0.05), width: isSelected ? 2 : 1),
-            boxShadow: isSelected ? [BoxShadow(color: AppColors.accent.withOpacity(0.15), blurRadius: 12, spreadRadius: 2)] : null,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            clipBehavior: Clip.antiAlias,
-            borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-            child: RadioListTile<CarrierModel>(
-              value: carrier,
-              groupValue: _selectedCarrier,
-              activeColor: AppColors.accentText,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              title: Text(carrier.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(carrier.delay, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-                  const SizedBox(height: AppSpacing.s4),
-                  Text(
-                    carrier.price == 0 ? 'GRATIS' : loc.formatPrice(isSelected ? _resolvedShippingCost : carrier.price),
-                    style: TextStyle(fontWeight: FontWeight.w900, color: carrier.price == 0 ? Colors.green : Colors.white, fontSize: 14),
-                  ),
-                ],
-              ),
-              secondary: carrier.imageUrl != null
-                  ? Container(
-                      width: 48,
-                      height: 48,
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                      child: CachedNetworkImage(
-                        imageUrl: carrier.imageUrl!,
-                        fit: BoxFit.contain,
-                        errorWidget: (context, url, error) => const Icon(Icons.local_shipping_rounded, color: Colors.grey),
-                      ),
-                    )
-                  : const Icon(Icons.local_shipping_rounded, color: Colors.white24, size: 28),
-              onChanged: (val) {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedCarrier = val);
-                _updateShippingCost();
-              },
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildPaymentList() {
-    if (_payments == null) return const ListShimmer(itemCount: 2);
-    if (_paymentsError) return NetworkErrorState(message: 'Nie udało się pobrać metod płatności.', onRetry: _refreshCheckoutData);
-    if (_payments!.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      children: _payments!.map((method) {
-        final isSelected = _selectedPayment?.id == method.id;
-        return AnimatedContainer(
-          duration: PharosLayout.motionFast,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-            border: Border.all(color: isSelected ? AppColors.accent : Colors.white.withOpacity(0.05), width: isSelected ? 2 : 1),
-            boxShadow: isSelected ? [BoxShadow(color: AppColors.accent.withOpacity(0.15), blurRadius: 12, spreadRadius: 2)] : null,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            clipBehavior: Clip.antiAlias,
-            borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent.withOpacity(0.1) : Colors.white.withOpacity(0.03),
-                  shape: BoxShape.circle,
-                ),
-                child: method.iconUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: method.iconUrl!,
-                        width: 24,
-                        height: 24,
-                        errorWidget: (context, url, error) => Icon(
-                          method.id.contains('blik') ? Icons.phonelink_ring_rounded : Icons.credit_card_rounded,
-                          color: isSelected ? AppColors.accentText : Colors.white24,
-                          size: 20,
-                        ),
-                      )
-                    : Icon(
-                        method.id.contains('blik') ? Icons.phonelink_ring_rounded : Icons.credit_card_rounded,
-                        color: isSelected ? AppColors.accentText : Colors.white24,
-                        size: 20,
-                      ),
-              ),
-              title: Text(method.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: Text(method.description ?? '', style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
-              trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.accentText, size: 22) : Icon(Icons.circle_outlined, color: Colors.white.withOpacity(0.1), size: 22),
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedPayment = method);
-              },
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildOrderSummary(CartProvider cart, double shipping, double total, LocalizationProvider loc) {
-    final l10n = AppLocalizations.of(context)!;
-    final double calculatedTotal = cart.subtotalAmount + shipping;
-    final double discount = (calculatedTotal - total).clamp(0.0, double.infinity);
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF151515),
-        borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-        border: Border.all(color: Colors.white.withOpacity(0.03)),
-      ),
-      child: Column(
-        children: [
-          _summaryRow(l10n.productsTotal, loc.formatPrice(cart.subtotalAmount)),
-          const SizedBox(height: AppSpacing.s12),
-          _summaryRow(l10n.shipping, shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
-          if (discount > 0.05) ...[
-             const SizedBox(height: AppSpacing.s12),
-             _summaryRow(l10n.discount, '- ${loc.formatPrice(discount)}', color: Colors.green),
-          ],
-          const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(color: Colors.white10)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.5)),
-              Text(loc.formatPrice(total), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.accentText)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _summaryRow(String label, String value, {Color? color}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.4))),
-        Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color ?? Colors.white70)),
-      ],
-    );
   }
 
   Widget _buildBottomBar(CartProvider cart, double total, String formattedTotal) {
     final userProvider = context.read<UserProvider>();
     final bool isGuest = !userProvider.isLoggedIn;
+    final bool isFinalAction = !_isStepped || _step == _lastStep;
 
-    String buttonText = 'ZAPŁAĆ $formattedTotal';
-    final validationPreview = _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart);
-    if (!isGuest && _selectedAddress == null) {
-      buttonText = 'WYBIERZ ADRES';
-    } else if (isGuest && validationPreview.isNotEmpty) {
-      buttonText = 'UZUPEŁNIJ DANE';
-    } else if (_carriers != null && _carriers!.isNotEmpty && _selectedCarrier == null) {
-      buttonText = 'WYBIERZ DOSTAWĘ';
-    } else if (_payments != null && _payments!.isNotEmpty && _selectedPayment == null) {
-      buttonText = 'WYBIERZ PŁATNOŚĆ';
-    }
+    final String buttonText = isFinalAction
+        ? _finalButtonText(cart, isGuest, formattedTotal)
+        : _nextButtonText(isGuest);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -994,22 +699,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: PharosButton(
           label: buttonText,
           isLoading: _isProcessing,
-          onPressed: _isProcessing ? null : () => _handleCheckoutAction(total),
+          onPressed: _isProcessing
+              ? null
+              : () => isFinalAction ? _handleCheckoutAction(total) : _goToNextStep(isGuest),
         ),
       ),
     );
   }
 
-  bool _isGuestCheckoutDataValid() {
-    return FormValidation.collectMissingLabels({
-      'adres e-mail': FormValidation.emailField(_emailController.text),
-      'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
-      'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
-      'ulica i numer': FormValidation.addressField(_addressController.text),
-      'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
-      'miasto': FormValidation.cityField(_cityController.text),
-      'numer telefonu': FormValidation.phoneField(_phoneController.text),
-    }).isEmpty;
+  String _nextButtonText(bool isGuest) {
+    if (_step == 0) {
+      if (!isGuest && _selectedAddress == null) return 'WYBIERZ ADRES';
+      if (isGuest && !_guest.isValid) return 'UZUPEŁNIJ DANE';
+      return 'DALEJ: DOSTAWA';
+    }
+    if (_hasCarrierOptions && _selectedCarrier == null) return 'WYBIERZ DOSTAWĘ';
+    return 'DALEJ: PŁATNOŚĆ';
+  }
+
+  String _finalButtonText(CartProvider cart, bool isGuest, String formattedTotal) {
+    if (!isGuest && _selectedAddress == null) return 'WYBIERZ ADRES';
+    if (isGuest && _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart).isNotEmpty) return 'UZUPEŁNIJ DANE';
+    if (_hasCarrierOptions && _selectedCarrier == null) return 'WYBIERZ DOSTAWĘ';
+    if (_hasPaymentOptions && _selectedPayment == null) return 'WYBIERZ PŁATNOŚĆ';
+    return 'ZAPŁAĆ $formattedTotal';
   }
 
   List<String> _collectCheckoutMissingLabels({required bool isGuest, required CartProvider cart}) {
@@ -1022,50 +735,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     if (isGuest) {
-      missingLabels.addAll(
-        FormValidation.collectMissingLabels({
-          'adres e-mail': FormValidation.emailField(_emailController.text),
-          'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
-          'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
-          'ulica i numer': FormValidation.addressField(_addressController.text),
-          'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
-          'miasto': FormValidation.cityField(_cityController.text),
-          'numer telefonu': FormValidation.phoneField(_phoneController.text),
-        }),
-      );
+      missingLabels.addAll(_guest.missingLabels());
     } else if (_selectedAddress == null) {
       missingLabels.add('adresu dostawy');
     }
 
-    if (_carriers != null && _carriers!.isNotEmpty && _selectedCarrier == null) {
+    if (_hasCarrierOptions && _selectedCarrier == null) {
       missingLabels.add('metody dostawy');
     }
-    if (_payments != null && _payments!.isNotEmpty && _selectedPayment == null) {
+    if (_hasPaymentOptions && _selectedPayment == null) {
       missingLabels.add('metody płatności');
     }
 
     return missingLabels;
   }
 
-  String? _validateCheckoutForm({required bool isGuest, required CartProvider cart}) {
-    if (isGuest) {
-      _guestFormKey.currentState?.validate();
-    }
-
-    final missingLabels = _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart);
-    if (missingLabels.isEmpty) {
-      return null;
-    }
-    return FormValidation.formatMissingFields(missingLabels);
-  }
-
   Future<void> _handleCheckoutAction(double totalAmount) async {
     final cart = context.read<CartProvider>();
     final isGuest = !context.read<UserProvider>().isLoggedIn;
-    final validationMessage = _validateCheckoutForm(isGuest: isGuest, cart: cart);
+    if (isGuest) _guestFormKey.currentState?.validate();
 
-    if (validationMessage != null) {
-      _analytics.logCheckoutValidationError('missing_fields');
+    final missingLabels = _collectCheckoutMissingLabels(isGuest: isGuest, cart: cart);
+    if (missingLabels.isNotEmpty) {
+      final validationMessage = FormValidation.formatMissingFields(missingLabels);
+      _analytics.logCheckoutValidationError('missing_fields', fieldCount: missingLabels.length);
       setState(() => _validationMessage = validationMessage);
       showValidationSnackBar(context, validationMessage);
       return;
@@ -1096,7 +789,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _checkoutNotifier.selectCarrier(_selectedCarrier);
       _checkoutNotifier.selectPayment(_selectedPayment);
 
-      final guestAddressValid = user != null || _isGuestCheckoutDataValid();
+      final guestAddressValid = user != null || _guest.isValid;
 
       final prepared = await _checkoutNotifier.prepareOrder(
         cart: cart,
@@ -1124,16 +817,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       };
 
       if (user == null) {
-        orderPayload['guest'] = {
-          'email': _emailController.text,
-          'firstname': _firstnameController.text,
-          'lastname': _lastnameController.text,
-          'address1': _addressController.text,
-          'postcode': _postcodeController.text,
-          'city': _cityController.text,
-          'phone': _phoneController.text,
-          'create_account': _createAccount,
-        };
+        orderPayload['guest'] = _guest.toPayload(createAccount: _createAccount);
       }
 
       if (_carriers != null && _carriers!.isNotEmpty && _selectedCarrier != null) {
