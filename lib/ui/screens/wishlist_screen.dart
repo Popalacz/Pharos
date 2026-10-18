@@ -6,6 +6,7 @@ import 'package:pharos/ui/widgets/product_shimmer.dart';
 import 'package:pharos/ui/widgets/pharos_product_card.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
@@ -19,7 +20,7 @@ class WishlistScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('ULUBIONE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.wishlistTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
         centerTitle: true,
       ),
       body: wishlistProvider.isLoading
@@ -63,7 +64,7 @@ class WishlistScreen extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.1)),
             ),
             const SizedBox(height: AppSpacing.s32),
-            const Text('TWOJA LISTA JEST PUSTA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+            Text(AppLocalizations.of(context)!.wishlistEmpty, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
             const SizedBox(height: AppSpacing.s12),
             Text(
               'Zapisuj produkty, które Ci się podobają, aby wrócić do nich w dowolnym momencie.',
@@ -72,7 +73,7 @@ class WishlistScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.s40),
             PharosButton(
-              label: 'ZACZNIJ ODKRYWAĆ',
+              label: AppLocalizations.of(context)!.startDiscovering,
               onPressed: () {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);

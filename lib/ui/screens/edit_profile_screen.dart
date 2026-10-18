@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/core/utils/validation_feedback.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -42,7 +43,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('EDYTUJ PROFIL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
+        title: Text(AppLocalizations.of(context)!.editProfileTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -52,21 +53,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               _buildTextField(
                 _firstnameController,
-                'Imię',
+                AppLocalizations.of(context)!.firstName,
                 Icons.person_outline,
-                validator: (value) => FormValidation.nameField(value, 'Imię'),
+                validator: (value) => FormValidation.nameField(value, AppLocalizations.of(context)!.firstName),
               ),
               const SizedBox(height: AppSpacing.s16),
               _buildTextField(
                 _lastnameController,
-                'Nazwisko',
+                AppLocalizations.of(context)!.lastName,
                 Icons.person_outline,
-                validator: (value) => FormValidation.nameField(value, 'Nazwisko'),
+                validator: (value) => FormValidation.nameField(value, AppLocalizations.of(context)!.lastName),
               ),
               const SizedBox(height: AppSpacing.s16),
               _buildTextField(
                 _emailController,
-                'E-mail',
+                AppLocalizations.of(context)!.email,
                 Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) => FormValidation.emailField(value),
@@ -83,7 +84,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: _isSaving
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('ZAPISZ ZMIANY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      : Text(AppLocalizations.of(context)!.saveChangesButton, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
@@ -121,8 +122,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _handleSave() async {
     final missingLabels = FormValidation.collectMissingLabels({
-      'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
-      'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
+      'imię': FormValidation.nameField(_firstnameController.text, AppLocalizations.of(context)!.firstName),
+      'nazwisko': FormValidation.nameField(_lastnameController.text, AppLocalizations.of(context)!.lastName),
       'adres e-mail': FormValidation.emailField(_emailController.text),
     });
 
@@ -149,7 +150,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profil zaktualizowany!'), backgroundColor: Colors.green),
+        SnackBar(content: Text(AppLocalizations.of(context)!.profileUpdated), backgroundColor: Colors.green),
       );
       Navigator.pop(context);
       return;

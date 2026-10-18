@@ -19,6 +19,7 @@ import 'package:pharos/ui/screens/cart_screen.dart';
 import 'package:pharos/core/error/failures.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
@@ -89,7 +90,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   MaterialPageRoute(
                                     builder: (_) => ReviewFormScreen(
                                       productId: widget.product.id,
-                                      title: 'Oceń produkt',
+                                      title: AppLocalizations.of(context)!.rateProduct,
                                     ),
                                   ),
                                 ).then((_) {
@@ -99,7 +100,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 });
                               },
                               icon: const Icon(Icons.add, size: 18, color: Colors.orange),
-                              label: const Text('DODAJ', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                              label: Text(AppLocalizations.of(context)!.addButton, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
                             ),
                         ],
                       ),
@@ -317,14 +318,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) return const LinearProgressIndicator(color: Colors.orange);
         if (snapshot.hasError || !snapshot.hasData) {
-          return Text('Błąd podczas ładowania opinii.', style: TextStyle(color: Colors.white.withOpacity(0.3)));
+          return Text(AppLocalizations.of(context)!.reviewsLoadError, style: TextStyle(color: Colors.white.withOpacity(0.3)));
         }
 
         return snapshot.data!.fold(
-          (failure) => Text('Nie udało się pobrać opinii.', style: TextStyle(color: Colors.white.withOpacity(0.3))),
+          (failure) => Text(AppLocalizations.of(context)!.reviewsFetchFailed, style: TextStyle(color: Colors.white.withOpacity(0.3))),
           (reviews) {
             if (reviews.isEmpty) {
-              return Text('Brak opinii o tym produkcie.', style: TextStyle(color: Colors.white.withOpacity(0.3)));
+              return Text(AppLocalizations.of(context)!.noReviews, style: TextStyle(color: Colors.white.withOpacity(0.3)));
             }
             return Column(
               children: reviews.map((review) => Container(
@@ -369,6 +370,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 builder: (context, wishlist, child) {
                   final isFav = wishlist.isFavorite(widget.product.id);
                   return IconButton(
+                    tooltip: isFav ? AppLocalizations.of(context)!.a11yRemoveFromFavorites : AppLocalizations.of(context)!.a11yAddToFavorites,
                     icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.white),
                     onPressed: () => wishlist.toggleWishlist(widget.product),
                   );
@@ -378,15 +380,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               Expanded(
                 child: widget.product.canBeAddedToCart
                     ? PharosButton(
-                  label: widget.product.isOnOrder ? 'KUP NA ZAMÓWIENIE' : 'DODAJ DO KOSZYKA',
+                  label: widget.product.isOnOrder ? AppLocalizations.of(context)!.buyOnOrder : AppLocalizations.of(context)!.addToCartUpper,
                   onPressed: () {
                     context.read<CartProvider>().addItem(widget.product);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(widget.product.isOnOrder ? 'Dodano produkt (Na zamówienie)' : 'Dodano do koszyka'),
+                        content: Text(widget.product.isOnOrder ? AppLocalizations.of(context)!.addedOnOrder : AppLocalizations.of(context)!.addedToCart),
                         backgroundColor: Colors.green,
                         action: SnackBarAction(
-                          label: 'KOSZYK',
+                          label: AppLocalizations.of(context)!.cartUpper,
                           textColor: Colors.white,
                           onPressed: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
@@ -399,17 +401,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     : widget.product.shouldShowNotifyMe
                     ? PharosButton(
                   style: PharosButtonStyle.outline,
-                  label: 'POWIADOM O DOSTĘPNOŚCI',
+                  label: AppLocalizations.of(context)!.notifyAvailability,
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Zapisano Cię na powiadomienie o dostępności!'), backgroundColor: Colors.blue),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.notifySaved), backgroundColor: Colors.blue),
                     );
                   },
                 )
                     : Container(
                   height: 60,
                   alignment: Alignment.center,
-                  child: const Text('PRODUKT NIEDOSTĘPNY', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.productUnavailable, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -424,7 +426,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       top: 50, left: 20,
       child: CircleAvatar(
         backgroundColor: Colors.black.withOpacity(0.5),
-        child: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        child: IconButton(tooltip: AppLocalizations.of(context)!.a11yBack, icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/core/utils/validation_feedback.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class AddressFormScreen extends StatefulWidget {
   final AddressModel? address;
@@ -54,8 +55,8 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   void _saveForm() async {
     final missingLabels = FormValidation.collectMissingLabels({
       'nazwa adresu': FormValidation.requiredField(_aliasController.text, 'Nazwa adresu'),
-      'imię': FormValidation.nameField(_firstnameController.text, 'Imię'),
-      'nazwisko': FormValidation.nameField(_lastnameController.text, 'Nazwisko'),
+      'imię': FormValidation.nameField(_firstnameController.text, AppLocalizations.of(context)!.firstName),
+      'nazwisko': FormValidation.nameField(_lastnameController.text, AppLocalizations.of(context)!.lastName),
       'ulica i numer': FormValidation.addressField(_address1Controller.text),
       'kod pocztowy': FormValidation.postcodeField(_postcodeController.text),
       'miasto': FormValidation.cityField(_cityController.text),
@@ -96,7 +97,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
       setState(() => _isSaving = false);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Adres został zapisany pomyślnie'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.addressSavedSuccess), backgroundColor: Colors.green),
         );
         await userProvider.fetchAddresses();
         if (mounted && userProvider.addresses.isNotEmpty) {
@@ -121,7 +122,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: Text(widget.address == null ? 'Nowy adres' : 'Edytuj adres', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(widget.address == null ? AppLocalizations.of(context)!.newAddress : AppLocalizations.of(context)!.editAddress, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -137,9 +138,9 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
               const SizedBox(height: AppSpacing.s16),
               Row(
                 children: [
-                  Expanded(child: _buildField(_firstnameController, 'Imię', Icons.person_outline, validator: (value) => FormValidation.nameField(value, 'Imię'))),
+                  Expanded(child: _buildField(_firstnameController, AppLocalizations.of(context)!.firstName, Icons.person_outline, validator: (value) => FormValidation.nameField(value, AppLocalizations.of(context)!.firstName))),
                   const SizedBox(width: AppSpacing.s16),
-                  Expanded(child: _buildField(_lastnameController, 'Nazwisko', Icons.person_outline, validator: (value) => FormValidation.nameField(value, 'Nazwisko'))),
+                  Expanded(child: _buildField(_lastnameController, AppLocalizations.of(context)!.lastName, Icons.person_outline, validator: (value) => FormValidation.nameField(value, AppLocalizations.of(context)!.lastName))),
                 ],
               ),
               const SizedBox(height: AppSpacing.s16),
@@ -171,7 +172,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                   ),
                   child: _isSaving 
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('ZAPISZ ADRES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    : Text(AppLocalizations.of(context)!.saveAddressButton, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],

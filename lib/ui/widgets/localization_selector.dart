@@ -3,6 +3,7 @@ import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
 import 'package:pharos/data/models/localization_models.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class LocalizationSelector extends StatelessWidget {
   const LocalizationSelector({super.key});
@@ -77,7 +78,7 @@ class LocalizationSelector extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Wybierz język'),
+        title: Text(AppLocalizations.of(context)!.chooseLanguage),
         backgroundColor: const Color(0xFF1A1A1A),
         content: SizedBox(
           width: double.maxFinite,
@@ -105,7 +106,7 @@ class LocalizationSelector extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Wybierz walutę'),
+        title: Text(AppLocalizations.of(context)!.chooseCurrency),
         backgroundColor: const Color(0xFF1A1A1A),
         content: SizedBox(
           width: double.maxFinite,

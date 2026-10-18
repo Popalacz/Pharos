@@ -61,5 +61,181 @@
   "voucherApplied": "Kod rabatowy zastosowany",
   "removedFromCart": "Usunięto z koszyka",
   "discount": "Rabat",
-  "productsTotal": "Suma produktów"
+  "productsTotal": "Suma produktów",
+  "addressSavedSuccess": "Adres został zapisany pomyślnie",
+  "newAddress": "Nowy adres",
+  "editAddress": "Edytuj adres",
+  "saveAddressButton": "ZAPISZ ADRES",
+  "chooseAddress": "Wybierz adres",
+  "addNewAddressButton": "DODAJ NOWY ADRES",
+  "editProfileTitle": "EDYTUJ PROFIL",
+  "firstName": "Imię",
+  "lastName": "Nazwisko",
+  "saveChangesButton": "ZAPISZ ZMIANY",
+  "profileUpdated": "Profil zaktualizowany!",
+  "myAddressesTitle": "MOJE ADRESY",
+  "noSavedAddresses": "Nie masz jeszcze zapisanych adresów",
+  "deleteAddress": "Usuń adres",
+  "cancelButton": "ANULUJ",
+  "deleteButton": "USUŃ",
+  "regionalSettings": "Ustawienia regionalne",
+  "categoriesTitle": "KATEGORIE",
+  "wishlistTitle": "ULUBIONE",
+  "wishlistEmpty": "TWOJA LISTA JEST PUSTA",
+  "startDiscovering": "ZACZNIJ ODKRYWAĆ",
+  "orderSuccessTitle": "SUKCES!",
+  "orderValue": "WARTOŚĆ ZAMÓWIENIA",
+  "paidBadge": "OPŁACONE",
+  "continueShopping": "KONTYNUUJ ZAKUPY",
+  "warehouseMarker": "Magazyn Pharos",
+  "yourAddressMarker": "Twój Adres",
+  "courierMarker": "Kurier Pharos",
+  "trackingPlacedTitle": "ZAMÓWIENIE ZŁOŻONE",
+  "trackingPlacedDesc": "Otrzymaliśmy Twoje zamówienie.",
+  "trackingPreparingTitle": "W PRZYGOTOWANIU",
+  "trackingPreparingDesc": "Twoje produkty są pakowane.",
+  "trackingShippedTitle": "W DRODZE",
+  "trackingShippedDesc": "Kurier odebrał paczkę.",
+  "trackingDeliveredTitle": "DOSTARCZONO",
+  "trackingDeliveredDesc": "Zamówienie dotarło!",
+  "orderStatusTitle": "STATUS ZAMÓWIENIA",
+  "fulfillmentHistory": "HISTORIA REALIZACJI",
+  "referenceLabel": "REFERENCJA",
+  "rateProductsQuestion": "JAK OCENIASZ PRODUKTY?",
+  "addReviewButton": "DODAJ OPINIĘ",
+  "technicalHelp": "POMOC TECHNICZNA",
+  "askQuestionButton": "ZADAJ PYTANIE",
+  "recentSearches": "OSTATNIE WYSZUKIWANIA",
+  "clearLabel": "Wyczyść",
+  "suggestions": "PODPOWIEDZI",
+  "profileHeading": "TWÓJ PROFIL PHAROS",
+  "loginOrRegister": "ZALOGUJ SIĘ LUB ZAŁÓŻ KONTO",
+  "orderHistory": "HISTORIA ZAMÓWIEŃ",
+  "accountSettings": "USTAWIENIA KONTA",
+  "languageCurrency": "Język i Waluta",
+  "languageCurrencySubtitle": "Zmień ustawienia regionalne",
+  "myData": "Moje dane",
+  "myDataSubtitle": "Edytuj informacje o profilu",
+  "myAddresses": "Moje adresy",
+  "myAddressesSubtitle": "Zarządzaj adresami dostaw",
+  "noOrderHistory": "Brak historii zamówień",
+  "scanProduct": "SKANUJ PRODUKT",
+  "scanHint": "Umieść kod kreskowy w ramce",
+  "seeAll": "Zobacz wszystko",
+  "reviewHeading": "TWOJA OPINIA JEST DLA NAS WAŻNA",
+  "submitReview": "WYŚLIJ OPINIĘ",
+  "reviewThanks": "Dziękujemy za Twoją opinię!",
+  "rateProduct": "Oceń produkt",
+  "addButton": "DODAJ",
+  "buyOnOrder": "KUP NA ZAMÓWIENIE",
+  "addToCartUpper": "DODAJ DO KOSZYKA",
+  "addedOnOrder": "Dodano produkt (Na zamówienie)",
+  "addedToCart": "Dodano do koszyka",
+  "cartUpper": "KOSZYK",
+  "notifyAvailability": "POWIADOM O DOSTĘPNOŚCI",
+  "notifySaved": "Zapisano Cię na powiadomienie o dostępności!",
+  "productUnavailable": "PRODUKT NIEDOSTĘPNY",
+  "loginTitle": "KONTO PHAROS",
+  "password": "Hasło",
+  "loginButton": "ZALOGUJ SIĘ",
+  "orSeparator": "LUB",
+  "registerButton": "ZAŁÓŻ KONTO",
+  "continueWithGoogle": "KONTYNUUJ PRZEZ GOOGLE",
+  "chooseLanguage": "Wybierz język",
+  "chooseCurrency": "Wybierz walutę",
+  "filtering": "FILTROWANIE",
+  "clearUpper": "WYCZYŚĆ",
+  "showResults": "POKAŻ WYNIKI",
+  "catalogFetchFailed": "Nie udało się pobrać katalogu",
+  "tryAgainSentence": "Spróbuj ponownie",
+  "favoritesAdded": "Dodano do ulubionych",
+  "favoritesRemoved": "Usunięto z ulubionych",
+  "noProductsTitle": "BRAK PRODUKTÓW",
+  "noResults": "Brak wyników",
+  "clearSearch": "Wyczyść wyszukiwanie",
+  "a11yBack": "Wstecz",
+  "a11yClose": "Zamknij",
+  "a11yRemove": "Usuń",
+  "a11yAddToFavorites": "Dodaj do ulubionych",
+  "a11yRemoveFromFavorites": "Usuń z ulubionych",
+  "a11yEdit": "Edytuj",
+  "a11yShowPassword": "Pokaż hasło",
+  "a11yHidePassword": "Ukryj hasło",
+  "a11yScanBarcode": "Skanuj kod kreskowy",
+  "a11yFilters": "Filtry",
+  "a11yIncreaseQuantity": "Zwiększ ilość",
+  "a11yDecreaseQuantity": "Zmniejsz ilość",
+  "a11yOpenMenu": "Otwórz menu",
+  "deleteAddressConfirm": "Czy na pewno chcesz usunąć adres \"{alias}\"?",
+  "@deleteAddressConfirm": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      }
+    }
+  },
+  "searchFor": "Szukaj \"{query}\"",
+  "@searchFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yLogout": "Wyloguj",
+  "a11yRefresh": "Odśwież",
+  "a11yVoiceSearch": "Wyszukiwanie głosowe",
+  "a11yApplyVoucher": "Zastosuj kod rabatowy",
+  "a11yRateStars": "Oceń na {count} z 5",
+  "@a11yRateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "galleryImageLabel": "Zdjęcie {index} z {total}",
+  "@galleryImageLabel": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "addedProduct": "Dodano: {name}",
+  "@addedProduct": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "currencyRecalcInfo": "Ceny produktów zostaną automatycznie przeliczone zgodnie z aktualnym kursem w Twoim sklepie.",
+  "noSavedAddressesDot": "Nie masz jeszcze zapisanych adresów.",
+  "listening": "SŁUCHAM...",
+  "searchInStore": "Szukaj w {store}...",
+  "@searchInStore": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "orderNumber": "Zamówienie #{reference}",
+  "@orderNumber": {
+    "placeholders": {
+      "reference": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewPlaceholder": "Napisz coś więcej...",
+  "reviewSendError": "Wystąpił błąd podczas wysyłania opinii.",
+  "reviewsLoadError": "Błąd podczas ładowania opinii.",
+  "reviewsFetchFailed": "Nie udało się pobrać opinii.",
+  "noReviews": "Brak opinii o tym produkcie.",
+  "reviewTitle": "Opinia"
 }

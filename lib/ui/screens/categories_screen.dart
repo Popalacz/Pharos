@@ -8,6 +8,7 @@ import 'package:pharos/ui/screens/catalog_screen.dart';
 import 'package:pharos/core/error/failures.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/ui/widgets/network_error_state.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -40,8 +41,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'KATEGORIE',
+        title: Text(
+          AppLocalizations.of(context)!.categoriesTitle,
           style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white),
         ),
         centerTitle: true,

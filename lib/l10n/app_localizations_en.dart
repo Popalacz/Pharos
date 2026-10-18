@@ -202,4 +202,392 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productsTotal => 'Products total';
+
+  @override
+  String get addressSavedSuccess => 'Address saved successfully';
+
+  @override
+  String get newAddress => 'New address';
+
+  @override
+  String get editAddress => 'Edit address';
+
+  @override
+  String get saveAddressButton => 'SAVE ADDRESS';
+
+  @override
+  String get chooseAddress => 'Choose address';
+
+  @override
+  String get addNewAddressButton => 'ADD NEW ADDRESS';
+
+  @override
+  String get editProfileTitle => 'EDIT PROFILE';
+
+  @override
+  String get firstName => 'First name';
+
+  @override
+  String get lastName => 'Last name';
+
+  @override
+  String get saveChangesButton => 'SAVE CHANGES';
+
+  @override
+  String get profileUpdated => 'Profile updated!';
+
+  @override
+  String get myAddressesTitle => 'MY ADDRESSES';
+
+  @override
+  String get noSavedAddresses => 'You have no saved addresses yet';
+
+  @override
+  String get deleteAddress => 'Delete address';
+
+  @override
+  String get cancelButton => 'CANCEL';
+
+  @override
+  String get deleteButton => 'DELETE';
+
+  @override
+  String get regionalSettings => 'Regional settings';
+
+  @override
+  String get categoriesTitle => 'CATEGORIES';
+
+  @override
+  String get wishlistTitle => 'FAVORITES';
+
+  @override
+  String get wishlistEmpty => 'YOUR LIST IS EMPTY';
+
+  @override
+  String get startDiscovering => 'START EXPLORING';
+
+  @override
+  String get orderSuccessTitle => 'SUCCESS!';
+
+  @override
+  String get orderValue => 'ORDER VALUE';
+
+  @override
+  String get paidBadge => 'PAID';
+
+  @override
+  String get continueShopping => 'CONTINUE SHOPPING';
+
+  @override
+  String get warehouseMarker => 'Pharos warehouse';
+
+  @override
+  String get yourAddressMarker => 'Your address';
+
+  @override
+  String get courierMarker => 'Pharos courier';
+
+  @override
+  String get trackingPlacedTitle => 'ORDER PLACED';
+
+  @override
+  String get trackingPlacedDesc => 'We have received your order.';
+
+  @override
+  String get trackingPreparingTitle => 'BEING PREPARED';
+
+  @override
+  String get trackingPreparingDesc => 'Your products are being packed.';
+
+  @override
+  String get trackingShippedTitle => 'ON THE WAY';
+
+  @override
+  String get trackingShippedDesc => 'The courier has picked up the parcel.';
+
+  @override
+  String get trackingDeliveredTitle => 'DELIVERED';
+
+  @override
+  String get trackingDeliveredDesc => 'Your order has arrived!';
+
+  @override
+  String get orderStatusTitle => 'ORDER STATUS';
+
+  @override
+  String get fulfillmentHistory => 'FULFILLMENT HISTORY';
+
+  @override
+  String get referenceLabel => 'REFERENCE';
+
+  @override
+  String get rateProductsQuestion => 'HOW DO YOU RATE THE PRODUCTS?';
+
+  @override
+  String get addReviewButton => 'ADD REVIEW';
+
+  @override
+  String get technicalHelp => 'TECHNICAL SUPPORT';
+
+  @override
+  String get askQuestionButton => 'ASK A QUESTION';
+
+  @override
+  String get recentSearches => 'RECENT SEARCHES';
+
+  @override
+  String get clearLabel => 'Clear';
+
+  @override
+  String get suggestions => 'SUGGESTIONS';
+
+  @override
+  String get profileHeading => 'YOUR PHAROS PROFILE';
+
+  @override
+  String get loginOrRegister => 'LOG IN OR CREATE AN ACCOUNT';
+
+  @override
+  String get orderHistory => 'ORDER HISTORY';
+
+  @override
+  String get accountSettings => 'ACCOUNT SETTINGS';
+
+  @override
+  String get languageCurrency => 'Language & Currency';
+
+  @override
+  String get languageCurrencySubtitle => 'Change regional settings';
+
+  @override
+  String get myData => 'My details';
+
+  @override
+  String get myDataSubtitle => 'Edit your profile information';
+
+  @override
+  String get myAddresses => 'My addresses';
+
+  @override
+  String get myAddressesSubtitle => 'Manage delivery addresses';
+
+  @override
+  String get noOrderHistory => 'No order history';
+
+  @override
+  String get scanProduct => 'SCAN PRODUCT';
+
+  @override
+  String get scanHint => 'Place the barcode inside the frame';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get reviewHeading => 'YOUR OPINION MATTERS TO US';
+
+  @override
+  String get submitReview => 'SUBMIT REVIEW';
+
+  @override
+  String get reviewThanks => 'Thank you for your review!';
+
+  @override
+  String get rateProduct => 'Rate product';
+
+  @override
+  String get addButton => 'ADD';
+
+  @override
+  String get buyOnOrder => 'BUY ON ORDER';
+
+  @override
+  String get addToCartUpper => 'ADD TO CART';
+
+  @override
+  String get addedOnOrder => 'Product added (on order)';
+
+  @override
+  String get addedToCart => 'Added to cart';
+
+  @override
+  String get cartUpper => 'CART';
+
+  @override
+  String get notifyAvailability => 'NOTIFY ME WHEN AVAILABLE';
+
+  @override
+  String get notifySaved => 'You will be notified when it is available!';
+
+  @override
+  String get productUnavailable => 'PRODUCT UNAVAILABLE';
+
+  @override
+  String get loginTitle => 'PHAROS ACCOUNT';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get loginButton => 'LOG IN';
+
+  @override
+  String get orSeparator => 'OR';
+
+  @override
+  String get registerButton => 'CREATE ACCOUNT';
+
+  @override
+  String get continueWithGoogle => 'CONTINUE WITH GOOGLE';
+
+  @override
+  String get chooseLanguage => 'Choose language';
+
+  @override
+  String get chooseCurrency => 'Choose currency';
+
+  @override
+  String get filtering => 'FILTERS';
+
+  @override
+  String get clearUpper => 'CLEAR';
+
+  @override
+  String get showResults => 'SHOW RESULTS';
+
+  @override
+  String get catalogFetchFailed => 'Could not load the catalog';
+
+  @override
+  String get tryAgainSentence => 'Try again';
+
+  @override
+  String get favoritesAdded => 'Added to favorites';
+
+  @override
+  String get favoritesRemoved => 'Removed from favorites';
+
+  @override
+  String get noProductsTitle => 'NO PRODUCTS';
+
+  @override
+  String get noResults => 'No results';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get a11yBack => 'Back';
+
+  @override
+  String get a11yClose => 'Close';
+
+  @override
+  String get a11yRemove => 'Remove';
+
+  @override
+  String get a11yAddToFavorites => 'Add to favorites';
+
+  @override
+  String get a11yRemoveFromFavorites => 'Remove from favorites';
+
+  @override
+  String get a11yEdit => 'Edit';
+
+  @override
+  String get a11yShowPassword => 'Show password';
+
+  @override
+  String get a11yHidePassword => 'Hide password';
+
+  @override
+  String get a11yScanBarcode => 'Scan barcode';
+
+  @override
+  String get a11yFilters => 'Filters';
+
+  @override
+  String get a11yIncreaseQuantity => 'Increase quantity';
+
+  @override
+  String get a11yDecreaseQuantity => 'Decrease quantity';
+
+  @override
+  String get a11yOpenMenu => 'Open menu';
+
+  @override
+  String deleteAddressConfirm(String alias) {
+    return 'Are you sure you want to delete the address \"$alias\"?';
+  }
+
+  @override
+  String searchFor(String query) {
+    return 'Search for \"$query\"';
+  }
+
+  @override
+  String get a11yLogout => 'Log out';
+
+  @override
+  String get a11yRefresh => 'Refresh';
+
+  @override
+  String get a11yVoiceSearch => 'Voice search';
+
+  @override
+  String get a11yApplyVoucher => 'Apply discount code';
+
+  @override
+  String a11yRateStars(int count) {
+    return 'Rate $count out of 5';
+  }
+
+  @override
+  String galleryImageLabel(int index, int total) {
+    return 'Image $index of $total';
+  }
+
+  @override
+  String addedProduct(String name) {
+    return 'Added: $name';
+  }
+
+  @override
+  String get currencyRecalcInfo =>
+      'Product prices will be converted automatically at the current rate in your store.';
+
+  @override
+  String get noSavedAddressesDot => 'You have no saved addresses yet.';
+
+  @override
+  String get listening => 'LISTENING...';
+
+  @override
+  String searchInStore(String store) {
+    return 'Search in $store...';
+  }
+
+  @override
+  String orderNumber(String reference) {
+    return 'Order #$reference';
+  }
+
+  @override
+  String get reviewPlaceholder => 'Write something more...';
+
+  @override
+  String get reviewSendError =>
+      'An error occurred while submitting your review.';
+
+  @override
+  String get reviewsLoadError => 'Error while loading reviews.';
+
+  @override
+  String get reviewsFetchFailed => 'Could not load reviews.';
+
+  @override
+  String get noReviews => 'No reviews for this product yet.';
+
+  @override
+  String get reviewTitle => 'Review';
 }

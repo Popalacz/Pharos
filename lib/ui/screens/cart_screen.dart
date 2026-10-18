@@ -305,6 +305,7 @@ class _CartItemTile extends StatelessWidget {
             ),
           ),
           IconButton(
+            tooltip: AppLocalizations.of(context)!.a11yRemove,
             icon: const Icon(Icons.delete_outline, color: Colors.red),
             onPressed: () {
               context.read<CartProvider>().removeItem(item.key);
@@ -400,6 +401,7 @@ class _VoucherInputState extends State<_VoucherInput> {
           _isApplying
               ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
               : IconButton(
+                tooltip: AppLocalizations.of(context)!.a11yApplyVoucher,
                   onPressed: _apply,
                   icon: const Icon(Icons.check_circle_outline, color: Colors.orange),
                 ),

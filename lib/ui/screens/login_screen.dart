@@ -5,6 +5,7 @@ import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/core/utils/validation_feedback.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,9 +51,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   String? _passwordValidator(String? value) => FormValidation.passwordField(value);
 
-  String? _firstnameValidator(String? value) => FormValidation.nameField(value, 'Imię');
+  String? _firstnameValidator(String? value) => FormValidation.nameField(value, AppLocalizations.of(context)!.firstName);
 
-  String? _lastnameValidator(String? value) => FormValidation.nameField(value, 'Nazwisko');
+  String? _lastnameValidator(String? value) => FormValidation.nameField(value, AppLocalizations.of(context)!.lastName);
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('KONTO PHAROS', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.loginTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.orange,
@@ -96,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             const SizedBox(height: 20),
             _buildTextField(
               controller: _loginEmailController,
-              label: 'E-mail',
+              label: AppLocalizations.of(context)!.email,
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: _emailValidator,
@@ -104,26 +105,27 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             const SizedBox(height: AppSpacing.s16),
             _buildTextField(
               controller: _loginPasswordController,
-              label: 'Hasło',
+              label: AppLocalizations.of(context)!.password,
               icon: Icons.lock_outline,
               obscureText: _obscurePassword,
               validator: _passwordValidator,
               suffixIcon: IconButton(
+                tooltip: _obscurePassword ? AppLocalizations.of(context)!.a11yShowPassword : AppLocalizations.of(context)!.a11yHidePassword,
                 icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white30),
                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
             const SizedBox(height: AppSpacing.s32),
             PharosButton(
-              label: 'ZALOGUJ SIĘ',
+              label: AppLocalizations.of(context)!.loginButton,
               isLoading: userProvider.isLoading,
               onPressed: _handleLogin,
             ),
             const SizedBox(height: AppSpacing.s32),
-            const Row(
+            Row(
               children: [
                 Expanded(child: Divider(color: Colors.white10)),
-                Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('LUB', style: TextStyle(color: Colors.white30, fontWeight: FontWeight.bold))),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text(AppLocalizations.of(context)!.orSeparator, style: TextStyle(color: Colors.white30, fontWeight: FontWeight.bold))),
                 Expanded(child: Divider(color: Colors.white10)),
               ],
             ),
@@ -146,15 +148,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           children: [
             Row(
               children: [
-                Expanded(child: _buildTextField(controller: _regFirstnameController, label: 'Imię', icon: Icons.person_outline, validator: _firstnameValidator)),
+                Expanded(child: _buildTextField(controller: _regFirstnameController, label: AppLocalizations.of(context)!.firstName, icon: Icons.person_outline, validator: _firstnameValidator)),
                 const SizedBox(width: AppSpacing.s16),
-                Expanded(child: _buildTextField(controller: _regLastnameController, label: 'Nazwisko', icon: Icons.person_outline, validator: _lastnameValidator)),
+                Expanded(child: _buildTextField(controller: _regLastnameController, label: AppLocalizations.of(context)!.lastName, icon: Icons.person_outline, validator: _lastnameValidator)),
               ],
             ),
             const SizedBox(height: AppSpacing.s16),
             _buildTextField(
               controller: _regEmailController, 
-              label: 'E-mail', 
+              label: AppLocalizations.of(context)!.email, 
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: _emailValidator,
@@ -162,14 +164,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             const SizedBox(height: AppSpacing.s16),
             _buildTextField(
               controller: _regPasswordController, 
-              label: 'Hasło', 
+              label: AppLocalizations.of(context)!.password, 
               icon: Icons.lock_outline,
               obscureText: _obscurePassword,
               validator: _passwordValidator,
             ),
             const SizedBox(height: AppSpacing.s32),
             PharosButton(
-              label: 'ZAŁÓŻ KONTO',
+              label: AppLocalizations.of(context)!.registerButton,
               isLoading: userProvider.isLoading,
               onPressed: _handleRegister,
             ),
@@ -246,8 +248,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: Colors.white),
                 ),
                 const SizedBox(width: AppSpacing.s12),
-                const Text(
-                  'KONTYNUUJ PRZEZ GOOGLE', 
+                Text(
+                  AppLocalizations.of(context)!.continueWithGoogle, 
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)
                 ),
               ],
@@ -310,8 +312,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   void _handleRegister() async {
     final missingLabels = FormValidation.collectMissingLabels({
-      'imię': FormValidation.nameField(_regFirstnameController.text, 'Imię'),
-      'nazwisko': FormValidation.nameField(_regLastnameController.text, 'Nazwisko'),
+      'imię': FormValidation.nameField(_regFirstnameController.text, AppLocalizations.of(context)!.firstName),
+      'nazwisko': FormValidation.nameField(_regLastnameController.text, AppLocalizations.of(context)!.lastName),
       'adres e-mail': FormValidation.emailField(_regEmailController.text),
       'hasło': FormValidation.passwordField(_regPasswordController.text),
     });

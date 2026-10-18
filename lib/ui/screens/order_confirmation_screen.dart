@@ -8,6 +8,7 @@ import 'package:pharos/core/theme/app_colors.dart';
 import 'package:pharos/core/constants/pharos_layout.dart';
 import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/core/providers/localization_provider.dart';
+import 'package:pharos/l10n/app_localizations.dart';
 
 class OrderConfirmationScreen extends StatefulWidget {
   final String orderReference;
@@ -117,8 +118,8 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                     opacity: _fadeAnimation,
                     child: Column(
                       children: [
-                        const Text(
-                          'SUKCES!',
+                        Text(
+                          AppLocalizations.of(context)!.orderSuccessTitle,
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
@@ -184,7 +185,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'WARTOŚĆ ZAMÓWIENIA', 
+                                AppLocalizations.of(context)!.orderValue, 
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.3), 
                                   fontWeight: FontWeight.w800, 
@@ -209,10 +210,10 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                                   letterSpacing: -0.5,
                                 ),
                               ),
-                              const Padding(
+                              Padding(
                                 padding: EdgeInsets.only(bottom: 6),
                                 child: Text(
-                                  'OPŁACONE',
+                                  AppLocalizations.of(context)!.paidBadge,
                                   style: TextStyle(
                                     color: Colors.green,
                                     fontWeight: FontWeight.bold,
@@ -249,8 +250,8 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> with 
                         ),
                         elevation: 0,
                       ),
-                      child: const Text(
-                        'KONTYNUUJ ZAKUPY', 
+                      child: Text(
+                        AppLocalizations.of(context)!.continueShopping, 
                         style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5),
                       ),
                     ),
