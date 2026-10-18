@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:flutter/services.dart';
@@ -70,8 +71,8 @@ class _PharosProductCardState extends State<PharosProductCard> {
               key: _imageKey,
               child: widget.product.imageUrl.isEmpty
                   ? ColoredBox(
-                      color: Colors.white.withOpacity(0.05),
-                      child: const Icon(Icons.image_not_supported_outlined, color: Colors.white24),
+                      color: AppColors.text.withOpacity(0.05),
+                      child: const Icon(Icons.image_not_supported_outlined, color: AppColors.border),
                     )
                   : CachedNetworkImage(
                       imageUrl: widget.product.getSizedImageUrl('home_default'),
@@ -80,21 +81,21 @@ class _PharosProductCardState extends State<PharosProductCard> {
                       fit: BoxFit.cover,
                       memCacheWidth: 400,
                       placeholder: (context, url) => Container(
-                        color: Colors.white.withOpacity(0.03),
+                        color: AppColors.text.withOpacity(0.03),
                         child: Shimmer.fromColors(
-                          baseColor: Colors.white.withOpacity(0.05),
-                          highlightColor: Colors.white.withOpacity(0.1),
-                          child: Container(color: Colors.white),
+                          baseColor: AppColors.text.withOpacity(0.05),
+                          highlightColor: AppColors.text.withOpacity(0.1),
+                          child: Container(color: AppColors.text),
                         ),
                       ),
-                      errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.white10),
+                      errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: AppColors.divider),
                     ),
             ),
           ),
           _buildWishlistButton(),
-          if (!widget.product.isAvailable) _buildStatusBadge('BRAK', Colors.red)
-          else if (widget.product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', Colors.blue)
-          else if (widget.product.isLowStock) _buildStatusBadge('OSTATNIE', Colors.orange),
+          if (!widget.product.isAvailable) _buildStatusBadge('BRAK', AppColors.error)
+          else if (widget.product.isOnOrder) _buildStatusBadge('NA ZAMÓWIENIE', AppColors.info)
+          else if (widget.product.isLowStock) _buildStatusBadge('OSTATNIE', AppColors.accentText),
           _buildQuickAddButton(context),
         ],
       ),
@@ -122,10 +123,10 @@ class _PharosProductCardState extends State<PharosProductCard> {
               content: Text(AppLocalizations.of(context)!.addedProduct(widget.product.name)),
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.accent,
               action: SnackBarAction(
                 label: AppLocalizations.of(context)!.cartUpper,
-                textColor: Colors.white,
+                textColor: AppColors.text,
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
               ),
             ),
@@ -136,11 +137,11 @@ class _PharosProductCardState extends State<PharosProductCard> {
           child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.orange,
+            color: AppColors.accentText,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
+            boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.3), blurRadius: 8)],
           ),
-          child: const Icon(Icons.add_shopping_cart, size: 20, color: Colors.white),
+          child: const Icon(Icons.add_shopping_cart, size: 20, color: AppColors.text),
         ),
         ),
         ),
@@ -171,19 +172,19 @@ class _PharosProductCardState extends State<PharosProductCard> {
                   content: Text(willBeFavorite ? AppLocalizations.of(context)!.favoritesAdded : AppLocalizations.of(context)!.favoritesRemoved),
                   duration: const Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
-                  backgroundColor: willBeFavorite ? Colors.orange : Colors.grey.shade800,
+                  backgroundColor: willBeFavorite ? AppColors.accentText : AppColors.surface,
                 ),
               );
             },
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: CircleAvatar(
-                backgroundColor: Colors.black45,
+                backgroundColor: AppColors.black.withOpacity(0.45),
                 radius: 16,
                 child: Icon(
                   isFav ? Icons.favorite : Icons.favorite_border,
                   size: 18,
-                  color: isFav ? Colors.red : Colors.white,
+                  color: isFav ? AppColors.error : AppColors.text,
                 ),
               ),
             ),
@@ -205,7 +206,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
         ),
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -223,7 +224,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
             widget.product.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.white),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.text),
           ),
           const SizedBox(height: AppSpacing.s4),
           Wrap(
@@ -232,7 +233,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
             children: [
               Text(
                 loc.formatPrice(widget.product.price),
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.orange),
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.accentText),
               ),
               if (widget.product.hasDiscount && widget.product.priceOld != null)
                 Text(
@@ -240,7 +241,7 @@ class _PharosProductCardState extends State<PharosProductCard> {
                   style: TextStyle(
                     fontWeight: FontWeight.w500, 
                     fontSize: 12, 
-                    color: Colors.white.withOpacity(0.3),
+                    color: AppColors.text.withOpacity(0.3),
                     decoration: TextDecoration.lineThrough,
                   ),
                 ),

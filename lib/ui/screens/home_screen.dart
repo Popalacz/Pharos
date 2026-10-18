@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -143,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
               alignment: Alignment.topRight,
               child: IconButton(
                 tooltip: AppLocalizations.of(context)!.a11yClose,
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: const Icon(Icons.close, color: AppColors.text),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -159,14 +160,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 margin: const EdgeInsets.only(top: 16),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.orange,
+                  color: AppColors.accentText,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   children: [
-                    Text(l10n.yourPromoCode, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(l10n.yourPromoCode, style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.bold)),
                     const SizedBox(height: AppSpacing.s4),
-                    Text(settings.appOnlyDiscountCode!, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                    Text(settings.appOnlyDiscountCode!, style: const TextStyle(color: AppColors.text, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
                   ],
                 ),
               ),
@@ -346,13 +347,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: const BoxDecoration(
-                      color: Colors.orange,
+                      color: AppColors.accentText,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                     child: Text(
                       '${searchProvider.activeFilterCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -390,13 +391,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: Colors.orange,
+                        color: AppColors.accentText,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                       child: Text(
                         '${cart.itemCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: AppColors.text, fontSize: 12, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -424,21 +425,21 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.orange.shade900.withOpacity(0.2),
+          color: AppColors.accent.withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.orange.shade800),
+          border: Border.all(color: AppColors.accent),
         ),
         child: Row(
           children: [
-            const Icon(Icons.shopping_cart_checkout, color: Colors.orange),
+            const Icon(Icons.shopping_cart_checkout, color: AppColors.accentText),
             const SizedBox(width: AppSpacing.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.finishShopping, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(l10n.finishShopping, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
                   Text(l10n.cartRecoveryMessage(loc.formatPrice(cart.totalAmount)), 
-                    style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
             ),
@@ -447,8 +448,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.text,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
@@ -602,22 +603,22 @@ class _HomeScreenState extends State<HomeScreen> {
           Lottie.network(
             'https://assets9.lottiefiles.com/packages/lf20_ghp9v6m3.json',
             height: 200,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.grey),
+            errorBuilder: (context, error, stackTrace) => const Icon(Icons.wifi_off_rounded, size: 80, color: AppColors.textMuted),
           ),
           const SizedBox(height: AppSpacing.s16),
           Text(l10n.syncErrorTitle, 
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.text)),
           const SizedBox(height: AppSpacing.s8),
           Text(l10n.syncErrorMessage, 
-            textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textMuted)),
           const SizedBox(height: AppSpacing.s24),
           ElevatedButton(
             onPressed: () => setState(() => _loadData()),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.accent,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(l10n.tryAgain, style: const TextStyle(color: Colors.white)),
+            child: Text(l10n.tryAgain, style: const TextStyle(color: AppColors.text)),
           ),
         ],
       ),

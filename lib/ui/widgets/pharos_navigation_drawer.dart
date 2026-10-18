@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +33,7 @@ class PharosNavigationDrawer extends StatelessWidget {
               decoration: const BoxDecoration(
                 color: Color(0xFF1A1A1A),
                 border: Border(
-                  bottom: BorderSide(color: Colors.orange, width: 2),
+                  bottom: BorderSide(color: AppColors.accentText, width: 2),
                 ),
               ),
               child: Column(
@@ -42,7 +43,7 @@ class PharosNavigationDrawer extends StatelessWidget {
                   Text(
                     settings.storeName.toUpperCase(),
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.text,
                       fontWeight: FontWeight.w900,
                       fontSize: 24,
                       letterSpacing: 2,
@@ -52,7 +53,7 @@ class PharosNavigationDrawer extends StatelessWidget {
                   Text(
                     l10n.drawerTagline,
                     style: const TextStyle(
-                      color: Colors.white70,
+                      color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -78,11 +79,11 @@ class PharosNavigationDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const LocalizationSettingsScreen()));
             }),
-            const Divider(color: Colors.white10, height: 32),
+            const Divider(color: AppColors.divider, height: 32),
             _buildMenuItem(context, Icons.refresh_rounded, l10n.drawerRefreshStore, () {
               Navigator.pop(context);
               onRefreshCatalog();
-            }, iconColor: Colors.orange),
+            }, iconColor: AppColors.accentText),
           ],
         ),
       ),
@@ -91,10 +92,10 @@ class PharosNavigationDrawer extends StatelessWidget {
 
   Widget _buildMenuItem(BuildContext context, IconData icon, String title, VoidCallback onTap, {Color? iconColor}) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? Colors.white70),
-      title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      leading: Icon(icon, color: iconColor ?? AppColors.textSecondary),
+      title: Text(title, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w600)),
       onTap: onTap,
-      hoverColor: Colors.orange.withOpacity(0.1),
+      hoverColor: AppColors.accentText.withOpacity(0.1),
     );
   }
 }

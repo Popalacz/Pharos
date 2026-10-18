@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:fpdart/fpdart.dart' hide State;
@@ -69,7 +70,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       const SizedBox(height: AppSpacing.s12),
                       Text(
                         widget.product.description,
-                        style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.7), height: 1.6)
+                        style: TextStyle(fontSize: 16, color: AppColors.text.withOpacity(0.7), height: 1.6)
                       ),
                       const SizedBox(height: AppSpacing.s32),
                       _buildTechnicalDetails(),
@@ -77,7 +78,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       _buildSectionTitle('PODOBNE PRODUKTY'),
                       const SizedBox(height: AppSpacing.s16),
                       _buildRelatedProducts(),
-                      const Divider(height: 64, color: Colors.white10),
+                      const Divider(height: 64, color: AppColors.divider),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -99,8 +100,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   });
                                 });
                               },
-                              icon: const Icon(Icons.add, size: 18, color: Colors.orange),
-                              label: Text(AppLocalizations.of(context)!.addButton, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                              icon: const Icon(Icons.add, size: 18, color: AppColors.accentText),
+                              label: Text(AppLocalizations.of(context)!.addButton, style: TextStyle(color: AppColors.accentText, fontWeight: FontWeight.bold)),
                             ),
                         ],
                       ),
@@ -136,11 +137,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 imageUrl: sizedImages[index],
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: Colors.white.withOpacity(0.05),
-                  highlightColor: Colors.white.withOpacity(0.1),
-                  child: Container(color: Colors.black),
+                  baseColor: AppColors.text.withOpacity(0.05),
+                  highlightColor: AppColors.text.withOpacity(0.1),
+                  child: Container(color: AppColors.black),
                 ),
-                errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image, color: Colors.white10, size: 40)),
+                errorWidget: (context, url, error) => const Center(child: Icon(Icons.broken_image, color: AppColors.divider, size: 40)),
               ),
             ),
             if (sizedImages.length > 1)
@@ -155,7 +156,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _currentImageIndex == entry.key ? Colors.orange : Colors.white24,
+                        color: _currentImageIndex == entry.key ? AppColors.accentText : AppColors.border,
                       ),
                     );
                   }).toList(),
@@ -174,7 +175,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         if (widget.product.manufacturerName.isNotEmpty)
           Text(
             widget.product.manufacturerName.toUpperCase(),
-            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 12)
+            style: const TextStyle(color: AppColors.accentText, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 12)
           ),
         const SizedBox(height: AppSpacing.s8),
         // Fix for bottom overflow: Product name now wrapped in a Flexible/FittedBox and uses maxLines
@@ -183,7 +184,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             constraints: BoxConstraints(maxWidth: constraints.maxWidth),
             child: Text(
               widget.product.name,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.text),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -193,7 +194,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(loc.formatPrice(widget.product.price), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.orange)),
+            Text(loc.formatPrice(widget.product.price), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.accentText)),
             if (widget.product.hasDiscount && widget.product.priceOld != null) ...[
               const SizedBox(width: AppSpacing.s12),
               Padding(
@@ -203,7 +204,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white.withOpacity(0.3),
+                    color: AppColors.text.withOpacity(0.3),
                     decoration: TextDecoration.lineThrough,
                   ),
                 ),
@@ -213,12 +214,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 margin: const EdgeInsets.only(bottom: 4),
                 decoration: BoxDecoration(
-                  color: Colors.red,
+                  color: AppColors.error,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '-${widget.product.discountPercentage ?? (((1 - widget.product.price / widget.product.priceOld!) * 100).round())}%',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ),
             ],
@@ -235,20 +236,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         const SizedBox(width: AppSpacing.s12),
         _badge(Icons.local_shipping_outlined, 'Szybka wysyłka'),
         const SizedBox(width: AppSpacing.s12),
-        if (widget.product.isLowStock) _badge(Icons.flash_on, 'Ostatnie sztuki', color: Colors.red),
+        if (widget.product.isLowStock) _badge(Icons.flash_on, 'Ostatnie sztuki', color: AppColors.error),
       ],
     );
   }
 
-  Widget _badge(IconData icon, String label, {Color color = Colors.white24}) {
+  Widget _badge(IconData icon, String label, {Color color = AppColors.border}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: color.withOpacity(0.2))),
       child: Row(
         children: [
-          Icon(icon, size: 14, color: color == Colors.white24 ? Colors.white70 : color),
+          Icon(icon, size: 14, color: color == AppColors.border ? AppColors.textSecondary : color),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(fontSize: 12, color: color == Colors.white24 ? Colors.white70 : color, fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(fontSize: 12, color: color == AppColors.border ? AppColors.textSecondary : color, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -271,15 +272,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.4))),
-          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: AppColors.text.withOpacity(0.4))),
+          Text(value, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2, color: Colors.white30));
+    return Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2, color: AppColors.textDisabled));
   }
 
   Widget _buildRelatedProducts() {
@@ -316,34 +317,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     return FutureBuilder<Either<Failure, List<ReviewModel>>>(
       future: _reviewsFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const LinearProgressIndicator(color: Colors.orange);
+        if (snapshot.connectionState == ConnectionState.waiting) return const LinearProgressIndicator(color: AppColors.accentText);
         if (snapshot.hasError || !snapshot.hasData) {
-          return Text(AppLocalizations.of(context)!.reviewsLoadError, style: TextStyle(color: Colors.white.withOpacity(0.3)));
+          return Text(AppLocalizations.of(context)!.reviewsLoadError, style: TextStyle(color: AppColors.text.withOpacity(0.3)));
         }
 
         return snapshot.data!.fold(
-          (failure) => Text(AppLocalizations.of(context)!.reviewsFetchFailed, style: TextStyle(color: Colors.white.withOpacity(0.3))),
+          (failure) => Text(AppLocalizations.of(context)!.reviewsFetchFailed, style: TextStyle(color: AppColors.text.withOpacity(0.3))),
           (reviews) {
             if (reviews.isEmpty) {
-              return Text(AppLocalizations.of(context)!.noReviews, style: TextStyle(color: Colors.white.withOpacity(0.3)));
+              return Text(AppLocalizations.of(context)!.noReviews, style: TextStyle(color: AppColors.text.withOpacity(0.3)));
             }
             return Column(
               children: reviews.map((review) => Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(color: AppColors.text.withOpacity(0.03), borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(review.customerName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                        Row(children: List.generate(5, (i) => Icon(Icons.star, size: 14, color: i < review.rating ? Colors.amber : Colors.white10))),
+                        Text(review.customerName, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
+                        Row(children: List.generate(5, (i) => Icon(Icons.star, size: 14, color: i < review.rating ? AppColors.warning : AppColors.divider))),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.s8),
-                    Text(review.comment, style: const TextStyle(fontSize: 14, color: Colors.white70)),
+                    Text(review.comment, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                   ],
                 ),
               )).toList(),
@@ -361,7 +362,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+          border: Border(top: BorderSide(color: AppColors.text.withOpacity(0.05))),
         ),
         child: SafeArea(
           child: Row(
@@ -371,7 +372,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   final isFav = wishlist.isFavorite(widget.product.id);
                   return IconButton(
                     tooltip: isFav ? AppLocalizations.of(context)!.a11yRemoveFromFavorites : AppLocalizations.of(context)!.a11yAddToFavorites,
-                    icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : Colors.white),
+                    icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? AppColors.error : AppColors.text),
                     onPressed: () => wishlist.toggleWishlist(widget.product),
                   );
                 },
@@ -386,10 +387,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(widget.product.isOnOrder ? AppLocalizations.of(context)!.addedOnOrder : AppLocalizations.of(context)!.addedToCart),
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.success,
                         action: SnackBarAction(
                           label: AppLocalizations.of(context)!.cartUpper,
-                          textColor: Colors.white,
+                          textColor: AppColors.text,
                           onPressed: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
                           },
@@ -404,14 +405,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   label: AppLocalizations.of(context)!.notifyAvailability,
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(AppLocalizations.of(context)!.notifySaved), backgroundColor: Colors.blue),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.notifySaved), backgroundColor: AppColors.info),
                     );
                   },
                 )
                     : Container(
                   height: 60,
                   alignment: Alignment.center,
-                  child: Text(AppLocalizations.of(context)!.productUnavailable, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.productUnavailable, style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -425,8 +426,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     return Positioned(
       top: 50, left: 20,
       child: CircleAvatar(
-        backgroundColor: Colors.black.withOpacity(0.5),
-        child: IconButton(tooltip: AppLocalizations.of(context)!.a11yBack, icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        backgroundColor: AppColors.black.withOpacity(0.5),
+        child: IconButton(tooltip: AppLocalizations.of(context)!.a11yBack, icon: const Icon(Icons.arrow_back, color: AppColors.text), onPressed: () => Navigator.pop(context)),
       ),
     );
   }

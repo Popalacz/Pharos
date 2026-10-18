@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/data/models/category_model.dart';
@@ -50,14 +51,14 @@ class BannerSliderSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                  colors: [AppColors.black.withOpacity(0.6), Colors.transparent],
                 ),
               ),
               padding: const EdgeInsets.all(20),
               alignment: Alignment.bottomLeft,
               child: Text(
                 item['title']?.toString() ?? '',
-                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: AppColors.text, fontSize: 22, fontWeight: FontWeight.bold),
               ),
             ),
           );
@@ -116,9 +117,9 @@ class CategoryChipsSection extends StatelessWidget {
         label: Text(label),
         selected: isSelected,
         onSelected: (_) => onCategorySelected(id),
-        selectedColor: Colors.orange,
-        backgroundColor: Colors.white.withOpacity(0.05),
-        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
+        selectedColor: AppColors.accent,
+        backgroundColor: AppColors.text.withOpacity(0.05),
+        labelStyle: TextStyle(color: isSelected ? AppColors.text : AppColors.textSecondary, fontWeight: FontWeight.bold),
         showCheckmark: false,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
       ),
@@ -140,13 +141,13 @@ class SectionHeaderWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.text)),
           if (onSeeAll != null)
             InkWell(
               onTap: onSeeAll,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(AppLocalizations.of(context)!.seeAll, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                child: Text(AppLocalizations.of(context)!.seeAll, style: TextStyle(color: AppColors.accentText, fontWeight: FontWeight.bold)),
               ),
             ),
         ],

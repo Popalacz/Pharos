@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:pharos/data/models/address_model.dart';
@@ -97,7 +98,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
       setState(() => _isSaving = false);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.addressSavedSuccess), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.addressSavedSuccess), backgroundColor: AppColors.success),
         );
         await userProvider.fetchAddresses();
         if (mounted && userProvider.addresses.isNotEmpty) {
@@ -109,7 +110,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(userProvider.addressError ?? 'Nie udało się zapisać adresu. Sprawdź wprowadzone dane.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -122,10 +123,10 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        title: Text(widget.address == null ? AppLocalizations.of(context)!.newAddress : AppLocalizations.of(context)!.editAddress, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(widget.address == null ? AppLocalizations.of(context)!.newAddress : AppLocalizations.of(context)!.editAddress, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: AppColors.text),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -167,12 +168,12 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                 child: ElevatedButton(
                   onPressed: _isSaving ? null : _saveForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: AppColors.accent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isSaving 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(AppLocalizations.of(context)!.saveAddressButton, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ? const CircularProgressIndicator(color: AppColors.text)
+                    : Text(AppLocalizations.of(context)!.saveAddressButton, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],
@@ -186,21 +187,21 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: AppColors.text),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white60),
-        prefixIcon: Icon(icon, color: Colors.orange),
+        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        prefixIcon: Icon(icon, color: AppColors.accentText),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white10),
+          borderSide: const BorderSide(color: AppColors.divider),
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.orange, width: 2),
+          borderSide: const BorderSide(color: AppColors.accentText, width: 2),
         ),
-        errorStyle: const TextStyle(color: Colors.redAccent),
+        errorStyle: const TextStyle(color: AppColors.error),
       ),
       validator: validator ?? (value) => FormValidation.requiredField(value, label),
     );

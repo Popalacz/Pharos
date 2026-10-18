@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:fpdart/fpdart.dart' hide State;
@@ -52,7 +53,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-            const Icon(Icons.rate_review_outlined, size: 80, color: Colors.orange),
+            const Icon(Icons.rate_review_outlined, size: 80, color: AppColors.accentText),
             const SizedBox(height: AppSpacing.s24),
             Text(
               AppLocalizations.of(context)!.reviewHeading,
@@ -63,7 +64,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
             const Text(
               'Podziel się swoimi wrażeniami z innymi klientami.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white30),
+              style: TextStyle(color: AppColors.textDisabled),
             ),
             const SizedBox(height: AppSpacing.s48),
             
@@ -76,7 +77,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
                   icon: Icon(
                     index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
                     size: 48,
-                    color: index < _rating ? Colors.orange : Colors.white10,
+                    color: index < _rating ? AppColors.accentText : AppColors.divider,
                   ),
                   onPressed: () {
                     HapticFeedback.lightImpact();
@@ -87,7 +88,7 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
             ),
             Text(
               _getRatingLabel(),
-              style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(color: AppColors.accentText, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             
             const SizedBox(height: AppSpacing.s40),
@@ -96,23 +97,23 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
               controller: _commentController,
               maxLines: 5,
               validator: (value) => FormValidation.commentField(value),
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.text),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.reviewPlaceholder,
-                hintStyle: const TextStyle(color: Colors.white10),
+                hintStyle: const TextStyle(color: AppColors.divider),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: AppColors.text.withOpacity(0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Colors.orange),
+                  borderSide: const BorderSide(color: AppColors.accentText),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Colors.redAccent),
+                  borderSide: const BorderSide(color: AppColors.error),
                 ),
               ),
             ),
@@ -125,11 +126,11 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitReview,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: AppColors.accent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 child: _isSubmitting 
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: AppColors.text)
                   : Text(AppLocalizations.of(context)!.submitReview, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
@@ -192,12 +193,12 @@ class _ReviewFormScreenState extends State<ReviewFormScreen> {
     if (mounted) {
       if (isSuccess) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reviewThanks), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.reviewThanks), backgroundColor: AppColors.success),
         );
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reviewSendError), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context)!.reviewSendError), backgroundColor: AppColors.error),
         );
       }
     }

@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class SearchFilterDrawer extends StatelessWidget {
                   Text(AppLocalizations.of(context)!.filtering, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
                   TextButton(
                     onPressed: () => searchProvider.clearFilters(),
-                    child: Text(AppLocalizations.of(context)!.clearUpper, style: TextStyle(color: Colors.orange)),
+                    child: Text(AppLocalizations.of(context)!.clearUpper, style: TextStyle(color: AppColors.accentText)),
                   ),
                 ],
               ),
@@ -52,10 +53,10 @@ class SearchFilterDrawer extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
+                    backgroundColor: AppColors.black,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text(AppLocalizations.of(context)!.showResults, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context)!.showResults, style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
                 ),
               ),
             )
@@ -70,7 +71,7 @@ class SearchFilterDrawer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: AppSpacing.s24),
-        Text(group.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1, color: Colors.grey)),
+        Text(group.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1, color: AppColors.textMuted)),
         const SizedBox(height: AppSpacing.s12),
         Wrap(
           spacing: 12,
@@ -94,7 +95,7 @@ class SearchFilterDrawer extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Color(int.parse(value.colorHex!.replaceFirst('#', '0xFF'))),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey[300]!, width: 1),
+                border: Border.all(color: AppColors.border, width: 1),
               ),
             ),
             const SizedBox(width: AppSpacing.s8),
@@ -104,16 +105,16 @@ class SearchFilterDrawer extends StatelessWidget {
       ),
       selected: isSelected,
       onSelected: (selected) => provider.toggleFilter(groupId, value.id),
-      selectedColor: Colors.orange.withOpacity(0.2),
+      selectedColor: AppColors.accentText.withOpacity(0.2),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.orange : Colors.black,
+        color: isSelected ? AppColors.accentText : AppColors.black,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: isSelected ? Colors.orange : Colors.grey[300]!),
+        side: BorderSide(color: isSelected ? AppColors.accentText : AppColors.border),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.text,
     );
   }
 }

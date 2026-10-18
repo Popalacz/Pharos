@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -62,13 +63,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(AppLocalizations.of(context)!.loginTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.loginTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: AppColors.text)),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.orange,
+          indicatorColor: AppColors.accentText,
           indicatorWeight: 3,
-          labelColor: Colors.orange,
-          unselectedLabelColor: Colors.white38,
+          labelColor: AppColors.accentText,
+          unselectedLabelColor: AppColors.textDisabled,
           tabs: const [
             Tab(text: 'LOGOWANIE'),
             Tab(text: 'REJESTRACJA'),
@@ -111,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               validator: _passwordValidator,
               suffixIcon: IconButton(
                 tooltip: _obscurePassword ? AppLocalizations.of(context)!.a11yShowPassword : AppLocalizations.of(context)!.a11yHidePassword,
-                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white30),
+                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppColors.textDisabled),
                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
@@ -124,9 +125,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             const SizedBox(height: AppSpacing.s32),
             Row(
               children: [
-                Expanded(child: Divider(color: Colors.white10)),
-                Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text(AppLocalizations.of(context)!.orSeparator, style: TextStyle(color: Colors.white30, fontWeight: FontWeight.bold))),
-                Expanded(child: Divider(color: Colors.white10)),
+                Expanded(child: Divider(color: AppColors.divider)),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text(AppLocalizations.of(context)!.orSeparator, style: TextStyle(color: AppColors.textDisabled, fontWeight: FontWeight.bold))),
+                Expanded(child: Divider(color: AppColors.divider)),
               ],
             ),
             const SizedBox(height: AppSpacing.s32),
@@ -195,29 +196,29 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: AppColors.text),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white38),
-        prefixIcon: Icon(icon, color: Colors.orange),
+        labelStyle: const TextStyle(color: AppColors.textDisabled),
+        prefixIcon: Icon(icon, color: AppColors.accentText),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: AppColors.text.withOpacity(0.05),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white10),
+          borderSide: const BorderSide(color: AppColors.divider),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.orange),
+          borderSide: const BorderSide(color: AppColors.accentText),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.redAccent),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
       ),
     );
@@ -232,12 +233,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       child: OutlinedButton(
         onPressed: userProvider.isLoading ? null : _handleGoogleSignIn,
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.white24),
+          side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white.withOpacity(0.05),
+          backgroundColor: AppColors.text.withOpacity(0.05),
         ),
         child: userProvider.isLoading 
-          ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(color: Colors.orange, strokeWidth: 2))
+          ? const SizedBox(width: AppSpacing.s24, height: 24, child: CircularProgressIndicator(color: AppColors.accentText, strokeWidth: 2))
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -245,12 +246,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   'https://authjs.dev/img/providers/google.svg',
                   height: 24,
                   width: 24,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: Colors.white),
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: AppColors.text),
                 ),
                 const SizedBox(width: AppSpacing.s12),
                 Text(
                   AppLocalizations.of(context)!.continueWithGoogle, 
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)
+                  style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, letterSpacing: 1)
                 ),
               ],
             ),
@@ -269,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(userProvider.authError!),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -303,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(userProvider.authError ?? 'Nie udało się zalogować. Sprawdź e-mail i hasło.'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -340,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(userProvider.authError ?? 'Nie udało się utworzyć konta. Sprawdź wprowadzone dane.'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );

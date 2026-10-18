@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -43,7 +44,7 @@ class PharosButton extends StatelessWidget {
             height: 24,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.text),
             ),
           )
         : Row(
@@ -77,10 +78,10 @@ class PharosButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: wrappedOnPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: Colors.white10,
-            disabledForegroundColor: Colors.white24,
+            backgroundColor: AppColors.accent,
+            foregroundColor: AppColors.text,
+            disabledBackgroundColor: AppColors.divider,
+            disabledForegroundColor: AppColors.border,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -90,9 +91,9 @@ class PharosButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: wrappedOnPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.1),
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: Colors.white.withOpacity(0.05),
+            backgroundColor: AppColors.text.withOpacity(0.1),
+            foregroundColor: AppColors.text,
+            disabledBackgroundColor: AppColors.text.withOpacity(0.05),
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -102,8 +103,8 @@ class PharosButton extends StatelessWidget {
         return OutlinedButton(
           onPressed: wrappedOnPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.orange,
-            side: BorderSide(color: isEnabled ? Colors.orange : Colors.white10, width: 2),
+            foregroundColor: AppColors.accentText,
+            side: BorderSide(color: isEnabled ? AppColors.accentText : AppColors.divider, width: 2),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           child: content,
@@ -112,7 +113,7 @@ class PharosButton extends StatelessWidget {
         return TextButton(
           onPressed: wrappedOnPressed,
           style: TextButton.styleFrom(
-            foregroundColor: Colors.white70,
+            foregroundColor: AppColors.textSecondary,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           child: content,
@@ -121,8 +122,8 @@ class PharosButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: wrappedOnPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.redAccent,
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.error,
+            foregroundColor: AppColors.text,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),

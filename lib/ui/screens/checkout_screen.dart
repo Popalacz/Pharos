@@ -190,13 +190,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Finalizacja zamówienia', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          title: const Text('Finalizacja zamówienia', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
             tooltip: 'Wstecz',
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.text),
             onPressed: _handleBackButton,
           ),
         ),
@@ -228,16 +228,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             if (_isProcessing)
               Container(
-                color: Colors.black.withOpacity(0.85),
+                color: AppColors.black.withOpacity(0.85),
                 child: const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(color: AppColors.accentText),
                       SizedBox(height: AppSpacing.s24),
-                      Text('Przetwarzanie zamówienia...', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                      Text('Przetwarzanie zamówienia...', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 18)),
                       SizedBox(height: AppSpacing.s8),
-                      Text('Proszę nie zamykać aplikacji', style: TextStyle(color: Colors.white60, fontSize: 14)),
+                      Text('Proszę nie zamykać aplikacji', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
                     ],
                   ),
                 ),
@@ -266,7 +266,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return [
       const CheckoutSectionHeader(title: 'Metoda dostawy', icon: Icons.local_shipping_rounded),
       if (noOptions)
-        const Text('Brak metod dostawy dla tego koszyka.', style: TextStyle(color: Colors.white70, fontSize: 14))
+        const Text('Brak metod dostawy dla tego koszyka.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))
       else
         CheckoutCarrierList(
           carriers: _carriers,
@@ -290,7 +290,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!noOptions || _isStepped) ...[
         const CheckoutSectionHeader(title: 'Płatność', icon: Icons.account_balance_wallet_rounded),
         if (noOptions)
-          const Text('Brak metod płatności dla tego koszyka.', style: TextStyle(color: Colors.white70, fontSize: 14))
+          const Text('Brak metod płatności dla tego koszyka.', style: TextStyle(color: AppColors.textSecondary, fontSize: 14))
         else
           CheckoutPaymentList(
             payments: _payments,
@@ -444,12 +444,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           const Text(
             'Masz już konto?',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 6),
           Text(
             'Zaloguj się, aby użyć zapisanych adresów i szybciej dokończyć zamówienie.',
-            style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 13, height: 1.4),
+            style: TextStyle(color: AppColors.text.withOpacity(0.55), fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: AppSpacing.s16),
           OutlinedButton.icon(
@@ -466,20 +466,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: AppSpacing.s16),
           Row(
             children: [
-              Expanded(child: Divider(color: Colors.white.withOpacity(0.08))),
+              Expanded(child: Divider(color: AppColors.text.withOpacity(0.08))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   'LUB KONTYNUUJ JAKO GOŚĆ',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.35),
+                    color: AppColors.text.withOpacity(0.35),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1,
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: Colors.white.withOpacity(0.08))),
+              Expanded(child: Divider(color: AppColors.text.withOpacity(0.08))),
             ],
           ),
         ],
@@ -543,8 +543,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-          border: Border.all(color: _selectedAddress == null ? Colors.red.withOpacity(0.5) : Colors.white.withOpacity(0.05)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))],
+          border: Border.all(color: _selectedAddress == null ? AppColors.error.withOpacity(0.5) : AppColors.text.withOpacity(0.05)),
+          boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
@@ -553,10 +553,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${_selectedAddress!.firstname} ${_selectedAddress!.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+                        Text('${_selectedAddress!.firstname} ${_selectedAddress!.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text, fontSize: 16)),
                         const SizedBox(height: 6),
-                        Text(_selectedAddress!.address1, style: TextStyle(color: Colors.white.withOpacity(0.6))),
-                        Text('${_selectedAddress!.postcode} ${_selectedAddress!.city}', style: TextStyle(color: Colors.white.withOpacity(0.6))),
+                        Text(_selectedAddress!.address1, style: TextStyle(color: AppColors.text.withOpacity(0.6))),
+                        Text('${_selectedAddress!.postcode} ${_selectedAddress!.city}', style: TextStyle(color: AppColors.text.withOpacity(0.6))),
                         if (_selectedAddress!.phone != null && _selectedAddress!.phone!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
@@ -567,9 +567,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Gdzie mamy wysłać paczkę?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text('Gdzie mamy wysłać paczkę?', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16)),
                         const SizedBox(height: AppSpacing.s4),
-                        Text(hasAddresses ? 'Kliknij, aby wybrać adres' : 'Kliknij, aby dodać dane do wysyłki', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
+                        Text(hasAddresses ? 'Kliknij, aby wybrać adres' : 'Kliknij, aby dodać dane do wysyłki', style: TextStyle(color: AppColors.text.withOpacity(0.4), fontSize: 13)),
                       ],
                     ),
             ),
@@ -600,12 +600,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() => _isApplyingVoucher = false);
       if (error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(error), backgroundColor: AppColors.error, behavior: SnackBarBehavior.floating),
         );
       } else {
         _voucherController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kod rabatowy został pomyślnie naliczony!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
+          const SnackBar(content: Text('Kod rabatowy został pomyślnie naliczony!'), backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating),
         );
       }
     }
@@ -632,12 +632,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF222222),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: AppColors.text.withOpacity(0.05)),
       ),
       child: Column(
         children: _addressSuggestions.map((s) => ListTile(
           dense: true,
-          title: Text(s['description'] ?? '', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          title: Text(s['description'] ?? '', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
           onTap: () => _selectAddressSuggestion(s),
         )).toList(),
       ),
@@ -692,8 +692,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: BoxDecoration(
         color: AppColors.background,
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, -8))],
+        border: Border(top: BorderSide(color: AppColors.text.withOpacity(0.05))),
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, -8))],
       ),
       child: SafeArea(
         child: PharosButton(

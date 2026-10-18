@@ -85,7 +85,7 @@ class CheckoutGuestForm extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: AppColors.text.withOpacity(0.05)),
           ),
           child: Column(
             children: [
@@ -184,11 +184,11 @@ class CheckoutGuestForm extends StatelessWidget {
               Material(
                 color: Colors.transparent,
                 child: Theme(
-                  data: ThemeData(unselectedWidgetColor: Colors.white54),
+                  data: ThemeData(unselectedWidgetColor: AppColors.textSecondary),
                   child: CheckboxListTile(
                     value: createAccount,
                     onChanged: (val) => onCreateAccountChanged(val ?? false),
-                    title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    title: const Text('Chcę założyć konto dla szybszych zakupów', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     activeColor: AppColors.accentText,
@@ -245,23 +245,23 @@ class _GuestField extends StatelessWidget {
       enableSuggestions: autocorrect,
       autofillHints: autofillHints,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: AppColors.text, fontSize: 14),
       cursorColor: AppColors.accentText,
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70, fontSize: 14),
+        labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
         floatingLabelStyle: const TextStyle(color: AppColors.accentText, fontSize: 12),
         prefixIcon: Icon(icon, size: 18, color: AppColors.accentText.withOpacity(0.7)),
         filled: true,
-        fillColor: Colors.black.withOpacity(0.1),
+        fillColor: AppColors.black.withOpacity(0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: _border(Colors.transparent),
-        enabledBorder: _border(Colors.white.withOpacity(0.05)),
+        enabledBorder: _border(AppColors.text.withOpacity(0.05)),
         focusedBorder: _border(AppColors.accent.withOpacity(0.6)),
-        errorBorder: _border(Colors.redAccent),
-        focusedErrorBorder: _border(Colors.redAccent, 2),
-        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 12),
+        errorBorder: _border(AppColors.error),
+        focusedErrorBorder: _border(AppColors.error, 2),
+        errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
       ),
     );
   }

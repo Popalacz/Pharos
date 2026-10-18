@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,7 @@ class WishlistScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(AppLocalizations.of(context)!.wishlistTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.wishlistTitle, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, color: AppColors.text)),
         centerTitle: true,
       ),
       body: wishlistProvider.isLoading
@@ -29,7 +30,7 @@ class WishlistScreen extends StatelessWidget {
               ? _buildEmptyState(context)
               : RefreshIndicator(
                   onRefresh: () => wishlistProvider.fetchWishlist(),
-                  color: Colors.orange,
+                  color: AppColors.accentText,
                   backgroundColor: const Color(0xFF1A1A1A),
                   child: GridView.builder(
                     padding: const EdgeInsets.all(16),
@@ -61,15 +62,15 @@ class WishlistScreen extends StatelessWidget {
               'https://assets1.lottiefiles.com/packages/lf20_v7v9z8zv.json',
               height: 200,
               repeat: true,
-              errorBuilder: (context, error, stackTrace) => Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.1)),
+              errorBuilder: (context, error, stackTrace) => Icon(Icons.favorite_border, size: 80, color: AppColors.text.withOpacity(0.1)),
             ),
             const SizedBox(height: AppSpacing.s32),
-            Text(AppLocalizations.of(context)!.wishlistEmpty, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+            Text(AppLocalizations.of(context)!.wishlistEmpty, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.text, letterSpacing: 1)),
             const SizedBox(height: AppSpacing.s12),
             Text(
               'Zapisuj produkty, które Ci się podobają, aby wrócić do nich w dowolnym momencie.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 15, height: 1.5),
+              style: TextStyle(color: AppColors.text.withOpacity(0.4), fontSize: 15, height: 1.5),
             ),
             const SizedBox(height: AppSpacing.s40),
             PharosButton(

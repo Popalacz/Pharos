@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +56,7 @@ class LocalizationSettingsScreen extends StatelessWidget {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, letterSpacing: 1.2, fontSize: 13),
+      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accentText, letterSpacing: 1.2, fontSize: 13),
     );
   }
 
@@ -65,15 +66,15 @@ class LocalizationSettingsScreen extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        side: BorderSide(color: AppColors.text.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: provider.languages.map((lang) => RadioListTile(
           value: lang.id,
           groupValue: provider.currentLanguage?.id,
-          title: Text(lang.name, style: const TextStyle(color: Colors.white)),
-          secondary: Text(lang.isoCode.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
-          activeColor: Colors.orange,
+          title: Text(lang.name, style: const TextStyle(color: AppColors.text)),
+          secondary: Text(lang.isoCode.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accentText)),
+          activeColor: AppColors.accentText,
           onChanged: (val) async {
             await provider.setLanguage(lang);
             if (!context.mounted) return;
@@ -96,15 +97,15 @@ class LocalizationSettingsScreen extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        side: BorderSide(color: AppColors.text.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: provider.currencies.map((curr) => RadioListTile(
           value: curr.id,
           groupValue: provider.currentCurrency?.id,
-          title: Text(curr.name, style: const TextStyle(color: Colors.white)),
-          secondary: Text(curr.isoCode, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
-          activeColor: Colors.orange,
+          title: Text(curr.name, style: const TextStyle(color: AppColors.text)),
+          secondary: Text(curr.isoCode, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accentText)),
+          activeColor: AppColors.accentText,
           onChanged: (val) => provider.setCurrency(curr),
         )).toList(),
       ),
@@ -112,6 +113,6 @@ class LocalizationSettingsScreen extends StatelessWidget {
   }
 
   Widget _buildInfoText(String text) {
-    return Text(text, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13, height: 1.5));
+    return Text(text, style: TextStyle(color: AppColors.text.withValues(alpha: 0.5), fontSize: 13, height: 1.5));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:pharos/core/services/scanner_service.dart';
@@ -13,7 +14,7 @@ class ScannerScreen extends StatelessWidget {
         title: Text(AppLocalizations.of(context)!.scanProduct, style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.text,
       ),
       extendBodyBehindAppBar: true,
       body: Stack(
@@ -33,7 +34,7 @@ class ScannerScreen extends StatelessWidget {
           Container(
             decoration: ShapeDecoration(
               shape: _ScannerOverlayShape(
-                borderColor: Colors.orange,
+                borderColor: AppColors.accentText,
                 borderRadius: 20,
                 borderLength: 40,
                 borderWidth: 8,
@@ -47,7 +48,7 @@ class ScannerScreen extends StatelessWidget {
             child: Text(
               AppLocalizations.of(context)!.scanHint,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.bold),
             ),
           )
         ],
@@ -64,7 +65,7 @@ class _ScannerOverlayShape extends ShapeBorder {
   final double cutOutSize;
 
   const _ScannerOverlayShape({
-    this.borderColor = Colors.white,
+    this.borderColor = AppColors.text,
     this.borderWidth = 3,
     this.borderRadius = 0,
     this.borderLength = 40,
@@ -93,7 +94,7 @@ class _ScannerOverlayShape extends ShapeBorder {
     );
 
     final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = AppColors.black.withOpacity(0.5)
       ..style = PaintingStyle.fill;
 
     final borderPaint = Paint()

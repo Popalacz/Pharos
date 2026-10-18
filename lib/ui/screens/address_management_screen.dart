@@ -1,3 +1,4 @@
+import 'package:pharos/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:pharos/core/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
@@ -33,11 +34,11 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       body: Stack(
         children: [
           userProvider.isLoadingAddresses && userProvider.addresses.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: Colors.orange))
+            ? const Center(child: CircularProgressIndicator(color: AppColors.accentText))
             : Column(
                 children: [
                   if (userProvider.isLoadingAddresses)
-                    const LinearProgressIndicator(backgroundColor: Colors.transparent, color: Colors.orange, minHeight: 2),
+                    const LinearProgressIndicator(backgroundColor: Colors.transparent, color: AppColors.accentText, minHeight: 2),
                   Expanded(
                     child: userProvider.addresses.isEmpty 
                       ? _buildEmptyState()
@@ -62,8 +63,8 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
               child: FloatingActionButton.extended(
                 heroTag: 'management_add_address_safe',
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressFormScreen())),
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.text,
                 label: Text(AppLocalizations.of(context)!.addNewAddressButton, style: TextStyle(fontWeight: FontWeight.bold)),
                 icon: const Icon(Icons.add),
               ),
@@ -79,9 +80,9 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.location_off_outlined, size: 80, color: Colors.white.withOpacity(0.05)),
+          Icon(Icons.location_off_outlined, size: 80, color: AppColors.text.withOpacity(0.05)),
           const SizedBox(height: AppSpacing.s16),
-          Text(AppLocalizations.of(context)!.noSavedAddresses, style: TextStyle(color: Colors.white30)),
+          Text(AppLocalizations.of(context)!.noSavedAddresses, style: TextStyle(color: AppColors.textDisabled)),
         ],
       ),
     );
@@ -92,9 +93,9 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: AppColors.text.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,28 +103,28 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(address.alias.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, fontSize: 12)),
+              Text(address.alias.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.accentText, fontSize: 12)),
               Row(
                 children: [
                   IconButton(
                     tooltip: AppLocalizations.of(context)!.a11yEdit,
-                    icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.white70),
+                    icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.textSecondary),
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddressFormScreen(address: address))),
                   ),
                   IconButton(
                     tooltip: AppLocalizations.of(context)!.a11yRemove,
-                    icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                    icon: const Icon(Icons.delete_outline, size: 20, color: AppColors.error),
                     onPressed: () => _confirmDelete(context, address),
                   ),
                 ],
               )
             ],
           ),
-          Text('${address.firstname} ${address.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          Text('${address.firstname} ${address.lastname}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text)),
           const SizedBox(height: AppSpacing.s4),
-          Text(address.address1, style: const TextStyle(color: Colors.white70)),
-          Text('${address.postcode} ${address.city}', style: const TextStyle(color: Colors.white70)),
-          if (address.phone != null) Text(address.phone!, style: const TextStyle(color: Colors.white70)),
+          Text(address.address1, style: const TextStyle(color: AppColors.textSecondary)),
+          Text('${address.postcode} ${address.city}', style: const TextStyle(color: AppColors.textSecondary)),
+          if (address.phone != null) Text(address.phone!, style: const TextStyle(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -143,7 +144,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
               context.read<UserProvider>().deleteAddress(address.id);
               Navigator.pop(context);
             }, 
-            child: Text(AppLocalizations.of(context)!.deleteButton, style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.deleteButton, style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),

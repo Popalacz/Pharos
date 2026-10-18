@@ -24,12 +24,12 @@ class CheckoutVoucherSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(PharosLayout.radiusMd),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: AppColors.text.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('KOD RABATOWY', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
+          const Text('KOD RABATOWY', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2)),
           const SizedBox(height: AppSpacing.s12),
           Row(
             children: [
@@ -40,12 +40,12 @@ class CheckoutVoucherSection extends StatelessWidget {
                   textCapitalization: TextCapitalization.characters,
                   autocorrect: false,
                   onSubmitted: (_) => onApply(),
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: const TextStyle(color: AppColors.text, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Wpisz kod...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                    hintStyle: TextStyle(color: AppColors.text.withOpacity(0.4)),
                     filled: true,
-                    fillColor: Colors.black.withOpacity(0.1),
+                    fillColor: AppColors.black.withOpacity(0.1),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
@@ -97,22 +97,22 @@ class CheckoutOrderSummary extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF151515),
         borderRadius: BorderRadius.circular(PharosLayout.radiusLg),
-        border: Border.all(color: Colors.white.withOpacity(0.03)),
+        border: Border.all(color: AppColors.text.withOpacity(0.03)),
       ),
       child: Column(
         children: [
           _row(l10n.productsTotal, loc.formatPrice(subtotal)),
           const SizedBox(height: AppSpacing.s12),
-          _row(l10n.shipping, shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? Colors.green : null),
+          _row(l10n.shipping, shipping == 0 ? 'GRATIS' : loc.formatPrice(shipping), color: shipping == 0 ? AppColors.success : null),
           if (discount > 0.05) ...[
             const SizedBox(height: AppSpacing.s12),
-            _row(l10n.discount, '- ${loc.formatPrice(discount)}', color: Colors.green),
+            _row(l10n.discount, '- ${loc.formatPrice(discount)}', color: AppColors.success),
           ],
-          const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(color: Colors.white10)),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Divider(color: AppColors.divider)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.5)),
+              Text(l10n.total.toUpperCase(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.text, letterSpacing: 1.5)),
               Text(loc.formatPrice(total), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.accentText)),
             ],
           ),
@@ -125,8 +125,8 @@ class CheckoutOrderSummary extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6))),
-        Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color ?? Colors.white70)),
+        Text(label, style: TextStyle(fontSize: 14, color: AppColors.text.withOpacity(0.6))),
+        Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color ?? AppColors.textSecondary)),
       ],
     );
   }
