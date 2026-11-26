@@ -38,7 +38,10 @@ inzynierka/    # materiały do pracy dyplomowej
 
 1. `flutter pub get`
 2. Skonfiguruj adres sklepu i klucz w `lib/core/api/api_config.dart` oraz `GOOGLE_SERVER_CLIENT_ID` przez `--dart-define` (dodaj SHA-1 w Firebase).
-3. `flutter run`
+3. Linki do stron prawnych sklepu w kasie podaj przez `--dart-define`: `TERMS_URL`, `PRIVACY_URL`, `WITHDRAWAL_URL`. Bez nich kasa pokazuje tylko tekst informacyjny, bez linków.
+4. `flutter run`
+
+Analityka i raporty błędów (Firebase) są domyślnie wyłączone. Włączają się dopiero po zgodzie użytkownika, którą aplikacja pyta przy pierwszym uruchomieniu i którą można zmienić w profilu.
 
 Moduł `pharosapi` w wersji 1.0.2 lub nowszej musi być wdrożony **przed** aplikacją, bo aplikacja zakłada uwierzytelnianie tokenem po stronie serwera.
 

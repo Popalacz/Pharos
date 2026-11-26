@@ -9,6 +9,8 @@ import 'package:pharos/data/repositories/system_repository.dart';
 import 'package:pharos/core/providers/cart_provider.dart';
 import 'package:pharos/core/providers/user_provider.dart';
 import 'package:pharos/core/providers/settings_provider.dart';
+import 'package:pharos/core/providers/consent_provider.dart';
+import 'package:pharos/ui/widgets/consent_dialog.dart';
 import 'package:pharos/core/theme/app_theme.dart';
 import 'package:pharos/ui/screens/home_screen.dart';
 import 'package:pharos/ui/screens/profile_screen.dart';
@@ -35,7 +37,6 @@ import 'package:pharos/data/repositories/order_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:version/version.dart' as v;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:pharos/core/config/google_config.dart';
 import 'package:pharos/core/utils/form_validation.dart';
 import 'package:pharos/l10n/app_localizations.dart';
@@ -45,7 +46,6 @@ void main() async {
   
   try {
     await Firebase.initializeApp();
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
     if (!GoogleConfig.hasServerClientId) {
       AppLog.w(
         'Google Sign-In: brak GOOGLE_SERVER_CLIENT_ID. '
@@ -57,6 +57,9 @@ void main() async {
     AppLog.e('Firebase Init Error: $e');
   }
 
+  final consentProvider = ConsentProvider();
+  await consentProvider.load();
+
   final apiService = ApiService();
   final settingsProvider = SettingsProvider(apiService: apiService);
 
@@ -66,8 +69,6 @@ void main() async {
     return true;
   };
 
-  FirebaseAnalytics.instance.logAppOpen();
-
   NotificationService().initialize();
   
   runApp(
@@ -75,6 +76,7 @@ void main() async {
       providers: [
         Provider<ApiService>.value(value: apiService),
         ChangeNotifierProvider.value(value: settingsProvider),
+        ChangeNotifierProvider.value(value: consentProvider),
         Provider<ISystemRepository>(
           create: (_) => SystemRepository(apiService: apiService),
         ),
@@ -181,7 +183,7 @@ class PharosApp extends StatelessWidget {
             FormValidation.l10n = AppLocalizations.of(context);
             return child ?? const SizedBox.shrink();
           },
-          home: const UpdateCheckWrapper(child: MainNavigation()),
+          home: const UpdateCheckWrapper(child: ConsentGate(child: MainNavigation())),
         );
       },
     );

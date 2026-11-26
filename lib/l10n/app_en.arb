@@ -284,7 +284,7 @@
   "stepTodo": "to do",
   "voucherHint": "Enter code...",
   "voucherUseButton": "APPLY",
-  "payAmount": "PAY {amount}",
+  "payAmount": "ORDER AND PAY {amount}",
   "@payAmount": {
     "placeholders": {
       "amount": {
@@ -292,6 +292,16 @@
       }
     }
   },
+  "checkoutLegalNotice": "By placing the order you confirm that you have read the store terms and privacy policy. You have 14 days to withdraw from the contract without giving a reason.",
+  "legalTermsLink": "Terms and conditions",
+  "legalPrivacyLink": "Privacy policy",
+  "legalWithdrawalLink": "Right of withdrawal",
+  "consentTitle": "Analytics and error reports",
+  "consentBody": "With your consent the app sends usage statistics and error reports (Google Firebase) so the store can improve it. Without consent we send nothing. You can change your choice in your profile at any time.",
+  "consentAccept": "I agree",
+  "consentDecline": "I do not agree",
+  "consentSettingTitle": "Privacy",
+  "consentSettingSubtitle": "Analytics and error reports",
   "missingFieldsMessage": "Missing: {fields}.",
   "@missingFieldsMessage": {
     "placeholders": {

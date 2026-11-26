@@ -14,6 +14,7 @@ import 'package:pharos/ui/screens/address_management_screen.dart';
 import 'package:pharos/ui/widgets/list_shimmer.dart';
 import 'package:pharos/l10n/app_localizations.dart';
 import 'package:pharos/ui/widgets/pharos_button.dart';
+import 'package:pharos/ui/widgets/consent_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -77,6 +78,13 @@ class ProfileScreen extends StatelessWidget {
             PharosButton(
               label: AppLocalizations.of(context)!.loginOrRegister,
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+            ),
+            const SizedBox(height: AppSpacing.s24),
+            _ProfileMenuTile(
+              icon: Icons.privacy_tip_outlined,
+              title: AppLocalizations.of(context)!.consentSettingTitle,
+              subtitle: AppLocalizations.of(context)!.consentSettingSubtitle,
+              onTap: () => showConsentDialog(context),
             ),
           ],
         ),
@@ -142,6 +150,12 @@ class _LoggedInProfileContent extends StatelessWidget {
           title: AppLocalizations.of(context)!.myData,
           subtitle: AppLocalizations.of(context)!.myDataSubtitle,
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen())),
+        ),
+        _ProfileMenuTile(
+          icon: Icons.privacy_tip_outlined,
+          title: AppLocalizations.of(context)!.consentSettingTitle,
+          subtitle: AppLocalizations.of(context)!.consentSettingSubtitle,
+          onTap: () => showConsentDialog(context),
         ),
         _ProfileMenuTile(
           icon: Icons.location_on_outlined,
