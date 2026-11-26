@@ -735,8 +735,40 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String payAmount(String amount) {
-    return 'ZAPŁAĆ $amount';
+    return 'ZAMAWIAM I PŁACĘ $amount';
   }
+
+  @override
+  String get checkoutLegalNotice =>
+      'Składając zamówienie, potwierdzasz zapoznanie się z regulaminem i polityką prywatności sklepu. Masz 14 dni na odstąpienie od umowy bez podania przyczyny.';
+
+  @override
+  String get legalTermsLink => 'Regulamin';
+
+  @override
+  String get legalPrivacyLink => 'Polityka prywatności';
+
+  @override
+  String get legalWithdrawalLink => 'Prawo odstąpienia od umowy';
+
+  @override
+  String get consentTitle => 'Analityka i raporty błędów';
+
+  @override
+  String get consentBody =>
+      'Za Twoją zgodą aplikacja wysyła statystyki użycia i raporty błędów (Google Firebase), aby sklep mógł poprawiać jej działanie. Bez zgody niczego nie wysyłamy. Zgodę możesz zmienić w profilu w każdej chwili.';
+
+  @override
+  String get consentAccept => 'Zgadzam się';
+
+  @override
+  String get consentDecline => 'Nie zgadzam się';
+
+  @override
+  String get consentSettingTitle => 'Prywatność';
+
+  @override
+  String get consentSettingSubtitle => 'Analityka i raporty błędów';
 
   @override
   String missingFieldsMessage(String fields) {

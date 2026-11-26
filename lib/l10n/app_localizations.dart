@@ -1493,8 +1493,68 @@ abstract class AppLocalizations {
   /// No description provided for @payAmount.
   ///
   /// In en, this message translates to:
-  /// **'PAY {amount}'**
+  /// **'ORDER AND PAY {amount}'**
   String payAmount(String amount);
+
+  /// No description provided for @checkoutLegalNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'By placing the order you confirm that you have read the store terms and privacy policy. You have 14 days to withdraw from the contract without giving a reason.'**
+  String get checkoutLegalNotice;
+
+  /// No description provided for @legalTermsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and conditions'**
+  String get legalTermsLink;
+
+  /// No description provided for @legalPrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get legalPrivacyLink;
+
+  /// No description provided for @legalWithdrawalLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Right of withdrawal'**
+  String get legalWithdrawalLink;
+
+  /// No description provided for @consentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics and error reports'**
+  String get consentTitle;
+
+  /// No description provided for @consentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'With your consent the app sends usage statistics and error reports (Google Firebase) so the store can improve it. Without consent we send nothing. You can change your choice in your profile at any time.'**
+  String get consentBody;
+
+  /// No description provided for @consentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get consentAccept;
+
+  /// No description provided for @consentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'I do not agree'**
+  String get consentDecline;
+
+  /// No description provided for @consentSettingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get consentSettingTitle;
+
+  /// No description provided for @consentSettingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics and error reports'**
+  String get consentSettingSubtitle;
 
   /// No description provided for @missingFieldsMessage.
   ///

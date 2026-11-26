@@ -18,6 +18,7 @@ import 'package:pharos/core/services/analytics_service.dart';
 import 'package:pharos/core/services/google_places_service.dart';
 import 'package:pharos/ui/screens/checkout/checkout_chrome.dart';
 import 'package:pharos/ui/screens/checkout/checkout_guest_form.dart';
+import 'package:pharos/ui/screens/checkout/checkout_legal_notice.dart';
 import 'package:pharos/ui/screens/checkout/checkout_option_cards.dart';
 import 'package:pharos/ui/screens/checkout/checkout_step_indicator.dart';
 import 'package:pharos/ui/screens/checkout/checkout_summary.dart';
@@ -698,12 +699,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, -8))],
       ),
       child: SafeArea(
-        child: PharosButton(
-          label: buttonText,
-          isLoading: _isProcessing,
-          onPressed: _isProcessing
-              ? null
-              : () => isFinalAction ? _handleCheckoutAction(total) : _goToNextStep(isGuest),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (isFinalAction) ...[
+              const CheckoutLegalNotice(),
+              const SizedBox(height: AppSpacing.s8),
+            ],
+            PharosButton(
+              label: buttonText,
+              isLoading: _isProcessing,
+              onPressed: _isProcessing
+                  ? null
+                  : () => isFinalAction ? _handleCheckoutAction(total) : _goToNextStep(isGuest),
+            ),
+          ],
         ),
       ),
     );

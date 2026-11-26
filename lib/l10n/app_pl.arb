@@ -284,7 +284,7 @@
   "stepTodo": "do wykonania",
   "voucherHint": "Wpisz kod...",
   "voucherUseButton": "UŻYJ",
-  "payAmount": "ZAPŁAĆ {amount}",
+  "payAmount": "ZAMAWIAM I PŁACĘ {amount}",
   "@payAmount": {
     "placeholders": {
       "amount": {
@@ -292,6 +292,16 @@
       }
     }
   },
+  "checkoutLegalNotice": "Składając zamówienie, potwierdzasz zapoznanie się z regulaminem i polityką prywatności sklepu. Masz 14 dni na odstąpienie od umowy bez podania przyczyny.",
+  "legalTermsLink": "Regulamin",
+  "legalPrivacyLink": "Polityka prywatności",
+  "legalWithdrawalLink": "Prawo odstąpienia od umowy",
+  "consentTitle": "Analityka i raporty błędów",
+  "consentBody": "Za Twoją zgodą aplikacja wysyła statystyki użycia i raporty błędów (Google Firebase), aby sklep mógł poprawiać jej działanie. Bez zgody niczego nie wysyłamy. Zgodę możesz zmienić w profilu w każdej chwili.",
+  "consentAccept": "Zgadzam się",
+  "consentDecline": "Nie zgadzam się",
+  "consentSettingTitle": "Prywatność",
+  "consentSettingSubtitle": "Analityka i raporty błędów",
   "missingFieldsMessage": "Brakuje: {fields}.",
   "@missingFieldsMessage": {
     "placeholders": {
