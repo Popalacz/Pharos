@@ -739,7 +739,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get checkoutLegalNotice => 'By placing the order you confirm that you have read the store terms and privacy policy. You have 14 days to withdraw from the contract without giving a reason.';
+  String get checkoutLegalNotice =>
+      'By placing the order you confirm that you have read the store terms and privacy policy. You have 14 days to withdraw from the contract without giving a reason.';
 
   @override
   String get legalTermsLink => 'Terms and conditions';
@@ -754,7 +755,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get consentTitle => 'Analytics and error reports';
 
   @override
-  String get consentBody => 'With your consent the app sends usage statistics and error reports (Google Firebase) so the store can improve it. Without consent we send nothing. You can change your choice in your profile at any time.';
+  String get consentBody =>
+      'With your consent the app sends usage statistics and error reports (Google Firebase) so the store can improve it. Without consent we send nothing. You can change your choice in your profile at any time.';
 
   @override
   String get consentAccept => 'I agree';
